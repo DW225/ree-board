@@ -4,7 +4,7 @@ import { boardTable, memberTable, Role, userTable } from "@/db/schema";
 import { db } from "./client";
 import { eq } from "drizzle-orm";
 import { findUserIdByKindeID } from "./user";
-import { addUserToBoard } from "./boardUser";
+import { addMember } from "./member";
 
 export async function fetchBoards(userId: string, useKindeId: boolean = true) {
   if (userId === null) {
@@ -44,7 +44,7 @@ export async function createBoard(newBoard: NewBoard, kindeId: string) {
     .returning({ id: boardTable.id })
     .execute();
   if (board.length > 0) {
-    await addUserToBoard({
+    await addMember({
       userId: userId,
       boardId: board[0].id,
       role: Role.owner,

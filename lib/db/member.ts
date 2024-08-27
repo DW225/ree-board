@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 
 type NewMember = typeof memberTable.$inferInsert;
 
-export const addUserToBoard = async (newMember: NewMember) => {
+export const addMember = async (newMember: NewMember) => {
   await db.insert(memberTable).values({
     userId: newMember.userId,
     boardId: newMember.boardId,
@@ -12,14 +12,11 @@ export const addUserToBoard = async (newMember: NewMember) => {
   });
 };
 
-export const removeUserFromBoard = async (userID: string, boardID: string) => {
+export const removeMember = async (userID: string, boardID: string) => {
   await db
     .delete(memberTable)
     .where(
-      and(
-        eq(memberTable.userId, userID),
-        eq(memberTable.boardId, boardID)
-      )
+      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardID))
     )
     .execute();
 };
