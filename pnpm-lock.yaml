@@ -21,8 +21,8 @@ importers:
         specifier: ^2.1.5
         version: 2.1.5(react@18.3.1)
       '@kinde-oss/kinde-auth-nextjs':
-        specifier: ^2.3.6
-        version: 2.3.6(@babel/core@7.25.2)(next@14.2.6(@babel/core@7.25.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.3.8
+        version: 2.3.8(@babel/core@7.25.2)(next@14.2.6(@babel/core@7.25.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@kinde/management-api-js':
         specifier: ^0.9.0
         version: 0.9.0
@@ -1077,8 +1077,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@kinde-oss/kinde-auth-nextjs@2.3.6':
-    resolution: {integrity: sha512-qZ3OlXgovHbWSYQelUNM2b+vSRwL+G0a9OcFXy5fd6nzVtmShMwVWA6q0jVB/A+wIy5/4kfx8IDkli5wOlfhaQ==}
+  '@kinde-oss/kinde-auth-nextjs@2.3.8':
+    resolution: {integrity: sha512-nSjQUDL93wNpRmDwnXdqANhbQ2oKf51AtAyUy8Q9uYLdloN8yqTSZ2C1RAM5ArtR+v2+sFBCKgjaKjgm7S8C0A==}
     peerDependencies:
       next: ^12.2.5 || ^13 || ^14
       react: ^18.1.0
@@ -4189,7 +4189,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@kinde-oss/kinde-auth-nextjs@2.3.6(@babel/core@7.25.2)(next@14.2.6(@babel/core@7.25.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@kinde-oss/kinde-auth-nextjs@2.3.8(@babel/core@7.25.2)(next@14.2.6(@babel/core@7.25.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/preset-env': 7.25.3(@babel/core@7.25.2)
       '@kinde-oss/kinde-typescript-sdk': 2.9.1
