@@ -51,7 +51,7 @@
     "daisyui": "^4.12.10",
     "drizzle-kit": "^0.24.2",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.7",
+    "eslint-config-next": "14.2.9",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-drizzle": "^0.2.3",
     "postcss": "^8.4.45",
