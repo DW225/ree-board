@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Role } from "@/db/schema";
-import { PlusCircle } from "lucide-react";
+import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
 import React, { useState } from "react";
 
@@ -111,7 +111,7 @@ export default function MemberManageModalComponent({
                 />
               </div>
               <Button type="submit" className="ml-auto">
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircleIcon className="mr-2 h-4 w-4" />
                 Add Member
               </Button>
             </form>

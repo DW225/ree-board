@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, UserCircle } from "lucide-react";
+import { TrashIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import type { MemberInfo } from "./MemberManageModalComponent";
 import { Role } from "@/db/schema";
 import { getEnumKeys } from "@/lib/utils";
@@ -29,7 +29,7 @@ export default function MemberList({
     <ul className="space-y-2">
       {members.map((member) => (
         <div key={member.id} className="flex items-center space-x-4 mb-4">
-          <UserCircle className="h-6 w-6" />
+          <UserCircleIcon className="h-6 w-6" />
           <div className="flex-grow">
             <p className="text-sm font-medium">{member.username}</p>
             <p className="text-sm text-gray-500">{member.email}</p>
@@ -55,7 +55,7 @@ export default function MemberList({
             size="icon"
             onClick={() => handleRemoveMember(member)}
           >
-            <Trash2 className="h-4 w-4" />
+            <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
       ))}
