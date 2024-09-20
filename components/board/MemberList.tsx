@@ -1,40 +1,63 @@
 "use client";
 
-import { removeMemberFromBoard } from "@/lib/actions/boardActions";
-import React from "react";
-import type { MemberInfo } from "./MemberManage";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Trash2, UserCircle } from "lucide-react";
+import type { MemberInfo } from "./MemberManageModalComponent";
+import { Role } from "@/db/schema";
+import { getEnumKeys } from "@/lib/utils";
 
 interface MemberListProps {
   boardId: string;
   members: MemberInfo[];
+  handleRemoveMember: (member: MemberInfo) => void;
+  handleRoleChange: (memberId: string, newRole: MemberInfo["role"]) => void;
 }
 
 export default function MemberList({
-  boardId,
   members,
+  handleRemoveMember,
+  handleRoleChange,
 }: MemberListProps) {
-
-  async function handleRemoveMember(memberId: number) {
-    await removeMemberFromBoard(boardId, memberId);
-  }
-
   return (
     <ul className="space-y-2">
       {members.map((member) => (
-        <li
-          key={member.id}
-          className="flex justify-between items-center bg-gray-100 p-2 rounded"
-        >
-          <div>
-            <p className="font-semibold">{member.username}</p>
+        <div key={member.id} className="flex items-center space-x-4 mb-4">
+          <UserCircle className="h-6 w-6" />
+          <div className="flex-grow">
+            <p className="text-sm font-medium">{member.username}</p>
+            <p className="text-sm text-gray-500">{member.email}</p>
           </div>
-          <button
-            onClick={() => handleRemoveMember(member.id)}
-            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+          <Select
+            onValueChange={(value: MemberInfo["role"]) =>
+              handleRoleChange(member.id, value)
+            }
           >
-            Remove
-          </button>
-        </li>
+            <SelectTrigger className="w-[110px]">
+              <SelectValue placeholder="Select role" />
+            </SelectTrigger>
+            <SelectContent>
+              {getEnumKeys(Role).map((role) => (
+                <SelectItem key={role} value={role}>
+                  {role}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleRemoveMember(member)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       ))}
     </ul>
   );

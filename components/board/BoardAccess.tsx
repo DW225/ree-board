@@ -9,7 +9,10 @@ interface BoardAccessProps {
   role: Role;
 }
 
-const MemberManage = dynamic(() => import("@/components/board/MemberManage"), { ssr: false });
+const MemberManageModalComponent = dynamic(
+  () => import("@/components/board/MemberManageModalComponent"),
+  { ssr: false }
+);
 
 export default async function BoardAccess({ boardId, role }: BoardAccessProps) {
   const members = await fetchMembersByBoardID(boardId);
@@ -40,7 +43,9 @@ export default async function BoardAccess({ boardId, role }: BoardAccessProps) {
           </div>
         )}
       </div>
-      {role === Role.owner && <MemberManage boardId={boardId} members={members} />}
+      {role === Role.owner && (
+        <MemberManageModalComponent boardId={boardId} members={members} />
+      )}
     </div>
   );
 }
