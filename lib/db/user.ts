@@ -7,7 +7,8 @@ export async function findUserIdByKindeID(kindeId: string) {
   const result = await db
     .select({ id: userTable.id })
     .from(userTable)
-    .where(eq(userTable.kinde_id, kindeId)).limit(1);
+    .where(eq(userTable.kinde_id, kindeId))
+    .limit(1);
   if (result.length > 0) {
     return result[0].id;
   } else {
@@ -37,6 +38,15 @@ export const deleteUser = async (userID: string) => {
   const result = await db
     .delete(userTable)
     .where(or(eq(userTable.id, userID), eq(userTable.kinde_id, userID)))
-    .returning({ deletedId: userTable.id });;
-  return result.length > 0 ? result[0] : 'No user deleted';
+    .returning({ deletedId: userTable.id });
+  return result.length > 0 ? result[0] : "No user deleted";
+};
+
+export const findUserByEmail = async (email: string) => {
+  const result = await db
+    .select()
+    .from(userTable)
+    .where(eq(userTable.email, email))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
 };

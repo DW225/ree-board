@@ -3,18 +3,18 @@
 import type { NewBoard, NewPost } from "@/db/schema";
 import { createBoard, deleteBoard } from "@/lib/db/board";
 import { createPost, fetchPostsByBoardID } from "@/lib/db/post";
-import { findUserIdByKindeID } from "@/lib/db/user";
+import { findUserByEmail, findUserIdByKindeID } from "@/lib/db/user";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 
-export async function authenticatedAction<T>(
+async function authenticatedAction<T>(
   action: () => Promise<T>
 ): Promise<T | null> {
   const { isAuthenticated } = getKindeServerSession();
 
   if (!isAuthenticated()) {
     console.warn("Not authenticated");
-    redirect("/api/auth/login");
+    redirect("/");
   }
 
   return await action();
@@ -48,3 +48,5 @@ export const authenticatedDeleteBoard = async (
 ) => authenticatedAction(() => deleteBoard(boardId, userId));
 
 export const authenticatedFindUserIdByKindeID = async (kindeId: string) => authenticatedAction(() => findUserIdByKindeID(kindeId));
+
+export const authenticatedFindUserByEmail = async (email: string) => authenticatedAction(() => findUserByEmail(email));
