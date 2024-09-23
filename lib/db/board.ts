@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "./client";
 import { addMember, checkMemberRole } from "./member";
 import { findUserIdByKindeID } from "./user";
+import { nanoid } from "nanoid";
 
 export async function fetchBoards(userId: string, useKindeId: boolean = true) {
   if (userId === null) {
@@ -57,6 +58,7 @@ export async function createBoard(newBoard: Board, kindeId: string) {
     .execute();
   if (board.length > 0) {
     await addMember({
+      id: nanoid(),
       userId: userId,
       boardId: board[0].id,
       role: Role.owner,

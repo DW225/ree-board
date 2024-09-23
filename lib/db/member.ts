@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 
 export const addMember = async (newMember: NewMember) => {
   await db.insert(memberTable).values({
+    id: newMember.id,
     userId: newMember.userId,
     boardId: newMember.boardId,
     role: newMember.role,
