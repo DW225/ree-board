@@ -1,7 +1,7 @@
 import { BoardAccess, BoardGrid } from "@/components/board";
 import { PostProvider } from "@/components/board/PostProvider";
 import { NavBar } from "@/components/common";
-import { checkMemberRole } from "@/lib/db/member";
+import { checkMemberRole, fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
 import { findUserIdByKindeID } from "@/lib/db/user";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -33,11 +33,12 @@ export default async function BoardPage({ params }: BoardPageProps) {
   }
 
   const posts = await fetchPostsByBoardID(boardID);
+  const members = await fetchMembersByBoardID(boardID);
 
   return (
     <>
       <NavBar />
-      <PostProvider initialPosts={posts}>
+      <PostProvider initialPosts={posts} initialMembers={members}>
         <div className="container mx-auto w-full max-w-full px-4">
           <div className="flex justify-end">
             <BoardAccess boardId={boardID} role={role} />
