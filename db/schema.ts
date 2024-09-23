@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { text, sqliteTable, integer, index } from "drizzle-orm/sqlite-core";
+import { text, sqliteTable, integer, index, unique } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
 export const userTable = sqliteTable(
@@ -98,7 +98,7 @@ export enum Role {
 export const memberTable = sqliteTable(
   "member",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: text("id").primaryKey(),
     userId: text("user_id").references(() => userTable.id, {
       onDelete: "cascade",
     }).notNull(),
@@ -116,6 +116,7 @@ export const memberTable = sqliteTable(
   (table) => ({
     userIdIdx: index("members_user_id_index").on(table.userId),
     boardIdIdx: index("members_board_id_index").on(table.boardId),
+    boardUserUnique: unique().on(table.boardId, table.userId),
   })
 );
 

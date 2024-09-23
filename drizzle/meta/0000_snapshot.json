@@ -84,10 +84,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
@@ -141,6 +141,14 @@
             "board_id"
           ],
           "isUnique": false
+        },
+        "member_board_id_user_id_unique": {
+          "name": "member_board_id_user_id_unique",
+          "columns": [
+            "board_id",
+            "user_id"
+          ],
+          "isUnique": true
         }
       },
       "foreignKeys": {

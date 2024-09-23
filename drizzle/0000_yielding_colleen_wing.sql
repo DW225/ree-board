@@ -9,7 +9,7 @@ CREATE TABLE `board` (
 );
 --> statement-breakpoint
 CREATE TABLE `member` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
 	`board_id` text NOT NULL,
 	`role` integer NOT NULL,
@@ -42,6 +42,7 @@ CREATE TABLE `user` (
 CREATE INDEX `board_state_index` ON `board` (`state`);--> statement-breakpoint
 CREATE INDEX `members_user_id_index` ON `member` (`user_id`);--> statement-breakpoint
 CREATE INDEX `members_board_id_index` ON `member` (`board_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `member_board_id_user_id_unique` ON `member` (`board_id`,`user_id`);--> statement-breakpoint
 CREATE INDEX `post_board_id_index` ON `post` (`board_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `user_name_unique` ON `user` (`name`);--> statement-breakpoint
 CREATE UNIQUE INDEX `user_kinde_id_unique` ON `user` (`kinde_id`);--> statement-breakpoint
