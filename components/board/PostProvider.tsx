@@ -1,9 +1,11 @@
 "use client";
 
 import type { Post } from "@/db/schema";
+import { memberSignalInitial } from "@/lib/signal/memberSingals";
 import { postSignalInitial } from "@/lib/signal/postSignals";
 import { useEffectOnce } from "@/lib/utils/effect";
 import React, { createContext, useContext, useState } from "react";
+import type { MemberInfo } from "./MemberManageModalComponent";
 
 interface AddPostFormContextType {
   openFormId: string | null;
@@ -13,6 +15,7 @@ interface AddPostFormContextType {
 interface PostProviderProps {
   children: React.ReactNode;
   initialPosts: Post[];
+  initialMembers: MemberInfo[];
 }
 
 const AddPostFormContext = createContext<AddPostFormContextType | undefined>(
@@ -22,11 +25,13 @@ const AddPostFormContext = createContext<AddPostFormContextType | undefined>(
 export const PostProvider: React.FC<PostProviderProps> = ({
   children,
   initialPosts,
+  initialMembers,
 }) => {
   const [openFormId, setOpenFormId] = useState<string | null>(null);
 
   useEffectOnce(() => {
     postSignalInitial(initialPosts);
+    memberSignalInitial(initialMembers);
   });
 
   return (

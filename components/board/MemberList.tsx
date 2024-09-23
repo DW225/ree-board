@@ -12,22 +12,30 @@ import { TrashIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import type { MemberInfo } from "./MemberManageModalComponent";
 import { Role } from "@/db/schema";
 import { getEnumKeys } from "@/lib/utils";
+import { memberSignal } from "@/lib/signal/memberSingals";
 
 interface MemberListProps {
   boardId: string;
-  members: MemberInfo[];
   handleRemoveMember: (member: MemberInfo) => void;
-  handleRoleChange: (memberId: string, newRole: MemberInfo["role"]) => void;
+  handleRoleChange: (
+    memberToUpdate: MemberInfo,
+    newRole: MemberInfo["role"]
+  ) => void;
 }
 
 export default function MemberList({
-  members,
   handleRemoveMember,
   handleRoleChange,
 }: MemberListProps) {
+  const roles = {
+    Guest: Role.guest,
+    Member: Role.member,
+    Owner: Role.owner,
+  };
+
   return (
     <ul className="space-y-2">
-      {members.map((member) => (
+      {memberSignal.value.map((member) => (
         <div key={member.id} className="flex items-center space-x-4 mb-4">
           <UserCircleIcon className="h-6 w-6" />
           <div className="flex-grow">
@@ -35,8 +43,8 @@ export default function MemberList({
             <p className="text-sm text-gray-500">{member.email}</p>
           </div>
           <Select
-            onValueChange={(value: MemberInfo["role"]) =>
-              handleRoleChange(member.id, value)
+            onValueChange={(value: keyof typeof roles) =>
+              handleRoleChange(member, roles[value])
             }
           >
             <SelectTrigger className="w-[110px]">

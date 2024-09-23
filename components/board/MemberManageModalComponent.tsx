@@ -12,18 +12,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Role } from "@/db/schema";
+import { Role } from "@/db/schema";
+import { authenticatedFindUserByEmail } from "@/lib/actions/authenticatedDBActions";
+import {
+  addMember,
+  removeMember,
+  updateMember
+} from "@/lib/signal/memberSingals";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
 import React, { useState } from "react";
 
 interface MemberManageProps {
   boardId: string;
-  members: MemberInfo[];
 }
 
 export interface MemberInfo {
-  id: number;
+  id: string;
   userId: string;
   role: Role;
   username: string;
@@ -35,29 +41,44 @@ const MemberList = dynamic(() => import("@/components/board/MemberList"));
 
 export default function MemberManageModalComponent({
   boardId,
-  members,
 }: MemberManageProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [newMember, setNewMember] = useState({ username: "", email: "" });
+  const [newMember, setNewMember] = useState({ email: "" });
   const [memberToRemove, setMemberToRemove] = useState<MemberInfo | null>(null);
 
-  const handleAddMember = (e: React.FormEvent) => {
+  const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMember.username && newMember.email) {
-      setMembers([
-        ...members,
-        { ...newMember, id: Date.now().toString(), role: "Viewer" },
-      ]);
-      setNewMember({ username: "", email: "" });
+    if (newMember.email) {
+      try {
+        const user = await authenticatedFindUserByEmail(newMember.email);
+        if (!user) {
+          throw new Error("User not found");
+        } else {
+          addMember({
+            id: nanoid(),
+            userId: user.id,
+            username: user.name,
+            email: newMember.email,
+            role: Role.member,
+            updateAt: new Date(),
+          });
+        }
+      } catch (error) {
+        // TODO: Add error toast
+        console.error(error);
+      }
+      setNewMember({ email: "" });
     }
   };
 
-  const handleRoleChange = (memberId: string, newRole: MemberInfo["role"]) => {
-    setMembers(
-      members.map((member) =>
-        member.id === memberId ? { ...member, role: newRole } : member
-      )
-    );
+  const handleRoleChange = (
+    memberToUpdate: MemberInfo,
+    newRole: MemberInfo["role"]
+  ) => {
+    updateMember({
+      ...memberToUpdate,
+      role: newRole,
+    });
   };
 
   const handleRemoveMember = (member: MemberInfo) => {
@@ -66,7 +87,7 @@ export default function MemberManageModalComponent({
 
   const confirmRemoveMember = () => {
     if (memberToRemove) {
-      setMembers(members.filter((m) => m.id !== memberToRemove.id));
+      removeMember(memberToRemove.id);
       setMemberToRemove(null);
     }
   };
@@ -83,19 +104,6 @@ export default function MemberManageModalComponent({
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <form onSubmit={handleAddMember} className="grid gap-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="name"
-                  value={newMember.username}
-                  onChange={(e) =>
-                    setNewMember({ ...newMember, username: e.target.value })
-                  }
-                  className="col-span-3"
-                />
-              </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="email" className="text-right">
                   Email
@@ -119,7 +127,6 @@ export default function MemberManageModalComponent({
               <h4 className="mb-4 text-sm font-medium">Current Members</h4>
               <MemberList
                 boardId={boardId}
-                members={members}
                 handleRemoveMember={handleRemoveMember}
                 handleRoleChange={handleRoleChange}
               />
@@ -136,8 +143,8 @@ export default function MemberManageModalComponent({
           <DialogHeader>
             <DialogTitle>Remove Member</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {memberToRemove?.name} from the
-              board?
+              Are you sure you want to remove {memberToRemove?.username} from
+              the board?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

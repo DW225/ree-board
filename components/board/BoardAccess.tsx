@@ -44,7 +44,9 @@ export default async function BoardAccess({ boardId, role }: BoardAccessProps) {
         )}
       </div>
       {role === Role.owner && (
-        <MemberManageModalComponent boardId={boardId} members={members} />
+        <MemberManageModalComponent
+          boardId={boardId}
+        />
       )}
     </div>
   );
