@@ -24,8 +24,8 @@ importers:
         specifier: ^0.10.0
         version: 0.10.0
       '@next/env':
-        specifier: ^14.2.7
-        version: 14.2.7
+        specifier: ^14.2.13
+        version: 14.2.13
       '@preact/signals-react':
         specifier: ^2.2.0
         version: 2.2.0(react@18.3.1)
@@ -1240,9 +1240,6 @@ packages:
 
   '@next/env@14.2.13':
     resolution: {integrity: sha512-s3lh6K8cbW1h5Nga7NNeXrbe0+2jIIYK9YaA9T7IufDWnZpozdFUp6Hf0d5rNWUKu4fEuSX2rCKlGjCrtylfDw==}
-
-  '@next/env@14.2.7':
-    resolution: {integrity: sha512-OTx9y6I3xE/eih+qtthppwLytmpJVPM5PPoJxChFsbjIEFXIayG0h/xLzefHGJviAa3Q5+Fd+9uYojKkHDKxoQ==}
 
   '@next/eslint-plugin-next@14.2.11':
     resolution: {integrity: sha512-7mw+xW7Y03Ph4NTCcAzYe+vu4BNjEHZUfZayyF3Y1D9RX6c5NIe25m1grHEAkyUuaqjRxOYhnCNeglOkIqLkBA==}
@@ -5158,8 +5155,6 @@ snapshots:
       - utf-8-validate
 
   '@next/env@14.2.13': {}
-
-  '@next/env@14.2.7': {}
 
   '@next/eslint-plugin-next@14.2.11':
     dependencies:
