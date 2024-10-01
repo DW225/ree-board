@@ -1,4 +1,6 @@
 # Ree-Board
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDW225%2Free-board.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FDW225%2Free-board?ref=badge_shield)
+
 
 Retro Board build using [Next.js](https://nextjs.org/), [TailwindCSS](https://tailwindcss.com/), [Turso](https://turso.tech/) and [Kinde](https://kinde.com/)
 
@@ -48,3 +50,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDW225%2Free-board.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FDW225%2Free-board?ref=badge_large)
