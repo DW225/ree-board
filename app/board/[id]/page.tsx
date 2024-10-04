@@ -20,19 +20,20 @@ export default async function BoardPage({ params }: BoardPageProps) {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 
-  if (!user?.id) {
+  if (!user) {
     redirect("/api/auth/login");
   }
-  const userID = await findUserIdByKindeID(user.id);
+
+  const [userID, posts, members] = await Promise.all([
+    findUserIdByKindeID(user.id),
+    fetchPostsByBoardID(boardID),
+    fetchMembersByBoardID(boardID),
+  ]);
 
   if (!userID) {
     throw new Error("User not found");
   }
 
-  const [posts, members] = await Promise.all([
-    fetchPostsByBoardID(boardID),
-    fetchMembersByBoardID(boardID)
-  ]);
   const role = members.find((m) => m.userId === userID)?.role;
 
   if (role === undefined) {
@@ -47,9 +48,9 @@ export default async function BoardPage({ params }: BoardPageProps) {
         <PostProvider initialPosts={posts} initialMembers={members}>
           <div className="container mx-auto w-full max-w-full px-4">
             <div className="flex justify-end">
-              <BoardAccess boardId={boardID} role={role} />
+              <BoardAccess boardId={boardID} role={role} members={members} />
             </div>
-            <BoardGrid boardID={boardID} viewOnly={viewOnly}/>
+            <BoardGrid boardID={boardID} viewOnly={viewOnly} userId={userID} />
           </div>
         </PostProvider>
       </AnonymousModeProvider>

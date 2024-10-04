@@ -10,9 +10,10 @@ const BoardColumn = dynamic(() => import("@/components/board/BoardColumn"), {
 interface BoardGridProps {
   boardID: string;
   viewOnly?: boolean;
+  userId: string;
 }
 
-const BoardGrid: React.FC<BoardGridProps> = async ({ boardID, viewOnly }) => {
+const BoardGrid: React.FC<BoardGridProps> = async ({ boardID, viewOnly, userId }) => {
   const columns = [
     { title: "Went Well", postType: PostType.went_well },
     { title: "To Improve", postType: PostType.to_improvement },
@@ -32,6 +33,7 @@ const BoardGrid: React.FC<BoardGridProps> = async ({ boardID, viewOnly }) => {
             postType={column.postType}
             boardID={boardID}
             viewOnly={viewOnly}
+            userId={userId}
           />
         </div>
       ))}

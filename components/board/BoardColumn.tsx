@@ -20,6 +20,7 @@ interface BoardColumnProps {
   title: string;
   postType: PostType;
   viewOnly?: boolean;
+  userId: string;
 }
 
 export default function BoardColumn({
@@ -27,6 +28,7 @@ export default function BoardColumn({
   title,
   postType,
   viewOnly = false,
+  userId,
 }: BoardColumnProps) {
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
@@ -55,7 +57,9 @@ export default function BoardColumn({
     <div className="w-full flex flex-col bg-gray-100 rounded-xl mx-2">
       <div className="bg-gray-100 rounded-t-lg p-2">
         <h3 className="font-bold text-xl text-center mb-4">{title}</h3>
-        {!viewOnly && <AddPostForm postType={postType} boardID={boardID} />}
+        {!viewOnly && (
+          <AddPostForm postType={postType} boardID={boardID} userId={userId} />
+        )}
       </div>
       <div ref={columnRef} className="flex-grow overflow-y-auto p-3 space-y-3">
         <AnimatePresence>

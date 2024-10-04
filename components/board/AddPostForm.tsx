@@ -7,21 +7,22 @@ import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { PostType } from "@/db/schema";
-import {
-  authenticatedCreatePost,
-  authenticatedFindUserIdByKindeID,
-} from "@/lib/actions/authenticatedDBActions";
+import { authenticatedCreatePost } from "@/lib/actions/authenticatedDBActions";
 import { addPost, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
 interface AddPostFormProps {
+  userId: string;
   postType: PostType;
   boardID: string;
 }
 
-export default function AddPostForm({ postType, boardID }: AddPostFormProps) {
+export default function AddPostForm({
+  userId,
+  postType,
+  boardID,
+}: AddPostFormProps) {
   const { openFormId, setOpenFormId } = useAddPostForm();
   const [content, setContent] = useState("");
   const [tempContent, setTempContent] = useState("");
@@ -29,19 +30,12 @@ export default function AddPostForm({ postType, boardID }: AddPostFormProps) {
   const formId = `${boardID}-${postType}`;
   const isAdding = openFormId === formId;
 
-  const { user } = useKindeBrowserClient();
-
-  if (!user) {
-    return null; // User not authenticated
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 
     const postId = nanoid();
     try {
-      const userId = await authenticatedFindUserIdByKindeID(user.id);
       const newPost = {
         id: postId,
         content,

@@ -1,5 +1,4 @@
 import { Role } from "@/db/schema";
-import { fetchMembersByBoardID } from "@/lib/db/member";
 import MD5 from "crypto-js/md5";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -7,6 +6,14 @@ import Image from "next/image";
 interface BoardAccessProps {
   boardId: string;
   role: Role;
+  members: {
+    id: string;
+    userId: string;
+    role: Role;
+    username: string;
+    email: string;
+    updateAt: Date;
+  }[];
 }
 
 const MemberManageModalComponent = dynamic(
@@ -14,8 +21,7 @@ const MemberManageModalComponent = dynamic(
   { ssr: false }
 );
 
-export default async function BoardAccess({ boardId, role }: BoardAccessProps) {
-  const members = await fetchMembersByBoardID(boardId);
+export default async function BoardAccess({ boardId, role, members }: BoardAccessProps) {
   const memberCount = members.length;
 
   return (
@@ -43,11 +49,7 @@ export default async function BoardAccess({ boardId, role }: BoardAccessProps) {
           </div>
         )}
       </div>
-      {role === Role.owner && (
-        <MemberManageModalComponent
-          boardId={boardId}
-        />
-      )}
+      {role === Role.owner && <MemberManageModalComponent boardId={boardId} />}
     </div>
   );
 }
