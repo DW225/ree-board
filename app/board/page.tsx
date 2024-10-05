@@ -7,6 +7,7 @@ import { BoardList, CreateBoardForm } from "@/components/home";
 import { fetchBoards } from "@/lib/db/board";
 import { BoardProvider } from "@/components/home/BoardProvider";
 import { ToastSystem } from "@/components/common/ToastSystem";
+import { findUserIdByKindeID } from "@/lib/db/user";
 
 export default async function Boards() {
   const { getUser } = getKindeServerSession();
@@ -16,7 +17,14 @@ export default async function Boards() {
     redirect("/api/auth/login");
   }
 
-  const initialBoardList = await fetchBoards(user.id);
+  const [initialBoardList, userID] = await Promise.all([
+    fetchBoards(user.id),
+    findUserIdByKindeID(user.id)
+  ]);
+
+  if (!userID) {
+    throw new Error("User not found");
+  }
 
   return (
     <>
@@ -27,8 +35,8 @@ export default async function Boards() {
           <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
           <div className="flex flex-wrap gap-4">
             <BoardProvider initialBoards={initialBoardList}>
-              <CreateBoardForm />
-              <BoardList userID={user.id} />
+              <CreateBoardForm userID={userID} />
+              <BoardList userID={userID} />
             </BoardProvider>
           </div>
         </div>

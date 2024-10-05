@@ -3,19 +3,15 @@
 import React from "react";
 import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
 import { BoardState, type NewBoard } from "@/db/schema";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { nanoid } from "nanoid";
 import { authenticatedCreateBoard } from "@/lib/actions/authenticatedDBActions";
 import { toast } from "@/lib/signal/toastSignals";
 
-export default function CreateBoardForm() {
-  const { user, getUser } = useKindeBrowserClient();
-  const alsoUser = getUser();
+interface CreateBoardFormProps {
+  userID: string;
+}
 
-  if (!user || !alsoUser) {
-    return null;
-  }
-
+export default function CreateBoardForm({ userID }: CreateBoardFormProps) {
   const createNewBoard = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -30,7 +26,7 @@ export default function CreateBoardForm() {
       state: BoardState.active,
       createdAt: new Date(),
       updatedAt: new Date(),
-      creator: user.id,
+      creator: userID,
     };
 
     // Optimistically update the UI
@@ -38,7 +34,7 @@ export default function CreateBoardForm() {
     form.reset();
 
     try {
-      await authenticatedCreateBoard(newBoard, user.id);
+      await authenticatedCreateBoard(newBoard, userID);
     } catch (error) {
       console.error("Failed to create board:", error);
       toast.error("Failed to create board. Please try again later.");
