@@ -3,7 +3,6 @@ import { boardTable, memberTable, Role, userTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
 import { addMember, checkMemberRole } from "./member";
-import { findUserIdByKindeID } from "./user";
 import { nanoid } from "nanoid";
 
 export async function fetchBoards(userId: string, useKindeId: boolean = true) {
@@ -41,25 +40,21 @@ export async function fetchBoards(userId: string, useKindeId: boolean = true) {
   }
 }
 
-export async function createBoard(newBoard: Board, kindeId: string) {
-  const userId = await findUserIdByKindeID(kindeId);
-  if (userId === null) {
-    throw new Error("User not found");
-  }
+export async function createBoard(newBoard: Board, userID: string) {
   const board = await db
     .insert(boardTable)
     .values({
       id: newBoard.id,
       title: newBoard.title,
       state: newBoard.state,
-      creator: userId,
+      creator: userID,
     })
     .returning({ id: boardTable.id })
     .execute();
   if (board.length > 0) {
     await addMember({
       id: nanoid(),
-      userId: userId,
+      userId: userID,
       boardId: board[0].id,
       role: Role.owner,
     });
