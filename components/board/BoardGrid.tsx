@@ -13,7 +13,11 @@ interface BoardGridProps {
   userId: string;
 }
 
-const BoardGrid: React.FC<BoardGridProps> = async ({ boardID, viewOnly, userId }) => {
+const BoardGrid: React.FC<BoardGridProps> = async ({
+  boardID,
+  viewOnly,
+  userId,
+}) => {
   const columns = [
     { title: "Went Well", postType: PostType.went_well },
     { title: "To Improve", postType: PostType.to_improvement },
