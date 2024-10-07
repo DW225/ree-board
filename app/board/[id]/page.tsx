@@ -8,11 +8,20 @@ import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
 import { findUserIdByKindeID } from "@/lib/db/user";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
 interface BoardPageProps {
   params: { id: string };
 }
+
+const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
+  ssr: false,
+});
+
+const PostChannel = dynamic(() => import("@/components/board/PostChannelComponent"), {
+  ssr: false,
+});
 
 export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
   const boardID = params.id;
@@ -44,16 +53,23 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
   return (
     <>
       <NavBar />
-      <AnonymousModeProvider>
-        <PostProvider initialPosts={posts} initialMembers={members}>
-          <div className="container mx-auto w-full max-w-full px-4">
-            <div className="flex justify-end">
-              <BoardAccess boardId={boardID} role={role} members={members} />
+      <RTLProvider boardId={boardID}>
+        <AnonymousModeProvider>
+          <PostProvider initialPosts={posts} initialMembers={members}>
+            <PostChannel boardId={boardID} userId={userID} />
+            <div className="container mx-auto w-full max-w-full px-4">
+              <div className="flex justify-end">
+                <BoardAccess boardId={boardID} role={role} members={members} />
+              </div>
+              <BoardGrid
+                boardID={boardID}
+                viewOnly={viewOnly}
+                userId={userID}
+              />
             </div>
-            <BoardGrid boardID={boardID} viewOnly={viewOnly} userId={userID} />
-          </div>
-        </PostProvider>
-      </AnonymousModeProvider>
+          </PostProvider>
+        </AnonymousModeProvider>
+      </RTLProvider>
       <ToastSystem />
     </>
   );
