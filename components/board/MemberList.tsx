@@ -26,7 +26,7 @@ interface MemberListProps {
 export default function MemberList({
   handleRemoveMember,
   handleRoleChange,
-}: MemberListProps) {
+}: Readonly<MemberListProps>) {
   const roles = {
     Guest: Role.guest,
     Member: Role.member,

@@ -13,7 +13,7 @@ export default function NavLink({
   children,
   onClick,
   className,
-}: NavLinkProps) {
+}: Readonly<NavLinkProps>) {
   return (
     <Link
       href={href}

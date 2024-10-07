@@ -8,7 +8,7 @@ type MobileMenuProps = {
   onClose: () => void;
 };
 
-export default function MobileMenu({ onClose }: MobileMenuProps) {
+export default function MobileMenu({ onClose }: Readonly<MobileMenuProps>) {
   return (
     <div className="sm:hidden" id="mobile-menu">
       <div className="pt-2 pb-3 space-y-1">

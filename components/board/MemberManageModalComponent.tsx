@@ -46,7 +46,7 @@ const MemberList = dynamic(() => import("@/components/board/MemberList"));
 
 export default function MemberManageModalComponent({
   boardId,
-}: MemberManageProps) {
+}: Readonly<MemberManageProps>) {
   const [isOpen, setIsOpen] = useState(false);
   const [newMember, setNewMember] = useState({ email: "" });
   const [memberToRemove, setMemberToRemove] = useState<MemberInfo | null>(null);

@@ -29,7 +29,7 @@ export default function BoardColumn({
   postType,
   viewOnly = false,
   userId,
-}: BoardColumnProps) {
+}: Readonly<BoardColumnProps>) {
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
 

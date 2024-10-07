@@ -12,7 +12,7 @@ export default function NavButton({
   children,
   ariaLabel,
   className = "",
-}: NavButtonProps) {
+}: Readonly<NavButtonProps>) {
   return (
     <Button
       onClick={onClick}

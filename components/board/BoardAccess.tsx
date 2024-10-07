@@ -21,7 +21,7 @@ const MemberManageModalComponent = dynamic(
   { ssr: false }
 );
 
-export default async function BoardAccess({ boardId, role, members }: BoardAccessProps) {
+export default async function BoardAccess({ boardId, role, members }: Readonly<BoardAccessProps>) {
   const memberCount = members.length;
 
   return (

@@ -11,7 +11,7 @@ interface CreateBoardFormProps {
   userID: string;
 }
 
-export default function CreateBoardForm({ userID }: CreateBoardFormProps) {
+export default function CreateBoardForm({ userID }: Readonly<CreateBoardFormProps>) {
   const createNewBoard = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;

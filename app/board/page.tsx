@@ -19,7 +19,7 @@ export default async function Boards() {
 
   const [initialBoardList, userID] = await Promise.all([
     fetchBoards(user.id),
-    findUserIdByKindeID(user.id)
+    findUserIdByKindeID(user.id),
   ]);
 
   if (!userID) {
@@ -27,21 +27,19 @@ export default async function Boards() {
   }
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        <NavBar />
+    <div className="min-h-screen bg-gray-50">
+      <NavBar />
 
-        <div className="container mx-auto mt-8 px-4">
-          <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
-          <div className="flex flex-wrap gap-4">
-            <BoardProvider initialBoards={initialBoardList}>
-              <CreateBoardForm userID={userID} />
-              <BoardList userID={userID} />
-            </BoardProvider>
-          </div>
+      <div className="container mx-auto mt-8 px-4">
+        <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
+        <div className="flex flex-wrap gap-4">
+          <BoardProvider initialBoards={initialBoardList}>
+            <CreateBoardForm userID={userID} />
+            <BoardList userID={userID} />
+          </BoardProvider>
         </div>
-        <ToastSystem />
       </div>
-    </>
+      <ToastSystem />
+    </div>
   );
 }

@@ -11,7 +11,7 @@ interface ProfileUpdateFormProps {
 export default function ProfileUpdateForm({
   initialUsername,
   initialName,
-}: ProfileUpdateFormProps) {
+}: Readonly<ProfileUpdateFormProps>) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);

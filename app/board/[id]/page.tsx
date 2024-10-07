@@ -14,7 +14,7 @@ interface BoardPageProps {
   params: { id: string };
 }
 
-export default async function BoardPage({ params }: BoardPageProps) {
+export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
   const boardID = params.id;
 
   const { getUser } = getKindeServerSession();

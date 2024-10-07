@@ -9,7 +9,7 @@ interface BoardListProps {
   userID: string;
 }
 
-export default function BoardList({ userID }: BoardListProps) {
+export default function BoardList({ userID }: Readonly<BoardListProps>) {
   useSignals();
   return (
     <>

@@ -22,7 +22,7 @@ export default function AddPostForm({
   userId,
   postType,
   boardID,
-}: AddPostFormProps) {
+}: Readonly<AddPostFormProps>) {
   const { openFormId, setOpenFormId } = useAddPostForm();
   const [content, setContent] = useState("");
   const [tempContent, setTempContent] = useState("");
