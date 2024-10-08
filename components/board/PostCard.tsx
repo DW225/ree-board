@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { PostType } from "@/db/schema";
+import type { PostSignal } from "@/lib/signal/postSignals";
 import {
   HandThumbUpIcon,
   PencilSquareIcon,
@@ -20,23 +21,19 @@ import React, { useState } from "react";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 
 interface PostCardProps {
-  type: PostType;
-  initialContent: string;
-  id: string;
+  post: PostSignal;
   viewOnly?: boolean;
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, newContent: string) => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
-  type,
-  initialContent,
-  id,
+  post,
   viewOnly = false,
   onDelete,
   onUpdate,
 }) => {
-  const [message, setMessage] = useState(initialContent);
+  const [message, setMessage] = useState(post.content.value);
   const [voteCount, setVoteCount] = useState(0);
   const [hasVoted, setHasVoted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -66,19 +63,19 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const handleEdit = () => {
     if (onUpdate) {
-      onUpdate(id, message);
+      onUpdate(post.id, message);
     }
     setIsEditing(false);
   };
 
   return (
-    <Card className={`w-full ${cardTypes[type]} relative`}>
+    <Card className={`w-full ${cardTypes[post.type.value]} relative`}>
       {!viewOnly && onDelete && (
         <Button
           variant="ghost"
           size="icon"
           className="absolute top-2 right-2"
-          onClick={() => onDelete(id)}
+          onClick={() => onDelete(post.id)}
         >
           <XMarkIcon className="h-4 w-4" />
         </Button>
@@ -89,7 +86,7 @@ const PostCard: React.FC<PostCardProps> = ({
             isAnonymous ? "blur-sm select-none" : ""
           }`}
         >
-          {message}
+          {post.content}
         </p>
       </CardContent>
       <CardFooter className="flex justify-end items-center p-3">
@@ -106,7 +103,7 @@ const PostCard: React.FC<PostCardProps> = ({
                   <DialogTitle>Edit Message</DialogTitle>
                 </DialogHeader>
                 <Textarea
-                  value={message}
+                  value={post.content.value}
                   onChange={handleChange}
                   className="min-h-[100px]"
                 />
