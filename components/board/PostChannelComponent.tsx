@@ -2,6 +2,7 @@
 
 import type { Post } from "@/db/schema";
 import { addPost, updatePost, removePost } from "@/lib/signal/postSignals";
+import { EVENT_TYPE } from "@/lib/utils/ably";
 import { useChannel } from "ably/react";
 
 interface PostChannelProps {
@@ -14,11 +15,11 @@ export default function PostChannel({ boardId, userId }: Readonly<PostChannelPro
     if (message.extras.headers.user !== userId) {
       const messageType = message.name;
       const post: Post = JSON.parse(message.data);
-      if (messageType === "ADD") {
+      if (messageType === EVENT_TYPE.POST.ADD) {
         addPost(post);
-      } else if (messageType === "UPDATE") {
+      } else if (messageType === EVENT_TYPE.POST.UPDATE_CONTENT) {
         updatePost({ id: post.id, content: post.content });
-      } else if (messageType === "DELETE") {
+      } else if (messageType === EVENT_TYPE.POST.DELETE) {
         removePost(post.id);
       }
     }
