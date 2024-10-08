@@ -1,11 +1,11 @@
 import { defineConfig } from "drizzle-kit";
 
-import './envConfig'
+import "./envConfig";
 
 export default defineConfig(
   process.env.NODE_ENV === "development"
     ? {
-        dialect: "sqlite",
+        dialect: "turso",
         schema: "./db/schema.ts",
         out: "./drizzle",
         dbCredentials: {
@@ -14,10 +14,9 @@ export default defineConfig(
         verbose: true,
       }
     : {
-        dialect: "sqlite",
+        dialect: "turso",
         schema: "./db/schema.ts",
         out: "./drizzle",
-        driver: "turso",
         dbCredentials: {
           url: process.env.TURSO_DATABASE_URL!,
           authToken: process.env.TURSO_AUTH_TOKEN,
