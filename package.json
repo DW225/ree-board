@@ -16,7 +16,7 @@
   "dependencies": {
     "@headlessui/react": "^2.1.8",
     "@heroicons/react": "^2.1.5",
-    "@kinde-oss/kinde-auth-nextjs": "^2.3.8",
+    "@kinde-oss/kinde-auth-nextjs": "^2.3.10",
     "@kinde/management-api-js": "^0.9.0",
     "@libsql/client": "^0.14.0",
     "@next/env": "^14.2.13",
