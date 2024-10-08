@@ -10,7 +10,8 @@ import {
   updatePostContent,
   updatePostType,
 } from "@/lib/db/post";
-import { findUserByEmail, findUserIdByKindeID } from "@/lib/db/user";
+import { findUserByEmail } from "@/lib/db/user";
+import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 
@@ -28,18 +29,82 @@ async function authenticatedAction<T>(
 }
 
 export const authenticatedCreatePost = async (post: NewPost) =>
-  authenticatedAction(() => createPost(post));
+  authenticatedAction(() =>
+    Promise.all([
+      createPost(post),
+      ablyClient(post.boardId).publish({
+        name: EVENT_TYPE.POST.ADD,
+        extras: {
+          headers: {
+            user: post.author,
+          },
+        },
+        data: JSON.stringify(post),
+      }),
+    ])
+  );
 
-export const authenticatedDeletePost = async (postId: string) =>
-  authenticatedAction(() => deletePost(postId));
+export const authenticatedDeletePost = async (
+  id: string,
+  boardId: string,
+  updater: string
+) =>
+  authenticatedAction(() =>
+    Promise.all([
+      deletePost(id),
+      ablyClient(boardId).publish({
+        name: EVENT_TYPE.POST.DELETE,
+        extras: {
+          headers: {
+            user: updater,
+          },
+        },
+        data: JSON.stringify({ id }),
+      }),
+    ])
+  );
 
 export const authenticatedUpdatePostType = async (
   id: string,
-  newType: PostType
-) => authenticatedAction(() => updatePostType(id, newType));
+  boardId: string,
+  newType: PostType,
+  updater: string
+) =>
+  authenticatedAction(() =>
+    Promise.all([
+      updatePostType(id, newType),
+      ablyClient(boardId).publish({
+        name: EVENT_TYPE.POST.UPDATE_TYPE,
+        extras: {
+          headers: {
+            user: updater,
+          },
+        },
+        data: JSON.stringify({ id, type: newType }),
+      }),
+    ])
+  );
 
-export const authenticatedUpdatePostContent = async (id: string, newContent: string) =>
-  authenticatedAction(() => updatePostContent(id, newContent));
+export const authenticatedUpdatePostContent = async (
+  id: string,
+  boardId: string,
+  newContent: string,
+  updater: string
+) =>
+  authenticatedAction(() =>
+    Promise.all([
+      updatePostContent(id, newContent),
+      ablyClient(boardId).publish({
+        name: EVENT_TYPE.POST.UPDATE_CONTENT,
+        extras: {
+          headers: {
+            user: updater,
+          },
+        },
+        data: JSON.stringify({ id, content: newContent }),
+      }),
+    ])
+  );
 
 export const authenticatedFetchPostsByBoardID = async (boardId: string) =>
   authenticatedAction(() => fetchPostsByBoardID(boardId));
@@ -64,9 +129,6 @@ export const authenticatedDeleteBoard = async (
   boardId: string,
   userId: string
 ) => authenticatedAction(() => deleteBoard(boardId, userId));
-
-export const authenticatedFindUserIdByKindeID = async (kindeId: string) =>
-  authenticatedAction(() => findUserIdByKindeID(kindeId));
 
 export const authenticatedFindUserByEmail = async (email: string) =>
   authenticatedAction(() => findUserByEmail(email));
