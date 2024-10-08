@@ -7,7 +7,7 @@ import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { PostType } from "@/db/schema";
-import { authenticatedCreatePost } from "@/lib/actions/authenticatedDBActions";
+import { authenticatedCreatePost } from "@/lib/actions/authenticatedActions";
 import { addPost, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";

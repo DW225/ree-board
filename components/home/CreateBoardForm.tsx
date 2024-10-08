@@ -4,14 +4,16 @@ import React from "react";
 import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
 import { BoardState, type NewBoard } from "@/db/schema";
 import { nanoid } from "nanoid";
-import { authenticatedCreateBoard } from "@/lib/actions/authenticatedDBActions";
+import { authenticatedCreateBoard } from "@/lib/actions/authenticatedActions";
 import { toast } from "@/lib/signal/toastSignals";
 
 interface CreateBoardFormProps {
   userID: string;
 }
 
-export default function CreateBoardForm({ userID }: Readonly<CreateBoardFormProps>) {
+export default function CreateBoardForm({
+  userID,
+}: Readonly<CreateBoardFormProps>) {
   const createNewBoard = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -20,7 +22,12 @@ export default function CreateBoardForm({ userID }: Readonly<CreateBoardFormProp
     if (title === "") return;
 
     const newBoardID = nanoid();
-    const newBoard: NewBoard & { id: string, createdAt: Date, updatedAt: Date, creator: string | null } = {
+    const newBoard: NewBoard & {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      creator: string | null;
+    } = {
       id: newBoardID,
       title,
       state: BoardState.active,
