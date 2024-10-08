@@ -35,7 +35,7 @@ export default function BoardColumn({
 
   const handlePostDelete = async (id: string) => {
     try {
-      await authenticatedDeletePost(id);
+      await authenticatedDeletePost(id, boardID, userId);
       removePost(id);
     } catch (error) {
       toast.error("Failed to delete post");
@@ -45,7 +45,7 @@ export default function BoardColumn({
 
   const handlePostUpdate = async (id: string, newContent: string) => {
     try {
-      await authenticatedUpdatePostContent(id, newContent);
+      await authenticatedUpdatePostContent(id, boardID, newContent, userId);
       updatePost({ id, content: newContent });
     } catch (error) {
       toast.error("Failed to update post");
