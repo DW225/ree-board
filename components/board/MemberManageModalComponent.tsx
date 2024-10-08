@@ -17,7 +17,7 @@ import {
   authenticatedAddMemberToBoard,
   authenticatedFindUserByEmail,
   authenticatedRemoveMemberFromBoard,
-} from "@/lib/actions/authenticatedDBActions";
+} from "@/lib/actions/authenticatedActions";
 import {
   addMember,
   removeMember,

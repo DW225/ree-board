@@ -4,12 +4,8 @@ import type { PostType } from "@/db/schema";
 import {
   authenticatedDeletePost,
   authenticatedUpdatePostContent,
-} from "@/lib/actions/authenticatedDBActions";
-import {
-  postSignal,
-  removePost,
-  updatePost
-} from "@/lib/signal/postSignals";
+} from "@/lib/actions/authenticatedActions";
+import { postSignal, removePost, updatePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { useSignals } from "@preact/signals-react/runtime";
 import { AnimatePresence, motion } from "framer-motion";
