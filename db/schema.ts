@@ -1,6 +1,12 @@
 import { sql } from "drizzle-orm";
-import { text, sqliteTable, integer, index, unique } from "drizzle-orm/sqlite-core";
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import {
+  text,
+  sqliteTable,
+  integer,
+  index,
+  unique,
+} from "drizzle-orm/sqlite-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const userTable = sqliteTable(
   "user",
@@ -54,10 +60,10 @@ export type NewBoard = typeof boardTable.$inferInsert;
 export type Board = typeof boardTable.$inferSelect;
 
 export enum PostType {
-  'went_well',
-  'to_improvement',
-  'to_discuss',
-  'action_item',
+  "went_well",
+  "to_improvement",
+  "to_discuss",
+  "action_item",
 }
 
 export const postTable = sqliteTable(
@@ -68,10 +74,13 @@ export const postTable = sqliteTable(
     author: text("user_id").references(() => userTable.id, {
       onDelete: "set null",
     }),
-    boardId: text("board_id").references(() => boardTable.id, {
-      onDelete: "cascade",
-    }).notNull(),
+    boardId: text("board_id")
+      .references(() => boardTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
     type: integer("post_type").$type<PostType>().notNull(),
+    voteCount: integer("vote_count").default(0).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
@@ -99,12 +108,16 @@ export const memberTable = sqliteTable(
   "member",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id").references(() => userTable.id, {
-      onDelete: "cascade",
-    }).notNull(),
-    boardId: text("board_id").references(() => boardTable.id, {
-      onDelete: "cascade",
-    }).notNull(),
+    userId: text("user_id")
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    boardId: text("board_id")
+      .references(() => boardTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
     role: integer("role").$type<Role>().notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
@@ -123,3 +136,32 @@ export const memberTable = sqliteTable(
 export const insertMemberSchema = createInsertSchema(memberTable);
 export const selectMemberSchema = createSelectSchema(memberTable);
 export type NewMember = typeof memberTable.$inferInsert;
+
+export const voteTable = sqliteTable(
+  "vote",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => userTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    postId: text("post_id")
+      .references(() => postTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    boardId: text("board_id")
+      .references(() => boardTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+  },
+  (table) => ({
+    compositeIdx: index("votes_composite_index").on(
+      table.boardId,
+      table.userId,
+      table.postId
+    ),
+  })
+);
