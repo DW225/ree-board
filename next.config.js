@@ -41,6 +41,7 @@ module.exports = withSentryConfig(
     org: "tekdw225",
     project: "ree-board",
     sentryUrl: "https://sentry.io/",
+    authToken: process.env.SENTRY_TOKEN,
 
     // Only print logs for uploading source maps in CI
     silent: !process.env.CI,
