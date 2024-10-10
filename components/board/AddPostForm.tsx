@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { PostType } from "@/db/schema";
+import type { Post, PostType } from "@/db/schema";
 import { authenticatedCreatePost } from "@/lib/actions/authenticatedActions";
 import { addPost, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
@@ -36,7 +36,7 @@ export default function AddPostForm({
 
     const postId = nanoid();
     try {
-      const newPost = {
+      const newPost: Post = {
         id: postId,
         content,
         type: postType,
@@ -44,6 +44,7 @@ export default function AddPostForm({
         boardId: boardID,
         createdAt: new Date(),
         updatedAt: new Date(),
+        voteCount: 0,
       };
 
       addPost(newPost);

@@ -11,7 +11,8 @@
     "tekdw",
     "testid",
     "turso",
-    "typeography"
+    "typeography",
+    "UPVOTE"
   ],
   "ignorePaths": [
     ".vscode/extensions.json",

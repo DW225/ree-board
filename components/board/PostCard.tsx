@@ -34,7 +34,6 @@ const PostCard: React.FC<PostCardProps> = ({
   onUpdate,
 }) => {
   const [message, setMessage] = useState(post.content.value);
-  const [voteCount, setVoteCount] = useState(0);
   const [hasVoted, setHasVoted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -54,9 +53,9 @@ const PostCard: React.FC<PostCardProps> = ({
   const handleVote = () => {
     if (viewOnly) return;
     if (hasVoted) {
-      setVoteCount(voteCount - 1);
+      
     } else {
-      setVoteCount(voteCount + 1);
+
     }
     setHasVoted(!hasVoted);
   };
@@ -120,7 +119,7 @@ const PostCard: React.FC<PostCardProps> = ({
             onClick={handleVote}
           >
             <HandThumbUpIcon className="h-4 w-4 mr-2" />
-            <span>{voteCount}</span>
+            <span>{post.voteCount}</span>
           </Button>
         </div>
       </CardFooter>
