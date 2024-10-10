@@ -11,6 +11,7 @@ import {
   updatePostType,
 } from "@/lib/db/post";
 import { findUserByEmail } from "@/lib/db/user";
+import { downVote, upVote } from "@/lib/db/vote";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
@@ -140,3 +141,44 @@ export const authenticatedRemoveMemberFromBoard = async (
   userId: string,
   boardId: string
 ) => authenticatedAction(() => removeMember(userId, boardId));
+
+export const authenticatedUpVotePost = async (
+  postId: string,
+  userId: string,
+  boardId: string
+) =>
+  authenticatedAction(() =>
+    Promise.all([
+      upVote(postId, userId, boardId),
+      ablyClient(boardId).publish({
+        name: EVENT_TYPE.POST.UPVOTE,
+        extras: {
+          headers: {
+            user: userId,
+          },
+        },
+        data: JSON.stringify({ postId }),
+      }),
+    ])
+  );
+
+export const authenticatedDownVotePost = async (
+  voteId: string,
+  postId: string,
+  userId: string,
+  boardId: string
+) =>
+  authenticatedAction(() =>
+    Promise.all([
+      downVote(voteId),
+      ablyClient(boardId).publish({
+        name: EVENT_TYPE.POST.DOWNVOTE,
+        extras: {
+          headers: {
+            user: userId,
+          },
+        },
+        data: JSON.stringify({ postId }),
+      }),
+    ])
+  );
