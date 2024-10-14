@@ -14,8 +14,11 @@ interface AddPostFormContextType {
 
 interface PostProviderProps {
   children: React.ReactNode;
-  initialPosts: Post[];
-  initialMembers: MemberInfo[];
+  initials: {
+    posts: Post[];
+    members: MemberInfo[];
+    votedPosts: string[];
+  };
 }
 
 const AddPostFormContext = createContext<AddPostFormContextType | undefined>(
@@ -24,14 +27,13 @@ const AddPostFormContext = createContext<AddPostFormContextType | undefined>(
 
 export const PostProvider: React.FC<PostProviderProps> = ({
   children,
-  initialPosts,
-  initialMembers,
+  initials,
 }) => {
   const [openFormId, setOpenFormId] = useState<string | null>(null);
 
   useEffectOnce(() => {
-    postSignalInitial(initialPosts);
-    memberSignalInitial(initialMembers);
+    postSignalInitial(initials.posts);
+    memberSignalInitial(initials.members);
   });
 
   return (

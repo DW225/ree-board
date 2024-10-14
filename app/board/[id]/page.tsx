@@ -7,6 +7,7 @@ import { Role } from "@/db/schema";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
 import { findUserIdByKindeID } from "@/lib/db/user";
+import { fetchUserVotedPost } from "@/lib/db/vote";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
@@ -19,9 +20,12 @@ const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
   ssr: false,
 });
 
-const PostChannel = dynamic(() => import("@/components/board/PostChannelComponent"), {
-  ssr: false,
-});
+const PostChannel = dynamic(
+  () => import("@/components/board/PostChannelComponent"),
+  {
+    ssr: false,
+  }
+);
 
 export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
   const boardID = params.id;
@@ -43,6 +47,8 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
     throw new Error("User not found");
   }
 
+  const votedPosts = await fetchUserVotedPost(userID);
+
   const role = members.find((m) => m.userId === userID)?.role;
 
   if (role === undefined) {
@@ -50,12 +56,18 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
   }
   const viewOnly = role === Role.guest;
 
+  const initialData = {
+    posts,
+    members,
+    votedPosts,
+  };
+
   return (
     <>
       <NavBar />
       <RTLProvider boardId={boardID}>
         <AnonymousModeProvider>
-          <PostProvider initialPosts={posts} initialMembers={members}>
+          <PostProvider initials={initialData}>
             <PostChannel boardId={boardID} userId={userID} />
             <div className="container mx-auto w-full max-w-full px-4">
               <div className="flex justify-end">
