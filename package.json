@@ -64,7 +64,7 @@
     "@typescript-eslint/parser": "^8.8.1",
     "@vercel/toolbar": "^0.1.22",
     "autoprefixer": "^10.4.20",
-    "daisyui": "^4.12.12",
+    "daisyui": "^4.12.13",
     "drizzle-kit": "^0.26.2",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.15",
