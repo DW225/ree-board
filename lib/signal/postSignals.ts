@@ -2,7 +2,8 @@ import type { Post, PostType } from "@/db/schema";
 import type { Signal } from "@preact/signals-react";
 import { signal } from "@preact/signals-react";
 
-export interface PostSignal extends Omit<Post, "content" | "type" | "voteCount"> {
+export interface PostSignal
+  extends Omit<Post, "content" | "type" | "voteCount"> {
   content: Signal<string>;
   type: Signal<PostType>;
   voteCount: Signal<number>;
@@ -43,28 +44,30 @@ export const removePost = (postID: string) => {
 
 export const updatePostContent = (postID: string, newContent: string) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index!== -1) {
+  if (index !== -1) {
     postSignal.value[index].content.value = newContent;
   }
 };
 
 export const updatePostType = (postID: string, newType: PostType) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index!== -1) {
+  if (index !== -1) {
     postSignal.value[index].type.value = newType;
   }
 };
 
 export const incrementPostVoteCount = (postID: string) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index!== -1) {
-    postSignal.value[index].voteCount.value++;
+  if (index !== -1) {
+    postSignal.value[index].voteCount.value = postSignal.value[index].voteCount
+      .value++;
   }
 };
 
 export const decrementPostVoteCount = (postID: string) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index!== -1 && postSignal.value[index].voteCount.value > 0) {
-    postSignal.value[index].voteCount.value--;
+  if (index !== -1 && postSignal.value[index].voteCount.value > 0) {
+    postSignal.value[index].voteCount.value = postSignal.value[index].voteCount
+      .value--;
   }
 };
