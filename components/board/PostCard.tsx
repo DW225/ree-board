@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { PostType } from "@/db/schema";
-import type { PostSignal } from "@/lib/signal/postSignals";
+import { decrementPostVoteCount, incrementPostVoteCount, type PostSignal } from "@/lib/signal/postSignals";
 import {
   HandThumbUpIcon,
   PencilSquareIcon,
@@ -19,12 +19,15 @@ import {
 } from "@heroicons/react/24/outline";
 import React, { useState } from "react";
 import { useAnonymousMode } from "./AnonymousModeProvider";
+import { useVotedPosts } from "./PostProvider";
+import { authenticatedDownVotePost, authenticatedUpVotePost } from "@/lib/actions/authenticatedActions";
 
 interface PostCardProps {
   post: PostSignal;
   viewOnly?: boolean;
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, newContent: string) => void;
+  userId: string;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -32,12 +35,13 @@ const PostCard: React.FC<PostCardProps> = ({
   viewOnly = false,
   onDelete,
   onUpdate,
+  userId,
 }) => {
   const [message, setMessage] = useState(post.content.value);
-  const [hasVoted, setHasVoted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const { isAnonymous } = useAnonymousMode();
+  const { addVotedPost, removeVotedPost, hasVoted } = useVotedPosts();
 
   const cardTypes = {
     [PostType.went_well]: "bg-green-100",
@@ -52,12 +56,15 @@ const PostCard: React.FC<PostCardProps> = ({
 
   const handleVote = () => {
     if (viewOnly) return;
-    if (hasVoted) {
-      
+    if (hasVoted(post.id)) {
+      authenticatedDownVotePost(post.id, userId, post.boardId);
+      decrementPostVoteCount(post.id);
+      removeVotedPost(post.id);
     } else {
-
+      authenticatedUpVotePost(post.id, userId, post.boardId);
+      incrementPostVoteCount(post.id);
+      addVotedPost(post.id);
     }
-    setHasVoted(!hasVoted);
   };
 
   const handleEdit = () => {
@@ -114,7 +121,7 @@ const PostCard: React.FC<PostCardProps> = ({
             variant="ghost"
             size="sm"
             className={`flex items-center ${
-              hasVoted ? "text-blue-600" : "text-gray-500"
+              hasVoted(post.id) ? "text-blue-600" : "text-gray-500"
             } ${viewOnly ? "cursor-default" : ""}`}
             onClick={handleVote}
           >
