@@ -5,6 +5,7 @@ import {
   integer,
   index,
   unique,
+  check,
 } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
@@ -90,6 +91,10 @@ export const postTable = sqliteTable(
   },
   (table) => ({
     boardIdIdx: index("post_board_id_index").on(table.boardId),
+    voteCountConstraint: check(
+      "vote_count_check",
+      sql`${table.voteCount} >= 0`
+    ),
   })
 );
 
