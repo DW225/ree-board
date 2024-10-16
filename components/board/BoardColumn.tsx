@@ -84,6 +84,7 @@ export default function BoardColumn({
                   }
                   viewOnly={viewOnly}
                   onUpdate={handlePostUpdate}
+                  userId={userId}
                 />
               </motion.div>
             ))}

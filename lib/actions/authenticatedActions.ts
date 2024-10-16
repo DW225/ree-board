@@ -163,14 +163,13 @@ export const authenticatedUpVotePost = async (
   );
 
 export const authenticatedDownVotePost = async (
-  voteId: string,
   postId: string,
   userId: string,
   boardId: string
 ) =>
   authenticatedAction(() =>
     Promise.all([
-      downVote(voteId),
+      downVote(postId, userId, boardId),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.DOWNVOTE,
         extras: {

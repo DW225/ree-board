@@ -1,7 +1,7 @@
 import { voteTable } from "@/db/schema";
 import { db } from "./client";
 import { nanoid } from "nanoid";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export async function upVote(postId: string, userId: string, boardId: string) {
   await db.insert(voteTable).values({
@@ -12,8 +12,20 @@ export async function upVote(postId: string, userId: string, boardId: string) {
   });
 }
 
-export async function downVote(voteId: string) {
-  await db.delete(voteTable).where(eq(voteTable.id, voteId));
+export async function downVote(
+  postId: string,
+  userId: string,
+  boardId: string
+) {
+  await db
+    .delete(voteTable)
+    .where(
+      and(
+        eq(voteTable.postId, postId),
+        eq(voteTable.userId, userId),
+        eq(voteTable.boardId, boardId)
+      )
+    );
 }
 
 export async function fetchUserVotedPost(userId: string): Promise<string[]> {
