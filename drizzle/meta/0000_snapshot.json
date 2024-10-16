@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "49ad5249-c19e-4db5-a99c-f2e2f1faa427",
-  "prevId": "cd674ad2-0031-4687-8295-664947210e64",
+  "id": "ae26ddb4-917f-478d-97ba-05a8d9779e65",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "board": {
       "name": "board",
@@ -55,7 +55,9 @@
       "indexes": {
         "board_state_index": {
           "name": "board_state_index",
-          "columns": ["state"],
+          "columns": [
+            "state"
+          ],
           "isUnique": false
         }
       },
@@ -64,14 +66,19 @@
           "name": "board_user_id_user_id_fk",
           "tableFrom": "board",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "member": {
       "name": "member",
@@ -124,17 +131,24 @@
       "indexes": {
         "members_user_id_index": {
           "name": "members_user_id_index",
-          "columns": ["user_id"],
+          "columns": [
+            "user_id"
+          ],
           "isUnique": false
         },
         "members_board_id_index": {
           "name": "members_board_id_index",
-          "columns": ["board_id"],
+          "columns": [
+            "board_id"
+          ],
           "isUnique": false
         },
         "member_board_id_user_id_unique": {
           "name": "member_board_id_user_id_unique",
-          "columns": ["board_id", "user_id"],
+          "columns": [
+            "board_id",
+            "user_id"
+          ],
           "isUnique": true
         }
       },
@@ -143,8 +157,12 @@
           "name": "member_user_id_user_id_fk",
           "tableFrom": "member",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -152,14 +170,19 @@
           "name": "member_board_id_board_id_fk",
           "tableFrom": "member",
           "tableTo": "board",
-          "columnsFrom": ["board_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "board_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "post": {
       "name": "post",
@@ -227,7 +250,9 @@
       "indexes": {
         "post_board_id_index": {
           "name": "post_board_id_index",
-          "columns": ["board_id"],
+          "columns": [
+            "board_id"
+          ],
           "isUnique": false
         }
       },
@@ -236,8 +261,12 @@
           "name": "post_user_id_user_id_fk",
           "tableFrom": "post",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -245,14 +274,24 @@
           "name": "post_board_id_board_id_fk",
           "tableFrom": "post",
           "tableTo": "board",
-          "columnsFrom": ["board_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "board_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "vote_count_check": {
+          "name": "vote_count_check",
+          "value": "\"post\".\"vote_count\" >= 0"
+        }
+      }
     },
     "user": {
       "name": "user",
@@ -297,28 +336,37 @@
       "indexes": {
         "user_name_unique": {
           "name": "user_name_unique",
-          "columns": ["name"],
+          "columns": [
+            "name"
+          ],
           "isUnique": true
         },
         "user_kinde_id_unique": {
           "name": "user_kinde_id_unique",
-          "columns": ["kinde_id"],
+          "columns": [
+            "kinde_id"
+          ],
           "isUnique": true
         },
         "user_email_unique": {
           "name": "user_email_unique",
-          "columns": ["email"],
+          "columns": [
+            "email"
+          ],
           "isUnique": true
         },
         "user_name_index": {
           "name": "user_name_index",
-          "columns": ["name"],
+          "columns": [
+            "name"
+          ],
           "isUnique": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     },
     "vote": {
       "name": "vote",
@@ -355,7 +403,11 @@
       "indexes": {
         "votes_composite_index": {
           "name": "votes_composite_index",
-          "columns": ["board_id", "user_id", "post_id"],
+          "columns": [
+            "board_id",
+            "user_id",
+            "post_id"
+          ],
           "isUnique": false
         }
       },
@@ -364,8 +416,12 @@
           "name": "vote_user_id_user_id_fk",
           "tableFrom": "vote",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -373,8 +429,12 @@
           "name": "vote_post_id_post_id_fk",
           "tableFrom": "vote",
           "tableTo": "post",
-          "columnsFrom": ["post_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -382,16 +442,22 @@
           "name": "vote_board_id_board_id_fk",
           "tableFrom": "vote",
           "tableTo": "board",
-          "columnsFrom": ["board_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "board_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "checkConstraints": {}
     }
   },
+  "views": {},
   "enums": {},
   "_meta": {
     "schemas": {},
