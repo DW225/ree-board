@@ -57,17 +57,17 @@ export const updatePostType = (postID: string, newType: PostType) => {
 };
 
 export const incrementPostVoteCount = (postID: string) => {
+  console.log("Incrementing vote count for post", postID);
   const index = postSignal.value.findIndex((post) => post.id === postID);
+  console.log("Current vote count:", postSignal.value[index].voteCount.value);
   if (index !== -1) {
-    postSignal.value[index].voteCount.value = postSignal.value[index].voteCount
-      .value++;
+    postSignal.value[index].voteCount.value += 1;
   }
 };
 
 export const decrementPostVoteCount = (postID: string) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index !== -1 && postSignal.value[index].voteCount.value > 0) {
-    postSignal.value[index].voteCount.value = postSignal.value[index].voteCount
-      .value--;
+    postSignal.value[index].voteCount.value -= 1;
   }
 };
