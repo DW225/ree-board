@@ -157,7 +157,7 @@ export const authenticatedUpVotePost = async (
             user: userId,
           },
         },
-        data: JSON.stringify({ postId }),
+        data: JSON.stringify({ id: postId }),
       }),
     ])
   );
@@ -177,7 +177,7 @@ export const authenticatedDownVotePost = async (
             user: userId,
           },
         },
-        data: JSON.stringify({ postId }),
+        data: JSON.stringify({ id: postId }),
       }),
     ])
   );

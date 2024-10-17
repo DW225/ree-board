@@ -21,6 +21,7 @@ import React, { useState } from "react";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import { useVotedPosts } from "./PostProvider";
 import { authenticatedDownVotePost, authenticatedUpVotePost } from "@/lib/actions/authenticatedActions";
+import { toast } from "@/lib/signal/toastSignals";
 
 interface PostCardProps {
   post: PostSignal;
@@ -54,16 +55,21 @@ const PostCard: React.FC<PostCardProps> = ({
     setMessage(e.target.value);
   };
 
-  const handleVote = () => {
+  const handleVote = async () => {
     if (viewOnly) return;
-    if (hasVoted(post.id)) {
-      authenticatedDownVotePost(post.id, userId, post.boardId);
-      decrementPostVoteCount(post.id);
-      removeVotedPost(post.id);
-    } else {
-      authenticatedUpVotePost(post.id, userId, post.boardId);
-      incrementPostVoteCount(post.id);
-      addVotedPost(post.id);
+
+    const isVoted = hasVoted(post.id);
+    const voteAction = isVoted ? authenticatedDownVotePost : authenticatedUpVotePost;
+    const voteCountAction = isVoted ? decrementPostVoteCount : incrementPostVoteCount;
+    const votedPostAction = isVoted ? removeVotedPost : addVotedPost;
+
+    try {
+      await voteAction(post.id, userId, post.boardId);
+      voteCountAction(post.id);
+      votedPostAction(post.id);
+    } catch (error) {
+      console.error('Error while voting:', error);
+      toast.error("Failed to vote.");
     }
   };
 
