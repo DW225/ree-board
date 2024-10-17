@@ -11,17 +11,26 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { PostType } from "@/db/schema";
-import { decrementPostVoteCount, incrementPostVoteCount, type PostSignal } from "@/lib/signal/postSignals";
+import {
+  authenticatedDownVotePost,
+  authenticatedUpVotePost,
+} from "@/lib/actions/authenticatedActions";
+import {
+  decrementPostVoteCount,
+  incrementPostVoteCount,
+  type PostSignal,
+} from "@/lib/signal/postSignals";
+import { toast } from "@/lib/signal/toastSignals";
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import {
   HandThumbUpIcon,
   PencilSquareIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import { useVotedPosts } from "./PostProvider";
-import { authenticatedDownVotePost, authenticatedUpVotePost } from "@/lib/actions/authenticatedActions";
-import { toast } from "@/lib/signal/toastSignals";
+import invariant from "invariant";
 
 interface PostCardProps {
   post: PostSignal;
@@ -44,6 +53,8 @@ const PostCard: React.FC<PostCardProps> = ({
   const { isAnonymous } = useAnonymousMode();
   const { addVotedPost, removeVotedPost, hasVoted } = useVotedPosts();
 
+  const ref = useRef<HTMLDivElement>(null);
+
   const cardTypes = {
     [PostType.went_well]: "bg-green-100",
     [PostType.to_improvement]: "bg-red-100",
@@ -59,8 +70,12 @@ const PostCard: React.FC<PostCardProps> = ({
     if (viewOnly) return;
 
     const isVoted = hasVoted(post.id);
-    const voteAction = isVoted ? authenticatedDownVotePost : authenticatedUpVotePost;
-    const voteCountAction = isVoted ? decrementPostVoteCount : incrementPostVoteCount;
+    const voteAction = isVoted
+      ? authenticatedDownVotePost
+      : authenticatedUpVotePost;
+    const voteCountAction = isVoted
+      ? decrementPostVoteCount
+      : incrementPostVoteCount;
     const votedPostAction = isVoted ? removeVotedPost : addVotedPost;
 
     try {
@@ -68,7 +83,7 @@ const PostCard: React.FC<PostCardProps> = ({
       voteCountAction(post.id);
       votedPostAction(post.id);
     } catch (error) {
-      console.error('Error while voting:', error);
+      console.error("Error while voting:", error);
       toast.error("Failed to vote.");
     }
   };
@@ -80,8 +95,18 @@ const PostCard: React.FC<PostCardProps> = ({
     setIsEditing(false);
   };
 
+  useEffect(() => {
+    if (!viewOnly) {
+      const postCardEl = ref.current;
+      invariant(postCardEl, "postCardEl is null");
+      draggable({
+        element: postCardEl,
+      });
+    }
+  }, []);
+
   return (
-    <Card className={`w-full ${cardTypes[post.type.value]} relative`}>
+    <Card className={`w-full ${cardTypes[post.type.value]} relative`} ref={ref}>
       {!viewOnly && onDelete && (
         <Button
           variant="ghost"

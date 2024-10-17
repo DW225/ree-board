@@ -77,6 +77,9 @@ importers:
       framer-motion:
         specifier: ^11.11.4
         version: 11.11.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      invariant:
+        specifier: ^2.2.4
+        version: 2.2.4
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -132,6 +135,9 @@ importers:
       '@types/eslint__js':
         specifier: ^8.42.3
         version: 8.42.3
+      '@types/invariant':
+        specifier: ^2.2.37
+        version: 2.2.37
       '@types/jsonwebtoken':
         specifier: ^9.0.7
         version: 9.0.7
@@ -2128,6 +2134,9 @@ packages:
 
   '@types/http-errors@2.0.4':
     resolution: {integrity: sha512-D0CFMMtydbJAegzOyHjtiKPLlvnm3iTZyZRSZoLq2mRhDdmLfIWOCYPfQJ4cu2erKghU++QvjcUjp/5h7hESpA==}
+
+  '@types/invariant@2.2.37':
+    resolution: {integrity: sha512-IwpIMieE55oGWiXkQPSBY1nw1nFs6bsKXTFskNY8sdS17K24vyEBRQZEwlRS7ZmXCWnJcQtbxWzly+cODWGs2A==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -6880,6 +6889,8 @@ snapshots:
   '@types/http-cache-semantics@4.0.4': {}
 
   '@types/http-errors@2.0.4': {}
+
+  '@types/invariant@2.2.37': {}
 
   '@types/json-schema@7.0.15': {}
 
