@@ -11,10 +11,12 @@ import {
   updatePostContent,
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/dist/types/adapter/element-adapter";
 import { useSignals } from "@preact/signals-react/runtime";
 import { AnimatePresence, motion } from "framer-motion";
+import invariant from "invariant";
 import dynamic from "next/dynamic";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import PostCard from "./PostCard";
 
 const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"));
@@ -37,6 +39,8 @@ export default function BoardColumn({
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
 
+  const [isDraggedOver, setIsDraggedOver] = useState<boolean>(false);
+
   const handlePostDelete = async (id: string) => {
     try {
       await authenticatedDeletePost(id, boardID, userId);
@@ -46,6 +50,24 @@ export default function BoardColumn({
       console.error("Failed to delete post:", error);
     }
   };
+
+  useEffect(() => {
+    if (!viewOnly) {
+      const columnEl = columnRef.current;
+      invariant(columnEl, "columnEl is null");
+
+      return dropTargetForElements({
+        element: columnEl,
+        onDragEnter: ({ source }) => {
+          if (source.data.boardId !== boardID) {
+            setIsDraggedOver(true);
+          }
+        },
+        onDragLeave: () => setIsDraggedOver(false),
+        onDrop: () => setIsDraggedOver(false),
+      });
+    }
+  }, []);
 
   const handlePostUpdate = async (id: string, newContent: string) => {
     try {
@@ -58,8 +80,12 @@ export default function BoardColumn({
   };
 
   return (
-    <div className="w-full flex flex-col bg-gray-100 rounded-xl mx-2">
-      <div className="bg-gray-100 rounded-t-lg p-2">
+    <div
+      className={`w-full flex flex-col ${
+        isDraggedOver ? "bg-slate-100" : "bg-sky-200"
+      } rounded-xl mx-2`}
+    >
+      <div className="bg-slate-100 rounded-t-lg p-2">
         <h3 className="font-bold text-xl text-center mb-4">{title}</h3>
         {!viewOnly && (
           <AddPostForm postType={postType} boardID={boardID} userId={userId} />
