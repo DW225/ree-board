@@ -49,6 +49,7 @@ const PostCard: React.FC<PostCardProps> = ({
 }) => {
   const [message, setMessage] = useState(post.content.value);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const { isAnonymous } = useAnonymousMode();
   const { addVotedPost, removeVotedPost, hasVoted } = useVotedPosts();
@@ -99,14 +100,22 @@ const PostCard: React.FC<PostCardProps> = ({
     if (!viewOnly) {
       const postCardEl = ref.current;
       invariant(postCardEl, "postCardEl is null");
-      draggable({
+      return draggable({
         element: postCardEl,
+        getInitialData: () => ({ id: post.id, boardId: post.boardId }),
+        onDragStart: () => setIsDragging(true),
+        onDrop: () => setIsDragging(false),
       });
     }
   }, []);
 
   return (
-    <Card className={`w-full ${cardTypes[post.type.value]} relative`} ref={ref}>
+    <Card
+      className={`w-full ${cardTypes[post.type.value]} ${
+        isDragging ? "opacity-50" : ""
+      } relative`}
+      ref={ref}
+    >
       {!viewOnly && onDelete && (
         <Button
           variant="ghost"
