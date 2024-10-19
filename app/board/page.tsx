@@ -5,7 +5,7 @@ import React from "react";
 import { NavBar } from "@/components/common";
 import { BoardList, CreateBoardForm } from "@/components/home";
 import { fetchBoards } from "@/lib/db/board";
-import { BoardProvider } from "@/components/home/BoardProvider";
+import { HomeProvider } from "@/components/home/HomeProvider";
 import { ToastSystem } from "@/components/common/ToastSystem";
 import { findUserIdByKindeID } from "@/lib/db/user";
 
@@ -33,10 +33,10 @@ export default async function Boards() {
       <div className="container mx-auto mt-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
         <div className="flex flex-wrap gap-4">
-          <BoardProvider initialBoards={initialBoardList}>
+          <HomeProvider initialBoards={initialBoardList}>
             <CreateBoardForm userID={userID} />
             <BoardList userID={userID} />
-          </BoardProvider>
+          </HomeProvider>
         </div>
       </div>
       <ToastSystem />

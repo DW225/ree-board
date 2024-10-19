@@ -5,12 +5,12 @@ import { boardSignalInitial } from "@/lib/signal/boardSignals";
 import type { Board } from "@/db/schema";
 import { useEffectOnce } from "@/lib/utils/effect";
 
-interface BoardProviderProps {
+interface HomeProviderProps {
   children: React.ReactNode;
   initialBoards: Board[];
 }
 
-export const BoardProvider: React.FC<BoardProviderProps> = ({
+export const HomeProvider: React.FC<HomeProviderProps> = ({
   children,
   initialBoards,
 }) => {
