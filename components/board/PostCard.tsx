@@ -27,10 +27,10 @@ import {
   PencilSquareIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
+import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import { useVotedPosts } from "./PostProvider";
-import invariant from "invariant";
 
 interface PostCardProps {
   post: PostSignal;
@@ -40,13 +40,13 @@ interface PostCardProps {
   userId: string;
 }
 
-const PostCard: React.FC<PostCardProps> = ({
+const PostCard = memo(function PostCard({
   post,
   viewOnly = false,
   onDelete,
   onUpdate,
   userId,
-}) => {
+}: Readonly<PostCardProps>) {
   const [message, setMessage] = useState(post.content.value);
   const [isEditing, setIsEditing] = useState(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -102,12 +102,12 @@ const PostCard: React.FC<PostCardProps> = ({
       invariant(postCardEl, "postCardEl is null");
       return draggable({
         element: postCardEl,
-        getInitialData: () => ({ id: post.id, boardId: post.boardId }),
+        getInitialData: () => ({ id: post.id, originalType: post.type.value.valueOf(), boardId: post.boardId }),
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
       });
     }
-  }, []);
+  }, [post, viewOnly]);
 
   return (
     <Card
@@ -172,6 +172,6 @@ const PostCard: React.FC<PostCardProps> = ({
       </CardFooter>
     </Card>
   );
-};
+})
 
 export default PostCard;

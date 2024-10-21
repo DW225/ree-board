@@ -11,10 +11,12 @@ import {
   updatePostContent,
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useSignals } from "@preact/signals-react/runtime";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import invariant from "tiny-invariant";
 import PostCard from "./PostCard";
 
 const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"));
@@ -36,30 +38,60 @@ export default function BoardColumn({
 }: Readonly<BoardColumnProps>) {
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
+  const [isDragginOver, setIsDraggingOver] = useState<boolean>(false);
 
-  const handlePostDelete = async (id: string) => {
-    try {
-      await authenticatedDeletePost(id, boardID, userId);
-      removePost(id);
-    } catch (error) {
-      toast.error("Failed to delete post");
-      console.error("Failed to delete post:", error);
-    }
-  };
+  const handlePostDelete = useCallback(
+    async (id: string) => {
+      try {
+        await authenticatedDeletePost(id, boardID, userId);
+        removePost(id);
+      } catch (error) {
+        toast.error("Failed to delete post");
+        console.error("Failed to delete post:", error);
+      }
+    },
+    [boardID, userId]
+  );
 
-  const handlePostUpdate = async (id: string, newContent: string) => {
-    try {
-      await authenticatedUpdatePostContent(id, boardID, newContent, userId);
-      updatePostContent(id, newContent);
-    } catch (error) {
-      toast.error("Failed to update post");
-      console.error("Failed to update post:", error);
+  const handlePostUpdate = useCallback(
+    async (id: string, newContent: string) => {
+      try {
+        await authenticatedUpdatePostContent(id, boardID, newContent, userId);
+        updatePostContent(id, newContent);
+      } catch (error) {
+        toast.error("Failed to update post");
+        console.error("Failed to update post:", error);
+      }
+    },
+    [boardID, userId]
+  );
+
+  useEffect(() => {
+    if (!viewOnly) {
+      const columnEl = columnRef.current;
+      invariant(columnEl, "columnEl is null");
+
+      return dropTargetForElements({
+        element: columnEl,
+        getData: () => ({ postType }),
+        canDrop: ({ source }) => {
+          return source.data.postType !== postType.valueOf() && source.data.boardId === boardID;
+        },
+        getIsSticky: () => true,
+        onDragLeave: () => setIsDraggingOver(false),
+        onDragEnter: () => setIsDraggingOver(true),
+        onDrop: () => setIsDraggingOver(false),
+      });
     }
-  };
+  }, [boardID, postType, viewOnly]);
 
   return (
-    <div className="w-full flex flex-col bg-gray-100 rounded-xl mx-2">
-      <div className="bg-gray-100 rounded-t-lg p-2">
+    <div
+      className={`w-full flex flex-col ${
+        isDragginOver ? "bg-sky-200" : "bg-slate-100"
+      } rounded-xl mx-2`}
+    >
+      <div className="rounded-t-lg p-2">
         <h3 className="font-bold text-xl text-center mb-4">{title}</h3>
         {!viewOnly && (
           <AddPostForm postType={postType} boardID={boardID} userId={userId} />
