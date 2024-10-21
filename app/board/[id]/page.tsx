@@ -67,7 +67,11 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
       <NavBar />
       <RTLProvider boardId={boardID}>
         <AnonymousModeProvider>
-          <PostProvider initials={initialData}>
+          <PostProvider
+            initials={initialData}
+            boardId={boardID}
+            userId={userID}
+          >
             <PostChannel boardId={boardID} userId={userID} />
             <div className="container mx-auto w-full max-w-full px-4">
               <div className="flex justify-end">

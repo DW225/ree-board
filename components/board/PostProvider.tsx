@@ -1,20 +1,24 @@
 /* eslint-disable drizzle/enforce-delete-with-where */
 "use client";
 
-import type { Post } from "@/db/schema";
+import { PostType, type Post } from "@/db/schema";
+import { useSetState } from "@/hooks/useSetState";
+import { authenticatedUpdatePostType } from "@/lib/actions/authenticatedActions";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
-import { postSignalInitial } from "@/lib/signal/postSignals";
+import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
 import { useEffectOnce } from "@/lib/utils/effect";
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { ReactNode } from "react";
 import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+import invariant from "tiny-invariant";
 import type { MemberInfo } from "./MemberManageModalComponent";
-import { useSetState } from "@/hooks/useSetState";
 
 interface AddPostFormContextType {
   openFormId: string | null;
@@ -117,16 +121,53 @@ interface PostProviderProps {
     members: MemberInfo[];
     votedPosts: string[];
   };
+  boardId: string;
+  userId: string;
 }
 
 export const PostProvider: React.FC<PostProviderProps> = ({
   children,
   initials,
+  boardId,
+  userId,
 }) => {
   useEffectOnce(() => {
     postSignalInitial(initials.posts);
     memberSignalInitial(initials.members);
   });
+
+  useEffect(() => {
+    return monitorForElements({
+      async onDrop(args) {
+        const { location, source } = args;
+        if (!location.current.dropTargets.length) {
+          return;
+        }
+        const postId = source.data.id;
+        invariant(typeof postId === "string");
+        const originalType = source.data.originalType;
+        invariant(typeof originalType === "number");
+
+        if (location.current.dropTargets.length === 1) {
+          const [destinationColumnRecord] = location.current.dropTargets;
+          const destinationPostType = destinationColumnRecord.data.postType;
+          invariant(typeof destinationPostType === "number");
+
+          const postTypeKey = Object.keys(PostType)[
+            Object.values(PostType).indexOf(destinationPostType)
+          ] as keyof typeof PostType;
+
+          updatePostType(postId, PostType[postTypeKey]);
+          await authenticatedUpdatePostType(
+            postId,
+            boardId,
+            PostType[postTypeKey],
+            userId
+          );
+        }
+      },
+    });
+  }, [boardId, userId]);
 
   return (
     <VotedPostsProvider initial={{ votedPosts: initials.votedPosts }}>
