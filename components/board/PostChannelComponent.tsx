@@ -7,6 +7,7 @@ import {
   removePost,
   incrementPostVoteCount,
   decrementPostVoteCount,
+  updatePostType,
 } from "@/lib/signal/postSignals";
 import { EVENT_TYPE } from "@/lib/utils/ably";
 import { useChannel } from "ably/react";
@@ -30,6 +31,9 @@ export default function PostChannel({
           break;
         case EVENT_TYPE.POST.UPDATE_CONTENT:
           updatePostContent(post.id, post.content);
+          break;
+        case EVENT_TYPE.POST.UPDATE_TYPE:
+          updatePostType(post.id, post.type);
           break;
         case EVENT_TYPE.POST.DELETE:
           removePost(post.id);
