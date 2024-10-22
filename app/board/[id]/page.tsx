@@ -1,8 +1,3 @@
-import { BoardAccess, BoardGrid } from "@/components/board";
-import { AnonymousModeProvider } from "@/components/board/AnonymousModeProvider";
-import { PostProvider } from "@/components/board/PostProvider";
-import { NavBar } from "@/components/common";
-import { ToastSystem } from "@/components/common/ToastSystem";
 import { Role } from "@/db/schema";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
@@ -12,20 +7,25 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
-interface BoardPageProps {
-  params: { id: string };
-}
-
+const BoardAccess = dynamic(() => import("@/components/board").then(mod => mod.BoardAccess));
+const BoardGrid = dynamic(() => import("@/components/board").then(mod => mod.BoardGrid));
+const AnonymousModeProvider = dynamic(() => import("@/components/board/AnonymousModeProvider"));
+const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
+const NavBar = dynamic(() => import("@/components/common").then(mod => mod.NavBar));
+const ToastSystem = dynamic(() => import("@/components/common").then(mod => mod.ToastSystem));
 const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
   ssr: false,
 });
-
 const PostChannel = dynamic(
   () => import("@/components/board/PostChannelComponent"),
   {
     ssr: false,
   }
 );
+
+interface BoardPageProps {
+  params: { id: string };
+}
 
 export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
   const boardID = params.id;
