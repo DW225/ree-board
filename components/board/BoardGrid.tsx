@@ -1,4 +1,4 @@
-import { LoadingSpinner } from "@/components/ui";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { PostType } from "@/db/schema";
 import dynamic from "next/dynamic";
 import React from "react";

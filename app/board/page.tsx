@@ -5,11 +5,11 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
-const NavBar = dynamic(() => import("@/components/common").then(mod => mod.NavBar));
-const ToastSystem = dynamic(() => import("@/components/common").then(mod => mod.ToastSystem));
-const BoardList = dynamic(() => import("@/components/home").then(mod => mod.BoardList));
-const CreateBoardForm = dynamic(() => import("@/components/home").then(mod => mod.CreateBoardForm));
-const HomeProvider = dynamic(() => import("@/components/home").then(mod => mod.HomeProvider));
+const NavBar = dynamic(() => import("@/components/common/NavBar"));
+const ToastSystem = dynamic(() => import("@/components/common/ToastSystem"));
+const BoardList = dynamic(() => import("@/components/home/BoardList"));
+const CreateBoardForm = dynamic(() => import("@/components/home/CreateBoardForm"));
+const HomeProvider = dynamic(() => import("@/components/home/HomeProvider"));
 
 export default async function Boards() {
   const { getUser } = getKindeServerSession();

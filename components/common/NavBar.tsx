@@ -1,6 +1,7 @@
 "use client";
 
-import { NavLink, NavButton } from "@/components/navbar";
+import NavButton from "@/components/navbar/NavButton";
+import NavLink from "@/components/navbar/NavLink";
 import { useToggle } from "@/hooks/useToggles";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
 import dynamic from "next/dynamic";
