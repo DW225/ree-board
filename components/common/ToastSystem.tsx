@@ -39,7 +39,7 @@ const StackedToast = ({ count }: { count: number }) => {
   );
 };
 
-export function ToastSystem() {
+export default function ToastSystem() {
   const toastContainerRef = useRef<HTMLDivElement>(null);
   const visibleToasts = computed(() => toasts.value.slice(0, 5));
   const stackedCount = computed(() => toasts.value.length - 5);

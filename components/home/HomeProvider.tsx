@@ -10,7 +10,7 @@ interface HomeProviderProps {
   initialBoards: Board[];
 }
 
-export const HomeProvider: React.FC<HomeProviderProps> = ({
+const HomeProvider: React.FC<HomeProviderProps> = ({
   children,
   initialBoards,
 }) => {
@@ -26,3 +26,5 @@ export const HomeProvider: React.FC<HomeProviderProps> = ({
     </>
   );
 };
+
+export default HomeProvider;
