@@ -2,14 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { PostType } from "@/db/schema";
 import {
   authenticatedDownVotePost,
@@ -22,15 +14,14 @@ import {
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import {
-  HandThumbUpIcon,
-  PencilSquareIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import React, { memo, useEffect, useRef, useState } from "react";
+import { Pencil, ThumbsUp, X } from "lucide-react";
+import dynamic from "next/dynamic";
+import { memo, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import { useVotedPosts } from "./PostProvider";
+
+const EditDialog = dynamic(() => import("./EditDialog"), { ssr: false });
 
 interface PostCardProps {
   post: PostSignal;
@@ -123,7 +114,7 @@ const PostCard = memo(function PostCard({
           className="absolute top-2 right-2"
           onClick={() => onDelete(post.id)}
         >
-          <XMarkIcon className="h-4 w-4" />
+          <X className="h-4 w-4" />
         </Button>
       )}
       <CardContent className="pt-6 p-5">
@@ -138,30 +129,23 @@ const PostCard = memo(function PostCard({
       <CardFooter className="flex justify-end items-center p-3">
         <div className="flex items-center space-x-2">
           {!viewOnly && (
-            <Dialog
-              open={isEditing}
-              onOpenChange={(open) => {
-                setIsEditing(open);
-                setMessage(post.content.value);
-              }}
-            >
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <PencilSquareIcon className="h-4 w-4" />
+            <EditDialog
+              isOpen={isEditing}
+              onOpenChange={setIsEditing}
+              content={message}
+              onContentChange={setMessage}
+              onSave={handleEdit}
+              variant="edit"
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMessage(post.content.value)}
+                >
+                  <Pencil className="h-4 w-4" />
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Edit Message</DialogTitle>
-                </DialogHeader>
-                <Textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="min-h-[100px]"
-                />
-                <Button onClick={handleEdit}>Save</Button>
-              </DialogContent>
-            </Dialog>
+              }
+            />
           )}
           <Button
             variant="ghost"
@@ -171,7 +155,7 @@ const PostCard = memo(function PostCard({
             } ${viewOnly ? "cursor-default" : ""}`}
             onClick={handleVote}
           >
-            <HandThumbUpIcon className="h-4 w-4 mr-2" />
+            <ThumbsUp className="h-4 w-4 mr-2" />
             <span>{post.voteCount}</span>
           </Button>
         </div>
