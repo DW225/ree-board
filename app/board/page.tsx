@@ -1,13 +1,13 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
-import React from "react";
 
 import { NavBar } from "@/components/common";
-import { BoardList, CreateBoardForm } from "@/components/home";
-import { fetchBoards } from "@/lib/db/board";
-import { HomeProvider } from "@/components/home/HomeProvider";
 import { ToastSystem } from "@/components/common/ToastSystem";
+import { BoardList, CreateBoardForm } from "@/components/home";
+import { HomeProvider } from "@/components/home/HomeProvider";
+import { fetchBoards } from "@/lib/db/board";
 import { findUserIdByKindeID } from "@/lib/db/user";
+import { retryWithBackoff } from "@/lib/utils/retryWithBackoff";
 
 export default async function Boards() {
   const { getUser } = getKindeServerSession();
@@ -17,14 +17,16 @@ export default async function Boards() {
     redirect("/api/auth/login");
   }
 
-  const [initialBoardList, userID] = await Promise.all([
-    fetchBoards(user.id),
-    findUserIdByKindeID(user.id),
-  ]);
-
-  if (!userID) {
-    throw new Error("User not found");
-  }
+  const [initialBoardList, userID] = await retryWithBackoff(async () => {
+    const [boards, id] = await Promise.all([
+      fetchBoards(user.id),
+      findUserIdByKindeID(user.id),
+    ]);
+    if (!id) {
+      throw new Error("User not found");
+    }
+    return [boards, id];
+  }, { maxRetries: 3, initialDelay: 500 });
 
   return (
     <div className="min-h-screen bg-gray-50">
