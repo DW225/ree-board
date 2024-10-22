@@ -17,9 +17,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
-import PostCard from "./PostCard";
 
 const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"));
+const PostCard = dynamic(() => import("@/components/board/PostCard"));
 
 interface BoardColumnProps {
   boardID: string;
