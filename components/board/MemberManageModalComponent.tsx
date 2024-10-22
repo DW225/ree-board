@@ -24,7 +24,7 @@ import {
   updateMember,
 } from "@/lib/signal/memberSingals";
 import { toast } from "@/lib/signal/toastSignals";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
+import { PlusCircle } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
 import React, { useCallback, useState } from "react";
@@ -140,7 +140,7 @@ export default function MemberManageModalComponent({
                 />
               </div>
               <Button type="submit" className="ml-auto">
-                <PlusCircleIcon className="mr-2 size-4" />
+                <PlusCircle className="mr-2 size-4" />
                 Add Member
               </Button>
             </form>

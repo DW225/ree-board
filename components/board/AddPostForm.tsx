@@ -10,7 +10,7 @@ import type { Post, PostType } from "@/db/schema";
 import { authenticatedCreatePost } from "@/lib/actions/authenticatedActions";
 import { addPost, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Plus, X } from "lucide-react";
 
 interface AddPostFormProps {
   userId: string;
@@ -67,7 +67,7 @@ export default function AddPostForm({
         onClick={() => setOpenFormId(formId)}
         className="flex items-center justify-center w-full p-2 my-2 text-gray-600 hover:bg-gray-200 rounded-md transition-colors duration-200 ease-in-out"
       >
-        <PlusIcon className="h-5 w-5 mr-2" />
+        <Plus className="h-5 w-5 mr-2" />
         <span>Add a post</span>
       </button>
     );
@@ -101,7 +101,7 @@ export default function AddPostForm({
           variant="ghost"
           aria-labelledby="close form button"
         >
-          <XMarkIcon className="h-4 w-4" />
+          <X className="h-4 w-4" />
         </Button>
       </div>
     </form>
