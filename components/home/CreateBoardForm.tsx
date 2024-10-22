@@ -52,7 +52,7 @@ export default function CreateBoardForm({
   return (
     <form
       onSubmit={createNewBoard}
-      className="w-64 h-32 bg-gray-100 rounded-lg shadow-md flex flex-col items-center justify-center hover:bg-gray-200 transition-colors"
+      className="w-56 h-32 bg-gray-100 rounded-lg shadow-md flex flex-col items-center justify-center hover:bg-gray-200 transition-colors"
     >
       <input
         type="text"
