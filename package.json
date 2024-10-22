@@ -69,7 +69,7 @@
     "daisyui": "^4.12.13",
     "drizzle-kit": "^0.26.2",
     "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.15",
+    "eslint-config-next": "15.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-drizzle": "^0.2.3",
     "fluid-tailwind": "^1.0.3",
