@@ -27,7 +27,7 @@ import { toast } from "@/lib/signal/toastSignals";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 
 interface MemberManageProps {
   boardId: string;
@@ -53,45 +53,48 @@ export default function MemberManageModalComponent({
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMember.email) {
-      try {
-        const user = await authenticatedFindUserByEmail(newMember.email);
-        if (!user) {
-          throw new Error("User not found");
-        } else {
-          const memberId = nanoid();
-          addMember({
-            id: memberId,
-            userId: user.id,
-            username: user.name,
-            email: newMember.email,
-            role: Role.member,
-            updateAt: new Date(),
-          });
-          await authenticatedAddMemberToBoard({
-            id: memberId,
-            boardId,
-            role: Role.member,
-            userId: user.id,
-          });
-        }
-      } catch (error) {
-        toast.error("Error adding member. User might not exists.");
-        console.error(error);
+    if (!newMember.email) return;
+
+    try {
+      const user = await authenticatedFindUserByEmail(newMember.email);
+      if (!user) {
+        throw new Error("User not found");
       }
+
+      const memberId = nanoid();
+      const newMemberInfo = {
+        id: memberId,
+        userId: user.id,
+        username: user.name,
+        email: newMember.email,
+        role: Role.member,
+        updateAt: new Date(),
+      };
+
+      await authenticatedAddMemberToBoard({
+        id: memberId,
+        boardId,
+        role: Role.member,
+        userId: user.id,
+      });
+
+      addMember(newMemberInfo);
       setNewMember({ email: "" });
+    } catch (error) {
+      toast.error("Error adding member. User might not exist.");
+      console.error(error);
     }
   };
 
-  const handleRoleChange = (
-    memberToUpdate: MemberInfo,
-    newRole: MemberInfo["role"]
-  ) => {
-    updateMember({
-      ...memberToUpdate,
-      role: newRole,
-    });
-  };
+  const handleRoleChange = useCallback(
+    (memberToUpdate: MemberInfo, newRole: MemberInfo["role"]) => {
+      updateMember({
+        ...memberToUpdate,
+        role: newRole,
+      });
+    },
+    []
+  );
 
   const handleRemoveMember = (member: MemberInfo) => {
     setMemberToRemove(member);
