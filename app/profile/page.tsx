@@ -1,4 +1,4 @@
-import { NavBar } from "@/components/common";
+import NavBar from "@/components/common/NavBar";
 import ProfileInfo from "@/components/profile/ProfileInfo";
 // import ProfileUpdateForm from "@/components/profile/ProfileUpdateForm";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";

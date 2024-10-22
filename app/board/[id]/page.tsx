@@ -7,12 +7,12 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
-const BoardAccess = dynamic(() => import("@/components/board").then(mod => mod.BoardAccess));
-const BoardGrid = dynamic(() => import("@/components/board").then(mod => mod.BoardGrid));
+const BoardAccess = dynamic(() => import("@/components/board/BoardAccess"));
+const BoardGrid = dynamic(() => import("@/components/board/BoardGrid"));
 const AnonymousModeProvider = dynamic(() => import("@/components/board/AnonymousModeProvider"));
 const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
-const NavBar = dynamic(() => import("@/components/common").then(mod => mod.NavBar));
-const ToastSystem = dynamic(() => import("@/components/common").then(mod => mod.ToastSystem));
+const NavBar = dynamic(() => import("@/components/common/NavBar"));
+const ToastSystem = dynamic(() => import("@/components/common/ToastSystem"));
 const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
   ssr: false,
 });
