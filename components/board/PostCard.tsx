@@ -47,7 +47,7 @@ const PostCard = memo(function PostCard({
   onUpdate,
   userId,
 }: Readonly<PostCardProps>) {
-  const [message, setMessage] = useState(post.content.value);
+  const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
@@ -61,10 +61,6 @@ const PostCard = memo(function PostCard({
     [PostType.to_improvement]: "bg-red-100",
     [PostType.to_discuss]: "bg-yellow-100",
     [PostType.action_item]: "bg-purple-100",
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
   };
 
   const handleVote = async () => {
@@ -102,7 +98,11 @@ const PostCard = memo(function PostCard({
       invariant(postCardEl, "postCardEl is null");
       return draggable({
         element: postCardEl,
-        getInitialData: () => ({ id: post.id, originalType: post.type.value.valueOf(), boardId: post.boardId }),
+        getInitialData: () => ({
+          id: post.id,
+          originalType: post.type.value.valueOf(),
+          boardId: post.boardId,
+        }),
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
       });
@@ -138,7 +138,13 @@ const PostCard = memo(function PostCard({
       <CardFooter className="flex justify-end items-center p-3">
         <div className="flex items-center space-x-2">
           {!viewOnly && (
-            <Dialog open={isEditing} onOpenChange={setIsEditing}>
+            <Dialog
+              open={isEditing}
+              onOpenChange={(open) => {
+                setIsEditing(open);
+                setMessage(post.content.value);
+              }}
+            >
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm">
                   <PencilSquareIcon className="h-4 w-4" />
@@ -149,8 +155,8 @@ const PostCard = memo(function PostCard({
                   <DialogTitle>Edit Message</DialogTitle>
                 </DialogHeader>
                 <Textarea
-                  value={post.content.value}
-                  onChange={handleChange}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="min-h-[100px]"
                 />
                 <Button onClick={handleEdit}>Save</Button>
@@ -172,6 +178,6 @@ const PostCard = memo(function PostCard({
       </CardFooter>
     </Card>
   );
-})
+});
 
 export default PostCard;
