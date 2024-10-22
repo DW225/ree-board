@@ -125,7 +125,7 @@ interface PostProviderProps {
   userId: string;
 }
 
-export const PostProvider: React.FC<PostProviderProps> = ({
+const PostProvider: React.FC<PostProviderProps> = ({
   children,
   initials,
   boardId,
@@ -191,3 +191,5 @@ export const useVotedPosts = () => {
   }
   return context;
 };
+
+export default PostProvider;
