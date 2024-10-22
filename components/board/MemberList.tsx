@@ -8,11 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TrashIcon, UserCircleIcon } from "@heroicons/react/24/outline";
-import type { MemberInfo } from "./MemberManageModalComponent";
 import { Role } from "@/db/schema";
-import { getEnumKeys } from "@/lib/utils";
 import { memberSignal } from "@/lib/signal/memberSingals";
+import { getEnumKeys } from "@/lib/utils";
+import { Trash2, UserCircle } from "lucide-react";
+import type { MemberInfo } from "./MemberManageModalComponent";
 
 interface MemberListProps {
   boardId: string;
@@ -43,7 +43,7 @@ export default function MemberList({
     <ul className="space-y-2">
       {memberSignal.value.map((member) => (
         <div key={member.id} className="flex items-center space-x-4 mb-4">
-          <UserCircleIcon className="h-6 w-6" />
+          <UserCircle className="h-6 w-6" />
           <div className="flex-grow">
             <p className="text-sm font-medium">{member.username}</p>
             <p className="text-sm text-gray-500">{member.email}</p>
@@ -70,7 +70,7 @@ export default function MemberList({
             size="icon"
             onClick={() => handleRemoveMember(member)}
           >
-            <TrashIcon className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       ))}

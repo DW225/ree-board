@@ -1,9 +1,9 @@
 "use client";
 
 import { removeToast, toasts, type Toast } from "@/lib/signal/toastSignals";
-import { XMarkIcon } from "@heroicons/react/24/outline";
 import { computed } from "@preact/signals-react";
 import { useSignalEffect, useSignals } from "@preact/signals-react/runtime";
+import { X } from "lucide-react";
 import { useRef } from "react";
 
 const Toast = ({ toast }: { toast: Toast }) => {
@@ -25,7 +25,7 @@ const Toast = ({ toast }: { toast: Toast }) => {
         onClick={() => removeToast(toast.id)}
         className="ml-4 focus:outline-none"
       >
-        <XMarkIcon className="size-4" />
+        <X className="size-4" />
       </button>
     </div>
   );
