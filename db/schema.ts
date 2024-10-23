@@ -168,5 +168,6 @@ export const voteTable = sqliteTable(
       table.userId,
       table.postId
     ),
+    uniqueVote: unique().on(table.boardId, table.userId, table.postId),
   })
 );
