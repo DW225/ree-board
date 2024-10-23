@@ -4,15 +4,12 @@ import NavButton from "@/components/navbar/NavButton";
 import NavLink from "@/components/navbar/NavLink";
 import { useToggle } from "@/hooks/useToggles";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
+import { LogOut, X, Menu } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const MobileMenu = dynamic(() => import("@/components/navbar/MobileMenu"), {
   ssr: false,
 });
-
-const Menu = dynamic(() => import("lucide-react").then((mod) => mod.Menu));
-const X = dynamic(() => import("lucide-react").then((mod) => mod.X));
-const LogOut = dynamic(() => import("lucide-react").then((mod) => mod.LogOut));
 
 export default function Navbar() {
   const [isOpen, toggleMenu] = useToggle(false);
