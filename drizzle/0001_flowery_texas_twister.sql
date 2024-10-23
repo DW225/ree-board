@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `vote_board_id_user_id_post_id_unique` ON `vote` (`board_id`,`user_id`,`post_id`);
