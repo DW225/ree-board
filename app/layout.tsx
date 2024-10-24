@@ -21,6 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const shouldInjectToolbar = process.env.NODE_ENV === "development";
+  const shouldInjectSpeedInsights = process.env.NODE_ENV !== "development";
   return (
     <html lang="en">
       <body>
@@ -28,7 +29,7 @@ export default function RootLayout({
           <div className="flex-grow-1">{children}</div>
           {shouldInjectToolbar && <VercelToolbar />}
         </main>
-        <SpeedInsights />
+        {shouldInjectSpeedInsights && <SpeedInsights />}
       </body>
     </html>
   );
