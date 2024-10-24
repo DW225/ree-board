@@ -5,6 +5,7 @@ import React from "react";
 
 const BoardColumn = dynamic(() => import("@/components/board/BoardColumn"), {
   loading: () => <LoadingSpinner />,
+  ssr: false,
 });
 
 interface BoardGridProps {
@@ -30,7 +31,7 @@ const BoardGrid: React.FC<BoardGridProps> = async ({
       {columns.map((column) => (
         <div
           key={column.title}
-          className="h-full w-full md:w-1/2 lg:w-1/4 px-1 mb-4"
+          className="h-full w-full md:w-1/2 lg:w-1/4 px-1 mb-4 transition-all ease-in-out"
         >
           <BoardColumn
             title={column.title}

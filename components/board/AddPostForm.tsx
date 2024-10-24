@@ -61,49 +61,53 @@ export default function AddPostForm({
     }
   };
 
-  if (!isAdding) {
-    return (
-      <button
-        onClick={() => setOpenFormId(formId)}
-        className="flex items-center justify-center w-full p-2 my-2 text-gray-600 hover:bg-gray-200 rounded-md transition-colors duration-200 ease-in-out"
-      >
-        <Plus className="h-5 w-5 mr-2" />
-        <span>Add a post</span>
-      </button>
-    );
-  }
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mt-2 p-2 transition-all duration-200 ease-in-out"
+    <div
+      className={`transition-all duration-300 ease-in-out ${
+        isAdding ? "animate-fade-in-down" : "animate-fade-out-up"
+      }`}
     >
-      <Textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Enter a title for this card..."
-        className="w-full p-2 border border-gray-300 rounded-sm focus:border-blue-400 bg-slate-50"
-        rows={3}
-      />
-      <div className="mt-2 flex items-center">
-        <Button
-          type="submit"
-          className="px-3 py-1.5 rounded-sm bg-blue-600 text-white"
-          variant="outline"
-          aria-labelledby="add post button"
+      {!isAdding ? (
+        <button
+          onClick={() => setOpenFormId(formId)}
+          className="flex items-center justify-center w-full p-2 my-2 text-gray-600 hover:bg-gray-200 rounded-md transition-colors duration-200 ease-in-out"
         >
-          Add Card
-        </Button>
-        <Button
-          onClick={() => setOpenFormId("")}
-          className="ml-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 ease-in-out"
-          size="icon"
-          variant="ghost"
-          aria-labelledby="close form button"
+          <Plus className="h-5 w-5 mr-2" />
+          <span>Add a post</span>
+        </button>
+      ) : (
+        <form
+          onSubmit={handleSubmit}
+          className="mt-2 p-2 transition-all duration-200 ease-in-out"
         >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    </form>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Enter a title for this card..."
+            className="w-full p-2 border border-gray-300 rounded-sm focus:border-blue-400 bg-slate-50"
+            rows={3}
+          />
+          <div className="mt-2 flex items-center">
+            <Button
+              type="submit"
+              className="px-3 py-1.5 rounded-sm bg-blue-600 text-white"
+              variant="outline"
+              aria-labelledby="add post button"
+            >
+              Add Card
+            </Button>
+            <Button
+              onClick={() => setOpenFormId("")}
+              className="ml-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 ease-in-out"
+              size="icon"
+              variant="ghost"
+              aria-labelledby="close form button"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }

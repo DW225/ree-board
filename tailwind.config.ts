@@ -8,13 +8,13 @@ import tailwindcssAnimate from "tailwindcss-animate";
 const config: Config = {
   darkMode: ["class"],
   content: {
-		files: [
-			"./pages/**/*.{js,ts,jsx,tsx,mdx}",
-			"./components/**/*.{js,ts,jsx,tsx,mdx}",
-			"./app/**/*.{js,ts,jsx,tsx,mdx}",
-		],
-		extract,
-	},
+    files: [
+      "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+      "./components/**/*.{js,ts,jsx,tsx,mdx}",
+      "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    ],
+    extract,
+  },
   theme: {
     extend: {
       borderRadius: {
@@ -63,17 +63,26 @@ const config: Config = {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        animation: {
+          "fade-in-down": "fadeInDown 0.3s ease-out",
+          "fade-out-up": "fadeOutUp 0.3s ease-out",
+        },
+        keyframes: {
+          fadeInDown: {
+            "0%": { opacity: "0", transform: "translateY(-10px)" },
+            "100%": { opacity: "1", transform: "translateY(0)" },
+          },
+          fadeOutUp: {
+            "0%": { opacity: "1", transform: "translateY(0)" },
+            "100%": { opacity: "0", transform: "translateY(-10px)" },
+          },
+        },
       },
     },
   },
-  plugins: [
-    typography,
-    daisyui,
-    tailwindcssAnimate,
-    fluid,
-  ],
+  plugins: [typography, daisyui, tailwindcssAnimate, fluid],
   daisyui: {
-    themes: ["light", "synthwave"],
+    themes: ["light"],
   },
 };
 export default config;

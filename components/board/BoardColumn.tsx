@@ -12,10 +12,10 @@ import {
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { computed, effect, signal } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
-import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 
 const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"));
@@ -29,6 +29,11 @@ interface BoardColumnProps {
   userId: string;
 }
 
+interface AnimatedPost {
+  id: string;
+  isRemoving: boolean;
+}
+
 export default function BoardColumn({
   boardID,
   title,
@@ -39,6 +44,17 @@ export default function BoardColumn({
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
   const [isDragginOver, setIsDraggingOver] = useState<boolean>(false);
+  const filteredPosts = computed(() =>
+    postSignal.value.filter((post) => post.type.value === postType)
+  );
+  const animatedPosts = signal<AnimatedPost[]>([]);
+
+  effect(() => {
+    animatedPosts.value = filteredPosts.value.map((post) => ({
+      id: post.id,
+      isRemoving: false,
+    }));
+  });
 
   const handlePostDelete = useCallback(
     async (id: string) => {
@@ -56,6 +72,10 @@ export default function BoardColumn({
   const handlePostUpdate = useCallback(
     async (id: string, newContent: string) => {
       try {
+        animatedPosts.value = animatedPosts.value.map((post) =>
+          post.id === id ? { ...post, isRemoving: true } : post
+        );
+        await new Promise((resolve) => setTimeout(resolve, 300)); // Wait for animation
         await authenticatedUpdatePostContent(id, boardID, newContent, userId);
         updatePostContent(id, newContent);
       } catch (error) {
@@ -63,7 +83,7 @@ export default function BoardColumn({
         console.error("Failed to update post:", error);
       }
     },
-    [boardID, userId]
+    [animatedPosts, boardID, userId]
   );
 
   useEffect(() => {
@@ -75,7 +95,10 @@ export default function BoardColumn({
         element: columnEl,
         getData: () => ({ postType }),
         canDrop: ({ source }) => {
-          return source.data.postType !== postType.valueOf() && source.data.boardId === boardID;
+          return (
+            source.data.postType !== postType.valueOf() &&
+            source.data.boardId === boardID
+          );
         },
         getIsSticky: () => true,
         onDragLeave: () => setIsDraggingOver(false),
@@ -84,6 +107,43 @@ export default function BoardColumn({
       });
     }
   }, [boardID, postType, viewOnly]);
+
+  const renderPosts = useMemo(
+    () =>
+      animatedPosts.value.map((animatedPost) => {
+        const post = filteredPosts.value.find((p) => p.id === animatedPost.id);
+        if (!post) return null;
+
+        return (
+          <div
+            key={post.id}
+            className={`
+            ${
+              animatedPost.isRemoving
+                ? "animate-out fade-out slide-out-to-bottom-5 duration-300"
+                : "animate-in fade-in slide-in-from-bottom-5 duration-300"
+            }
+          `}
+          >
+            <PostCard
+              post={post}
+              onDelete={viewOnly ? undefined : () => handlePostDelete(post.id)}
+              viewOnly={viewOnly}
+              onUpdate={handlePostUpdate}
+              userId={userId}
+            />
+          </div>
+        );
+      }),
+    [
+      animatedPosts.value,
+      filteredPosts.value,
+      viewOnly,
+      handlePostUpdate,
+      userId,
+      handlePostDelete,
+    ]
+  );
 
   return (
     <div
@@ -98,29 +158,7 @@ export default function BoardColumn({
         )}
       </div>
       <div ref={columnRef} className="flex-grow overflow-y-auto p-3 space-y-3">
-        <AnimatePresence>
-          {postSignal.value
-            .filter((post) => post.type.value === postType)
-            .map((post) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PostCard
-                  post={post}
-                  onDelete={
-                    viewOnly ? undefined : () => handlePostDelete(post.id)
-                  }
-                  viewOnly={viewOnly}
-                  onUpdate={handlePostUpdate}
-                  userId={userId}
-                />
-              </motion.div>
-            ))}
-        </AnimatePresence>
+        {renderPosts}
       </div>
     </div>
   );
