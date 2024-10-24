@@ -17,8 +17,6 @@ export default function RTLProvider({
     authMethod: "POST",
   });
 
-
-
   return (
     <AblyProvider client={client}>
       <ChannelProvider channelName={boardId}>{children}</ChannelProvider>
