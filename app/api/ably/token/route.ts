@@ -36,7 +36,7 @@ export async function POST() {
     throw new Error("ABLY_API_KEY environment variable is not set");
   }
 
-  const client = new Ably.Rest(ablyAPIKey);
+  const client = new Ably.Rest({ key: ablyAPIKey });
   const tokenRequestData = await client.auth.createTokenRequest({
     capability: { "*": ["subscribe"] },
     clientId: userId,
