@@ -1,6 +1,6 @@
 "use client";
 
-import { Realtime } from "ably";
+import { BaseRealtime, FetchRequest, WebSocketTransport } from "ably/modular";
 import { AblyProvider, ChannelProvider } from "ably/react";
 
 interface RTLProviderProps {
@@ -12,9 +12,11 @@ export default function RTLProvider({
   boardId,
   children,
 }: Readonly<RTLProviderProps>) {
-  const client = new Realtime({
+  const client = new BaseRealtime({
     authUrl: "/api/ably/token",
     authMethod: "POST",
+    plugins: { FetchRequest, WebSocketTransport },
+    disconnectedRetryTimeout: 15000,
   });
 
   return (
