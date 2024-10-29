@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.4.0",
-    "@headlessui/react": "^2.1.9",
+    "@headlessui/react": "^2.2.0",
     "@kinde-oss/kinde-auth-nextjs": "^2.3.11",
     "@kinde/management-api-js": "^0.10.0",
     "@libsql/client": "^0.14.0",
