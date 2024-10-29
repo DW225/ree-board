@@ -18,8 +18,8 @@ importers:
         specifier: ^2.3.11
         version: 2.3.11(@babel/core@7.25.7)(next@14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@kinde/management-api-js':
-        specifier: ^0.9.0
-        version: 0.9.0
+        specifier: ^0.10.0
+        version: 0.10.0
       '@libsql/client':
         specifier: ^0.14.0
         version: 0.14.0
@@ -1160,8 +1160,8 @@ packages:
   '@kinde/jwt-decoder@0.2.0':
     resolution: {integrity: sha512-dqtwCmAvywOVLkkUfp4UbqdvVLsK0cvHsJhU3gDY9rgjAdZhGw0vCreBW6j3MFLxbi6cZm7pMU7/O5SJgvN5Rw==}
 
-  '@kinde/management-api-js@0.9.0':
-    resolution: {integrity: sha512-/vyb4btfsWK4sA6jD7uysojbPcfTNQLWWw/Gfv/2lJ8P5A6c+wS0fa9dTy2Gs9EdmAiWGRhsesg0Q1yd61xfnA==}
+  '@kinde/management-api-js@0.10.0':
+    resolution: {integrity: sha512-kz/rdmB1sTCOwUNYMwu1n2mxJRayzxle4koTBFLRM1zTxLz1RPBqBxlYTe3qHHVnu4uqGVXZMJziq6gjUUYjAA==}
 
   '@libsql/client@0.14.0':
     resolution: {integrity: sha512-/9HEKfn6fwXB5aTEEoMeFh4CtG0ZzbncBb1e++OCdVpgKZ/xyMsIVYXm0w7Pv4RUel803vE6LwniB3PqD72R0Q==}
@@ -5789,7 +5789,7 @@ snapshots:
 
   '@kinde/jwt-decoder@0.2.0': {}
 
-  '@kinde/management-api-js@0.9.0':
+  '@kinde/management-api-js@0.10.0':
     dependencies:
       '@kinde/jwt-decoder': 0.2.0
       aws-jwt-verify: 4.0.1
