@@ -9,9 +9,14 @@ import { redirect } from "next/navigation";
 
 const AvatarStack = dynamic(() => import("@/components/board/AvatarStack"));
 const BoardGrid = dynamic(() => import("@/components/board/BoardGrid"));
-const AnonymousModeProvider = dynamic(() => import("@/components/board/AnonymousModeProvider"));
+const AnonymousModeProvider = dynamic(
+  () => import("@/components/board/AnonymousModeProvider")
+);
 const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
 const NavBar = dynamic(() => import("@/components/common/NavBar"));
+const MemberManageModalComponent = dynamic(
+  () => import("@/components/board/MemberManageModalComponent")
+);
 const ToastSystem = dynamic(() => import("@/components/common/ToastSystem"));
 const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
   ssr: false,
@@ -74,8 +79,13 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
           >
             <PostChannel boardId={boardID} userId={userID} />
             <div className="container mx-auto w-full max-w-full px-4">
-              <div className="flex justify-end">
-                <BoardAccess boardId={boardID} role={role} members={members} />
+              <div className="flex justify-end py-2">
+                <MemberManageModalComponent
+                  boardId={boardID}
+                  viewOnly={viewOnly}
+                >
+                  <AvatarStack members={members} />
+                </MemberManageModalComponent>
               </div>
               <BoardGrid
                 boardID={boardID}
