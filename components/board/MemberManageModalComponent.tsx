@@ -27,10 +27,13 @@ import { toast } from "@/lib/signal/toastSignals";
 import { PlusCircle } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
+import type { ReactNode } from "react";
 import React, { useCallback, useState } from "react";
 
 interface MemberManageProps {
   boardId: string;
+  viewOnly: boolean;
+  children: ReactNode;
 }
 
 export interface MemberInfo {
@@ -46,6 +49,8 @@ const MemberList = dynamic(() => import("@/components/board/MemberList"));
 
 export default function MemberManageModalComponent({
   boardId,
+  viewOnly,
+  children,
 }: Readonly<MemberManageProps>) {
   const [isOpen, setIsOpen] = useState(false);
   const [newMember, setNewMember] = useState({ email: "" });
@@ -117,37 +122,39 @@ export default function MemberManageModalComponent({
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">Manage Members</Button>
+          <button>{children}</button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Board Members</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <form onSubmit={handleAddMember} className="grid gap-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="email" className="text-right">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newMember.email}
-                  onChange={(e) =>
-                    setNewMember({ ...newMember, email: e.target.value })
-                  }
-                  className="col-span-3"
-                />
-              </div>
-              <Button type="submit" className="ml-auto">
-                <PlusCircle className="mr-2 size-4" />
-                Add Member
-              </Button>
-            </form>
+          <div className="grid gap-4">
+            {!viewOnly && (
+              <form onSubmit={handleAddMember} className="grid gap-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newMember.email}
+                    onChange={(e) =>
+                      setNewMember({ ...newMember, email: e.target.value })
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+                <Button type="submit" className="ml-auto">
+                  <PlusCircle className="mr-2 size-4" />
+                  Add Member
+                </Button>
+              </form>
+            )}
             <div className="mt-6">
               <h4 className="mb-4 text-sm font-medium">Current Members</h4>
               <MemberList
-                boardId={boardId}
+                viewOnly={viewOnly}
                 handleRemoveMember={handleRemoveMember}
                 handleRoleChange={handleRoleChange}
               />
