@@ -84,7 +84,7 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
                   boardId={boardID}
                   viewOnly={viewOnly}
                 >
-                  <AvatarStack members={members} />
+                  <AvatarStack />
                 </MemberManageModalComponent>
               </div>
               <BoardGrid
