@@ -15,6 +15,7 @@ import { Trash2 } from "lucide-react";
 import { AvatarIconWithFallback } from "./AvatarStack";
 import type { MemberInfo } from "./MemberManageModalComponent";
 import { ScrollArea } from "../ui/scroll-area";
+import { useSignals } from "@preact/signals-react/runtime";
 
 interface MemberListProps {
   viewOnly: boolean;
@@ -30,6 +31,7 @@ export default function MemberList({
   handleRemoveMember,
   handleRoleChange,
 }: Readonly<MemberListProps>) {
+  useSignals();
   const roles = {
     Guest: Role.guest,
     Member: Role.member,
