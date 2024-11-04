@@ -15,8 +15,8 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@kinde-oss/kinde-auth-nextjs':
-        specifier: ^2.3.11
-        version: 2.3.11(@babel/core@7.25.7)(next@14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.4.4
+        version: 2.4.4(@babel/core@7.25.7)(next@14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@kinde/management-api-js':
         specifier: ^0.10.0
         version: 0.10.0
@@ -1153,12 +1153,12 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@kinde-oss/kinde-auth-nextjs@2.3.11':
-    resolution: {integrity: sha512-wyVytEo9hB7BefLOTMULk//nKcuEOZyag0ydVd1PCJwiEWHriXJQbyaJhS3nr61yU7fRtT8K0ccjD3d83gRWXQ==}
+  '@kinde-oss/kinde-auth-nextjs@2.4.4':
+    resolution: {integrity: sha512-2QNElqr38KuYBmZK7JEf3XMFO1UT7L+g36t/7SD7JHIIZCIqrC7hjdoaq1G+xaiyPILKnFPLTc0O1F2tCcAsFg==}
     peerDependencies:
-      next: ^12.2.5 || ^13 || ^14
-      react: ^18.1.0
-      react-dom: ^18.1.0
+      next: ^12.2.5 || ^13 || ^14 || ^15
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
 
   '@kinde-oss/kinde-typescript-sdk@2.9.1':
     resolution: {integrity: sha512-3BBFQ3/WgAgoWigfpK9ItUkpyleuHN14in+V44NLWi+zHwE1B8II/HR5CHhw+s6qR1wyJwQh4ddz2tUJwEXysg==}
@@ -3660,9 +3660,6 @@ packages:
   jws@3.2.2:
     resolution: {integrity: sha512-YHlZCB6lMTllWDtSPHz/ZXTsi8S00usEV6v1tjq8tOUZzw7DpSDWVXjXDre6ed1w/pd495ODpHZYSdkRTsa0HA==}
 
-  jwt-decode@3.1.2:
-    resolution: {integrity: sha512-UfpWE/VZn0iP50d8cz9NrZLM9lSWhcJ+0Gt/nm4by88UL+J1SiKN8/5dkjMmbEzwL2CAe+67GsegCbIKtbp75A==}
-
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
@@ -3679,6 +3676,7 @@ packages:
 
   libsql@0.4.6:
     resolution: {integrity: sha512-F5M+ltteK6dCcpjMahrkgT96uFJvVI8aQ4r9f2AzHQjC7BkAYtvfMSTWGvRBezRgMUIU2h1Sy0pF9nOGOD5iyA==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lilconfig@2.1.0:
@@ -5798,13 +5796,13 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@kinde-oss/kinde-auth-nextjs@2.3.11(@babel/core@7.25.7)(next@14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@kinde-oss/kinde-auth-nextjs@2.4.4(@babel/core@7.25.7)(next@14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@babel/preset-env': 7.25.7(@babel/core@7.25.7)
       '@kinde-oss/kinde-typescript-sdk': 2.9.1
+      '@kinde/jwt-decoder': 0.2.0
       cookie: 1.0.1
       crypto-js: 4.2.0
-      jwt-decode: 3.1.2
       next: 14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -8024,7 +8022,7 @@ snapshots:
       debug: 4.3.7
       enhanced-resolve: 5.17.1
       eslint: 8.57.1
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@8.57.1)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
       fast-glob: 3.3.2
       get-tsconfig: 4.8.1
       is-bun-module: 1.2.1
@@ -8037,7 +8035,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@8.57.1):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -8063,7 +8061,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.1
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@8.57.1)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(@typescript-eslint/parser@8.11.0(eslint@8.57.1)(typescript@5.6.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -8705,8 +8703,6 @@ snapshots:
     dependencies:
       jwa: 1.4.1
       safe-buffer: 5.2.1
-
-  jwt-decode@3.1.2: {}
 
   keyv@4.5.4:
     dependencies:
