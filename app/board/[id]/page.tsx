@@ -7,7 +7,9 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
-const AvatarStack = dynamic(() => import("@/components/board/AvatarStack"));
+const AvatarStack = dynamic(() =>
+  import("@/components/board/AvatarStack").then((mod) => mod.AvatarStack)
+);
 const BoardGrid = dynamic(() => import("@/components/board/BoardGrid"));
 const AnonymousModeProvider = dynamic(
   () => import("@/components/board/AnonymousModeProvider")
