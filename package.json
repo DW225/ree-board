@@ -63,7 +63,7 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.11.0",
-    "@vercel/toolbar": "^0.1.22",
+    "@vercel/toolbar": "^0.1.25",
     "autoprefixer": "^10.4.20",
     "daisyui": "^4.12.13",
     "drizzle-kit": "^0.26.2",
