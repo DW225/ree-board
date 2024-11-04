@@ -11,8 +11,10 @@ import {
 import { Role } from "@/db/schema";
 import { memberSignal } from "@/lib/signal/memberSingals";
 import { getEnumKeys } from "@/lib/utils";
-import { Trash2, UserCircle } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { AvatarIconWithFallback } from "./AvatarStack";
 import type { MemberInfo } from "./MemberManageModalComponent";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface MemberListProps {
   viewOnly: boolean;
@@ -41,16 +43,19 @@ export default function MemberList({
   };
 
   return (
-    <ul className="space-y-2 max-h-40vh">
+    <ScrollArea className="space-y-2 h-[50vh]">
       {memberSignal.value.map((member) => (
         <div key={member.id} className="flex items-center space-x-4 mb-4">
-          <UserCircle className="h-6 w-6" />
+          <AvatarIconWithFallback
+            email={member.email}
+            username={member.username}
+          />
           <div className="flex-grow">
             <p className="text-sm font-medium">{member.username}</p>
             <p className="text-sm text-gray-500">{member.email}</p>
           </div>
           {!viewOnly && (
-            <>
+            <div className="flex justify-end">
               <Select
                 value={roleToKeyMap[member.role]}
                 onValueChange={(value: keyof typeof roles) =>
@@ -75,10 +80,10 @@ export default function MemberList({
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
-            </>
+            </div>
           )}
         </div>
       ))}
-    </ul>
+    </ScrollArea>
   );
 }
