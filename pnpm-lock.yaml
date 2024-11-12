@@ -57,8 +57,8 @@ importers:
         specifier: ^1.0.12
         version: 1.0.12(next@14.2.15(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       ably:
-        specifier: ^2.4.1
-        version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.5.0
+        version: 2.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -2436,8 +2436,8 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  ably@2.4.1:
-    resolution: {integrity: sha512-0zGqjPBdDMcnMPG+f0/N0d6BN92XAIo7o/PtLTR2cY0y8Q1fPPtCfb74Eib6q2VCoe4HfutSAbdl+OQp4WDSTQ==}
+  ably@2.5.0:
+    resolution: {integrity: sha512-PgZk1gDO7K5p5QbTGAV6n2un6otbu91J8n+2Bv/sCoNmfFqyAtQFnj/dWpcJTC3kwbxX/E3kimZAgnSXeNG8dg==}
     engines: {node: '>=16'}
     peerDependencies:
       react: '>=16.8.0'
@@ -7288,7 +7288,7 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  ably@2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  ably@2.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@ably/msgpack-js': 0.4.0
       fastestsmallesttextencoderdecoder: 1.0.22
