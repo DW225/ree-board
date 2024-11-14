@@ -5,7 +5,6 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
-const NavBar = dynamic(() => import("@/components/common/NavBar"));
 const ToastSystem = dynamic(() => import("@/components/common/ToastSystem"));
 const BoardList = dynamic(() => import("@/components/home/BoardList"));
 const CreateBoardForm = dynamic(() => import("@/components/home/CreateBoardForm"));
@@ -35,8 +34,6 @@ export default async function Boards() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <NavBar />
-
       <div className="container mx-auto mt-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
         <div className="flex flex-wrap gap-4">
