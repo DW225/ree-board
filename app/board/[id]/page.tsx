@@ -15,7 +15,6 @@ const AnonymousModeProvider = dynamic(
   () => import("@/components/board/AnonymousModeProvider")
 );
 const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
-const NavBar = dynamic(() => import("@/components/common/NavBar"));
 const MemberManageModalComponent = dynamic(
   () => import("@/components/board/MemberManageModalComponent")
 );
@@ -71,7 +70,6 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
 
   return (
     <>
-      <NavBar />
       <RTLProvider boardId={boardID}>
         <AnonymousModeProvider>
           <PostProvider
