@@ -171,3 +171,42 @@ export const voteTable = sqliteTable(
     uniqueVote: unique().on(table.boardId, table.userId, table.postId),
   })
 );
+
+export enum ActionState {
+  pending,
+  inProgress,
+  completed,
+}
+
+export const actionsTable = sqliteTable(
+  "action",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .references(() => userTable.id, {
+        onDelete: "set null",
+      }),
+    postId: text("post_id")
+      .references(() => postTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    boardId: text("board_id")
+      .references(() => boardTable.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    state: integer("state").$type<ActionState>().notNull().default(ActionState.pending),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(strftime('%s', 'now'))`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(strftime('%s', 'now'))`),
+  },
+  (table) => ({
+    uniqueAction: unique().on(table.boardId, table.userId, table.postId),
+    userIdx: index("actions_user_id_index").on(table.userId),
+    boardIdx: index("actions_board_id_index").on(table.boardId),
+  })
+);
