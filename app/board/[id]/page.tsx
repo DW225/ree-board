@@ -19,22 +19,17 @@ const MemberManageModalComponent = dynamic(
   () => import("@/components/board/MemberManageModalComponent")
 );
 const ToastSystem = dynamic(() => import("@/components/common/ToastSystem"));
-const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
-  ssr: false,
-});
+const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"));
 const PostChannel = dynamic(
-  () => import("@/components/board/PostChannelComponent"),
-  {
-    ssr: false,
-  }
+  () => import("@/components/board/PostChannelComponent")
 );
 
 interface BoardPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
-  const boardID = params.id;
+  const boardID = (await params).id;
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();
