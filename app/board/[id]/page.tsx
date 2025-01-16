@@ -56,6 +56,7 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
     redirect("/board");
   }
   const viewOnly = role === Role.guest;
+  const hasManagementAccess = role === Role.owner;
 
   const initialData = {
     posts,
@@ -77,7 +78,7 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
               <div className="flex justify-end py-2">
                 <MemberManageModalComponent
                   boardId={boardID}
-                  viewOnly={viewOnly}
+                  viewOnly={!hasManagementAccess}
                 >
                   <AvatarStack />
                 </MemberManageModalComponent>
