@@ -19,22 +19,17 @@ const MemberManageModalComponent = dynamic(
   () => import("@/components/board/MemberManageModalComponent")
 );
 const ToastSystem = dynamic(() => import("@/components/common/ToastSystem"));
-const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
-  ssr: false,
-});
+const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"));
 const PostChannel = dynamic(
-  () => import("@/components/board/PostChannelComponent"),
-  {
-    ssr: false,
-  }
+  () => import("@/components/board/PostChannelComponent")
 );
 
 interface BoardPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
-  const boardID = params.id;
+  const boardID = (await params).id;
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();
@@ -61,6 +56,7 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
     redirect("/board");
   }
   const viewOnly = role === Role.guest;
+  const hasManagementAccess = role === Role.owner;
 
   const initialData = {
     posts,
@@ -82,7 +78,7 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
               <div className="flex justify-end py-2">
                 <MemberManageModalComponent
                   boardId={boardID}
-                  viewOnly={viewOnly}
+                  viewOnly={!hasManagementAccess}
                 >
                   <AvatarStack />
                 </MemberManageModalComponent>

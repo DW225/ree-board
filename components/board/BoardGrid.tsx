@@ -5,7 +5,6 @@ import React from "react";
 
 const BoardColumn = dynamic(() => import("@/components/board/BoardColumn"), {
   loading: () => <LoadingSpinner />,
-  ssr: false,
 });
 
 interface BoardGridProps {

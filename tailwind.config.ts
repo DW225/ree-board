@@ -2,7 +2,6 @@
 import type { Config } from "tailwindcss";
 import fluid, { extract } from "fluid-tailwind";
 import typography from "@tailwindcss/typography";
-import daisyui from "daisyui"
 import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
@@ -80,9 +79,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [typography, daisyui, tailwindcssAnimate, fluid],
-  daisyui: {
-    themes: ["light"],
-  },
+  plugins: [typography, tailwindcssAnimate, fluid],
 };
 export default config;
