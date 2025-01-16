@@ -51,6 +51,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.17.0",
     "@fluid-tailwind/tailwind-merge": "^0.0.3",
     "@next/bundle-analyzer": "15.1.2",
