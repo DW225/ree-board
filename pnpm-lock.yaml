@@ -15,11 +15,11 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@kinde-oss/kinde-auth-nextjs':
-        specifier: ^2.4.6
-        version: 2.4.6(@babel/core@7.26.0)(next@15.1.2(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: 2.5.0-11
+        version: 2.5.0-11(@babel/core@7.26.0)(next@15.1.2(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@kinde/management-api-js':
-        specifier: ^0.10.0
-        version: 0.10.0
+        specifier: ^0.11.0
+        version: 0.11.0
       '@libsql/client':
         specifier: ^0.14.0
         version: 0.14.0
@@ -1196,8 +1196,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@kinde-oss/kinde-auth-nextjs@2.4.6':
-    resolution: {integrity: sha512-LttQcxrPgzQgYbViYqDX6ySGUXBtsp6hSUTW+ln3BdRB6BXuhBbJYY8SgWibBpdmYGiu+tjssfhclfuJcC5O/g==}
+  '@kinde-oss/kinde-auth-nextjs@2.5.0-11':
+    resolution: {integrity: sha512-re203NW8IkLCBH2CLFMyS9QmptczFvCFmbJ1T9/8ERWX0ggZmOpJ6/OhnP15qvpEadOFYkxpUNKGvDsMkMsqrQ==}
     peerDependencies:
       next: ^12.2.5 || ^13 || ^14 || ^15
       react: ^18 || ^19
@@ -1209,8 +1209,11 @@ packages:
   '@kinde/jwt-decoder@0.2.0':
     resolution: {integrity: sha512-dqtwCmAvywOVLkkUfp4UbqdvVLsK0cvHsJhU3gDY9rgjAdZhGw0vCreBW6j3MFLxbi6cZm7pMU7/O5SJgvN5Rw==}
 
-  '@kinde/management-api-js@0.10.0':
-    resolution: {integrity: sha512-kz/rdmB1sTCOwUNYMwu1n2mxJRayzxle4koTBFLRM1zTxLz1RPBqBxlYTe3qHHVnu4uqGVXZMJziq6gjUUYjAA==}
+  '@kinde/jwt-validator@0.4.0':
+    resolution: {integrity: sha512-aseXLTD/rh/rZ2v85Xy493CEtuC49MA4Hbt6ObccqSJfIGLAeMrAtBh2m9DleigVkMuZ/99/U4PqLnaVDLt5OQ==}
+
+  '@kinde/management-api-js@0.11.0':
+    resolution: {integrity: sha512-KPGpwS8CdrU+zvGM8b2F4ieF5KaL0gPh/kJnG4fTlzNdQ4Zb8m4WDOISPUTRG2ZLKIlp0ev1X6HRzXijktDkJA==}
 
   '@libsql/client-wasm@0.14.0':
     resolution: {integrity: sha512-gB/jtz0xuwrqAHApBv9e9JSew2030Fhj2edyZ83InZ4yPj/Q2LTUlEhaspEYT0T0xsAGqPy38uGrmq/OGS+DdQ==}
@@ -3590,6 +3593,9 @@ packages:
     resolution: {integrity: sha512-PRp66vJ865SSqOlgqS8hujT5U4AOgMfhrwYIuIhfKaoSCZcirrmASQr8CX7cUg+RMih+hgznrjp99o+W4pJLHQ==}
     engines: {node: '>=12', npm: '>=6'}
 
+  jsrsasign@11.1.0:
+    resolution: {integrity: sha512-Ov74K9GihaK9/9WncTe1mPmvrO7Py665TUfUKvraXBpu+xcTWitrtuOwcjf4KMU9maPaYn0OuaWy0HOzy/GBXg==}
+
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
@@ -5728,11 +5734,12 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@kinde-oss/kinde-auth-nextjs@2.4.6(@babel/core@7.26.0)(next@15.1.2(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@kinde-oss/kinde-auth-nextjs@2.5.0-11(@babel/core@7.26.0)(next@15.1.2(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@babel/preset-env': 7.26.0(@babel/core@7.26.0)
       '@kinde-oss/kinde-typescript-sdk': 2.9.1
       '@kinde/jwt-decoder': 0.2.0
+      '@kinde/jwt-validator': 0.4.0
       cookie: 1.0.2
       crypto-js: 4.2.0
       next: 15.1.2(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -5750,7 +5757,12 @@ snapshots:
 
   '@kinde/jwt-decoder@0.2.0': {}
 
-  '@kinde/management-api-js@0.10.0':
+  '@kinde/jwt-validator@0.4.0':
+    dependencies:
+      '@kinde/jwt-decoder': 0.2.0
+      jsrsasign: 11.1.0
+
+  '@kinde/management-api-js@0.11.0':
     dependencies:
       '@kinde/jwt-decoder': 0.2.0
       aws-jwt-verify: 4.0.1
@@ -8423,6 +8435,8 @@ snapshots:
       lodash.once: 4.1.1
       ms: 2.1.3
       semver: 7.6.3
+
+  jsrsasign@11.1.0: {}
 
   jsx-ast-utils@3.3.5:
     dependencies:
