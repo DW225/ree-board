@@ -172,8 +172,8 @@ importers:
         specifier: ^0.2.3
         version: 0.2.3(eslint@8.57.1)
       fluid-tailwind:
-        specifier: ^1.0.3
-        version: 1.0.3(tailwindcss@3.4.17)
+        specifier: ^1.0.4
+        version: 1.0.4(tailwindcss@3.4.17)
       postcss:
         specifier: ^8.5.1
         version: 8.5.1
@@ -3166,8 +3166,8 @@ packages:
   flatted@3.3.1:
     resolution: {integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw==}
 
-  fluid-tailwind@1.0.3:
-    resolution: {integrity: sha512-JhSklHiXUcKnb/PIru1TbyorLD+k0rCIgeAbFwzu1QyQHYDKmKKsKzN7xPisSeGGr7FtYY9S63t+tzddUlxxrQ==}
+  fluid-tailwind@1.0.4:
+    resolution: {integrity: sha512-jO1+4l4r3kE/5We3kYRl3o4JsbFA2zoluEwJG3VrytlKuCfK4aTv5QHqXgOaw0YQd9HKjOVIFYsVvhG8sxIh5w==}
     peerDependencies:
       tailwindcss: ^3.2.0
 
@@ -8078,11 +8078,11 @@ snapshots:
 
   flatted@3.3.1: {}
 
-  fluid-tailwind@1.0.3(tailwindcss@3.4.17):
+  fluid-tailwind@1.0.4(tailwindcss@3.4.17):
     dependencies:
       filter-obj: 5.1.0
       map-obj: 5.0.2
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       tailwindcss: 3.4.17
 
   for-each@0.3.3:
