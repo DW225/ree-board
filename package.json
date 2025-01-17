@@ -30,7 +30,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@sentry/nextjs": "^8.50.0",
     "@vercel/speed-insights": "^1.1.0",
-    "ably": "^2.5.0",
+    "ably": "^2.6.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
