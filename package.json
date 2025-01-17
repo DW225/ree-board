@@ -35,7 +35,7 @@
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.35.1",
+    "drizzle-orm": "^0.38.4",
     "drizzle-zod": "^0.5.1",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
