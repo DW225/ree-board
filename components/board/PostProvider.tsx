@@ -1,7 +1,8 @@
 /* eslint-disable drizzle/enforce-delete-with-where */
 "use client";
 
-import { PostType, type Post } from "@/db/schema";
+import type { Action, Post } from "@/db/schema";
+import { PostType } from "@/db/schema";
 import { useSetState } from "@/hooks/useSetState";
 import { authenticatedUpdatePostType } from "@/lib/actions/authenticatedActions";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
@@ -120,6 +121,7 @@ interface PostProviderProps {
     posts: Post[];
     members: MemberInfo[];
     votedPosts: string[];
+    actions: Action[];
   };
   boardId: string;
   userId: string;
@@ -132,7 +134,7 @@ const PostProvider: React.FC<PostProviderProps> = ({
   userId,
 }) => {
   useEffectOnce(() => {
-    postSignalInitial(initials.posts);
+    postSignalInitial(initials.posts, initials.actions);
     memberSignalInitial(initials.members);
   });
 

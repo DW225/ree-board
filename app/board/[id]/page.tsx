@@ -1,4 +1,5 @@
 import { Role } from "@/db/schema";
+import { fetchActions } from "@/lib/db/action";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
 import { findUserIdByKindeID } from "@/lib/db/user";
@@ -43,10 +44,11 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
     redirect("/api/auth/login");
   }
 
-  const [userID, posts, members] = await Promise.all([
+  const [userID, posts, members, actions] = await Promise.all([
     findUserIdByKindeID(user.id),
     fetchPostsByBoardID(boardID),
     fetchMembersByBoardID(boardID),
+    fetchActions(boardID),
   ]);
 
   if (!userID) {
@@ -67,6 +69,7 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
     posts,
     members,
     votedPosts,
+    actions,
   };
 
   return (

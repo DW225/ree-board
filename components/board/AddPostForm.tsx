@@ -6,9 +6,13 @@ import React, { useState } from "react";
 import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { Post, PostType } from "@/db/schema";
-import { authenticatedCreatePost } from "@/lib/actions/authenticatedActions";
-import { addPost, removePost } from "@/lib/signal/postSignals";
+import type { NewAction, Post } from "@/db/schema";
+import { PostType } from "@/db/schema";
+import {
+  authedCreateAction,
+  authenticatedCreatePost,
+} from "@/lib/actions/authenticatedActions";
+import { addPost, addPostAction, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { Plus, X } from "lucide-react";
 
@@ -52,6 +56,15 @@ export default function AddPostForm({
       setContent("");
 
       await authenticatedCreatePost(newPost);
+      if (postType === PostType.action_item) {
+        const newAction: NewAction = {
+          id: nanoid(),
+          postId,
+          boardId: boardID,
+        };
+        addPostAction(newAction);
+        await authedCreateAction(newAction);
+      }
     } catch (error) {
       toast.error("Failed to create a post. Please try again later.");
       console.error("Failed to create a post:", error);
