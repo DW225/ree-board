@@ -50,3 +50,11 @@ export const findUserByEmail = async (email: string) => {
     .limit(1);
   return result.length > 0 ? result[0] : undefined;
 };
+
+export const getUserByUserID = async (userID: string) => {
+  const result = await db
+    .select()
+    .from(userTable)
+    .where(eq(userTable.id, userID));
+  return result.length > 0? result[0] : undefined;
+}
