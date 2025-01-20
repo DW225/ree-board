@@ -1,6 +1,18 @@
 "use server";
 
-import type { NewBoard, NewMember, NewPost, PostType } from "@/db/schema";
+import type {
+  ActionState,
+  NewAction,
+  NewBoard,
+  NewMember,
+  NewPost,
+  PostType,
+} from "@/db/schema";
+import {
+  assignPostAction,
+  createAction,
+  updateActionState,
+} from "@/lib/db/action";
 import { createBoard, deleteBoard } from "@/lib/db/board";
 import { addMember, removeMember } from "@/lib/db/member";
 import {
@@ -178,6 +190,55 @@ export const authenticatedDownVotePost = async (
           },
         },
         data: JSON.stringify({ id: postId }),
+      }),
+    ])
+  );
+
+export const authedCreateAction = async (action: NewAction) =>
+  authenticatedAction(() =>
+    Promise.all([
+      createAction(action),
+      ablyClient(action.boardId).publish({
+        name: EVENT_TYPE.ACTION.CREATE,
+        data: JSON.stringify(action),
+      }),
+    ])
+  );
+
+export const authedPostAssign = async (action: {
+  postId: string;
+  userId: string | null;
+  boardId: string;
+}) =>
+  authenticatedAction(() =>
+    Promise.all([
+      assignPostAction(action.postId, action.userId),
+      // Publish the action to Ably for real-time updates on the client-side.
+      ablyClient(action.boardId).publish({
+        name: EVENT_TYPE.ACTION.ASSIGN,
+        extras: {
+          headers: {
+            user: action.userId,
+          },
+        },
+        data: JSON.stringify(action),
+      }),
+    ])
+  );
+
+export const authedPostActionStateUpdate = async (action: {
+  postId: string;
+  state: ActionState;
+  boardId: string;
+}) =>
+  authenticatedAction(() =>
+    Promise.all([
+      // Update the action state in the database.
+      updateActionState(action.postId, action.state),
+      // Publish the action state update to Ably for real-time updates on the client-side.
+      ablyClient(action.boardId).publish({
+        name: EVENT_TYPE.ACTION.STATE_UPDATE,
+        data: JSON.stringify(action),
       }),
     ])
   );

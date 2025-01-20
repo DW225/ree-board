@@ -176,16 +176,16 @@ export enum ActionState {
   pending,
   inProgress,
   completed,
+  cancelled,
 }
 
 export const actionsTable = sqliteTable(
   "action",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id")
-      .references(() => userTable.id, {
-        onDelete: "set null",
-      }),
+    userId: text("user_id").references(() => userTable.id, {
+      onDelete: "set null",
+    }),
     postId: text("post_id")
       .references(() => postTable.id, {
         onDelete: "cascade",
@@ -196,7 +196,10 @@ export const actionsTable = sqliteTable(
         onDelete: "cascade",
       })
       .notNull(),
-    state: integer("state").$type<ActionState>().notNull().default(ActionState.pending),
+    state: integer("state")
+      .$type<ActionState>()
+      .notNull()
+      .default(ActionState.pending),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
@@ -210,3 +213,6 @@ export const actionsTable = sqliteTable(
     boardIdx: index("actions_board_id_index").on(table.boardId),
   })
 );
+
+export type NewAction = typeof actionsTable.$inferInsert;
+export type Action = typeof actionsTable.$inferSelect;

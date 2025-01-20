@@ -17,9 +17,9 @@ export const AvatarIconWithFallback = memo(function AvatarIconWithFallback({
   username,
 }: Readonly<AvatarIconProps>) {
   return (
-    <Avatar className="border-2 border-background">
+    <Avatar className="h-8 w-8">
       <AvatarImage
-        src={`https://www.gravatar.com/avatar/${MD5(email)}?d=mp&s=48`}
+        src={`https://www.gravatar.com/avatar/${MD5(email)}?d=404&s=48`}
         alt={username}
       />
       <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
