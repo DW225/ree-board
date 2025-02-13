@@ -13,12 +13,13 @@ import {
 import { Role } from "@/db/schema";
 import { memberSignal } from "@/lib/signal/memberSingals";
 import { getEnumKeys } from "@/lib/utils";
+import { computed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useDebounce } from "react-use";
 import { AvatarIconWithFallback } from "./AvatarStack";
 import type { MemberInfo } from "./MemberManageModalComponent";
-import { computed } from "@preact/signals-react";
 
 interface MemberListProps {
   viewOnly: boolean;
@@ -34,13 +35,13 @@ const roles = {
   Guest: Role.guest,
   Member: Role.member,
   Owner: Role.owner,
-};
+} as const;
 
-const roleToKeyMap: Record<Role, keyof typeof roles> = {
+const roleToKeyMap = {
   [Role.guest]: "Guest",
   [Role.member]: "Member",
   [Role.owner]: "Owner",
-};
+} as const satisfies Record<Role, keyof typeof roles>;
 
 export default function MemberList({
   viewOnly,
@@ -50,6 +51,15 @@ export default function MemberList({
 }: Readonly<MemberListProps>) {
   useSignals();
   const [searchTerm, setSearchTerm] = useState("");
+  const [val, setVal] = useState("");
+
+  useDebounce(
+    () => {
+      setSearchTerm(val);
+    },
+    2000,
+    [val]
+  );
 
   const filteredMembers = computed(() =>
     memberSignal.value.filter(
@@ -64,8 +74,10 @@ export default function MemberList({
       <Input
         type="text"
         placeholder="Search members..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        value={val}
+        onChange={(e) => {
+          setVal(e.target.value);
+        }}
       />
       <ScrollArea className="h-[50vh]">
         {filteredMembers.value.map((member) => (
