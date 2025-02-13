@@ -32,7 +32,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ActionState, PostType } from "@/db/schema";
-import useUnmount from "@/hooks/useUmount";
 import {
   authedPostActionStateUpdate,
   authedPostAssign,
@@ -59,6 +58,7 @@ import MD5 from "crypto-js/md5";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
 import dynamic from "next/dynamic";
 import { memo, useEffect, useRef, useState } from "react";
+import { useUnmount } from "react-use";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
