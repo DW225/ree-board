@@ -57,7 +57,7 @@ export default function MemberList({
     () => {
       setSearchTerm(val);
     },
-    2000,
+    500,
     [val]
   );
 

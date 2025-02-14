@@ -52,12 +52,12 @@ import {
   batch,
   useComputed,
   useSignal,
-  useSignalEffect,
+  useSignalEffect
 } from "@preact/signals-react";
 import MD5 from "crypto-js/md5";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
 import dynamic from "next/dynamic";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useUnmount } from "react-use";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
@@ -76,7 +76,6 @@ interface PostCardHeaderProps {
 const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
   const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleEdit = () => {
@@ -104,16 +103,6 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
         updatePostState(post.id, oldState);
       }
     }
-  };
-
-  const handleAssign = (member: MemberInfo) => {
-    assignPostAction(post.id, member.userId);
-    authedPostAssign({
-      postId: post.id,
-      boardId: post.boardId,
-      userId: member.userId,
-    });
-    setIsAssignModalOpen(false);
   };
 
   return (
@@ -148,27 +137,6 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
                   </DropdownMenuItem>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
-              <Dialog
-                open={isAssignModalOpen}
-                onOpenChange={setIsAssignModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    onClick={() => {
-                      setIsAssignModalOpen(true);
-                    }}
-                  >
-                    {post.action?.assigned.value ? "Reassign" : "Assign"}
-                  </DropdownMenuItem>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Assign Task</DialogTitle>
-                  </DialogHeader>
-                  <MemberList viewOnly={true} onAssign={handleAssign} />
-                </DialogContent>
-              </Dialog>
             </>
           )}
           <EditDialog
@@ -232,9 +200,20 @@ const PostCardFooter = ({
       return "In Progress";
     } else if (post.action?.state.value === ActionState.completed) {
       return "Done";
+    } else if (post.action?.state.value === ActionState.cancelled) {
+      return "Cancelled";
     }
     return "To Do";
   });
+
+  const handleAssign = (member: MemberInfo) => {
+    assignPostAction(post.id, member.userId);
+    authedPostAssign({
+      postId: post.id,
+      boardId: post.boardId,
+      userId: member.userId,
+    });
+  };
 
   const fetchUserInfo = async (assigned: string) => {
     try {
@@ -252,6 +231,10 @@ const PostCardFooter = ({
           createdAt: Date;
         };
       } = await data.json();
+      if (!data.ok) {
+        throw new Error("Failed to fetch user info");
+      }
+      console.log("Fetched user info:", { name, email });
 
       batch(() => {
         assignedUser.value.name.value = name;
@@ -267,7 +250,10 @@ const PostCardFooter = ({
   };
 
   useSignalEffect(() => {
-    if (post.action?.assigned.value) {
+    if (
+      post.type.value === PostType.action_item &&
+      post.action?.assigned.value
+    ) {
       const assignedUserId = post.action.assigned.value;
       fetchUserInfo(assignedUserId);
     }
@@ -278,32 +264,40 @@ const PostCardFooter = ({
   });
 
   return (
-    <CardFooter className="grid grid-cols-5 p-2">
+    <CardFooter className="flex justify-between p-2">
       {post.type.value === PostType.action_item && (
         <>
-          <Badge className="flex items-center justify-center col-start-1 col-span-2">
+          <Badge className="flex items-center justify-center">
             <p className="text-xs">{badgeText}</p>
           </Badge>
-          <div className="flex items-center col-start-5 px-3">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={`https://www.gravatar.com/avatar/${MD5(
-                        assignedUser.value.email.value
-                      )}?d=404&s=48`}
-                      alt={assignedUser.value.name.value}
-                    />
-                    <AvatarFallback>{assignedUser.value.name}</AvatarFallback>
-                  </Avatar>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{assignedUser.value.name}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={`https://www.gravatar.com/avatar/${MD5(
+                          assignedUser.value.email.value
+                        )}?d=404&s=48`}
+                        alt={assignedUser.value.name.value}
+                      />
+                      <AvatarFallback>{assignedUser.value.name}</AvatarFallback>
+                    </Avatar>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Assign Task</DialogTitle>
+                    </DialogHeader>
+                    <MemberList viewOnly={true} onAssign={handleAssign} />
+                  </DialogContent>
+                </Dialog>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{assignedUser.value.name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </>
       )}
       {post.type.value !== PostType.action_item && (
@@ -312,7 +306,7 @@ const PostCardFooter = ({
           size="sm"
           className={`flex items-center ${
             hasVoted(post.id) ? "text-blue-600" : "text-gray-500"
-          } ${viewOnly ? "cursor-default" : ""} col-start-5 px-2`}
+          } ${viewOnly ? "cursor-default" : ""} px-2`}
           onClick={handleVote}
         >
           <ThumbsUp className="h-4 w-4 mr-2" />
@@ -352,9 +346,8 @@ const PostCard = memo(function PostCard({
     [PostType.action_item]: "bg-purple-100",
   };
 
-  const handleVote = async () => {
+  const handleVote = useCallback(async () => {
     if (viewOnly) return;
-
     const isVoted = hasVoted(post.id);
     const voteAction = isVoted
       ? authenticatedDownVotePost
@@ -372,7 +365,7 @@ const PostCard = memo(function PostCard({
       console.error("Error while voting:", error);
       toast.error("Failed to vote.");
     }
-  };
+  }, [viewOnly, hasVoted, post, userId, addVotedPost, removeVotedPost]);
 
   useEffect(() => {
     if (!viewOnly) {
@@ -416,3 +409,4 @@ const PostCard = memo(function PostCard({
 });
 
 export default PostCard;
+
