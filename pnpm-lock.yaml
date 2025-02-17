@@ -63,8 +63,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(next@14.2.23(@babel/core@7.25.7)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       ably:
-        specifier: ^2.6.2
-        version: 2.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.6.3
+        version: 2.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -2425,11 +2425,8 @@ packages:
   '@types/mysql@2.15.26':
     resolution: {integrity: sha512-DSLCOXhkvfS5WNNPbfn2KdICAmk8lLc+/PNvnPnF7gOdMZCxopXduqv0OQ13y/yA/zXTSikZZqVgybUxOEg6YQ==}
 
-  '@types/node@22.10.1':
-    resolution: {integrity: sha512-qKgsUwfHZV2WCWLAnVP1JqnpE6Im6h3Y0+fYgMTasNQ7V++CBX5OT1as0g0f+OyubbFqhf6XVNIsmN4IIhEgGQ==}
-
-  '@types/node@22.13.2':
-    resolution: {integrity: sha512-Z+r8y3XL9ZpI2EY52YYygAFmo2/oWfNSj4BCpAXE2McAexDk8VcnBMGC9Djn9gTKt4d2T/hhXqmPzo4hfIXtTg==}
+  '@types/node@22.13.4':
+    resolution: {integrity: sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==}
 
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
@@ -2639,8 +2636,8 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  ably@2.6.2:
-    resolution: {integrity: sha512-E2bC2mVckW9u/b8QsmuiEGOEZ1Nlj74gg8tkCufsB1Vu+nTcKHyPc706deXro/bX4TCVzbk74vwtOXvrIdBdrw==}
+  ably@2.6.3:
+    resolution: {integrity: sha512-M3YP4+fX1SrJXPPf5wTIWTZoKKqygxTYvrEGuqorOXFo19/ezbSIPZaY+U2znFfuK82k/LAEF7Q4sJ4oIgO1AA==}
     engines: {node: '>=16'}
     peerDependencies:
       react: '>=16.8.0'
@@ -7425,7 +7422,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 22.10.1
+      '@types/node': 22.13.4
       '@types/responselike': 1.0.3
 
   '@types/connect@3.4.36':
@@ -7479,7 +7476,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 22.10.1
+      '@types/node': 22.13.4
 
   '@types/mime@1.3.5': {}
 
@@ -7487,11 +7484,7 @@ snapshots:
     dependencies:
       '@types/node': 22.7.5
 
-  '@types/node@22.10.1':
-    dependencies:
-      undici-types: 6.20.0
-
-  '@types/node@22.13.2':
+  '@types/node@22.13.4':
     dependencies:
       undici-types: 6.20.0
 
@@ -7526,12 +7519,12 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 22.10.1
+      '@types/node': 22.13.4
 
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 22.7.5
+      '@types/node': 22.13.4
 
   '@types/serve-static@1.15.7':
     dependencies:
@@ -7783,7 +7776,7 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  ably@2.6.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  ably@2.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@ably/msgpack-js': 0.4.0
       fastestsmallesttextencoderdecoder: 1.0.22
@@ -9181,7 +9174,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.13.2
+      '@types/node': 22.13.4
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
