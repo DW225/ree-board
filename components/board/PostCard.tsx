@@ -1,5 +1,6 @@
 "use client";
 
+import CustomLink from "@/components/common/Link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,13 +53,17 @@ import {
   batch,
   useComputed,
   useSignal,
-  useSignalEffect
+  useSignalEffect,
 } from "@preact/signals-react";
 import MD5 from "crypto-js/md5";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
 import dynamic from "next/dynamic";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
 import { useUnmount } from "react-use";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
@@ -171,6 +176,13 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
   );
 };
 
+const STATUS_TEXT = {
+  [ActionState.pending]: "To Do",
+  [ActionState.inProgress]: "In Progress",
+  [ActionState.completed]: "Done",
+  [ActionState.cancelled]: "Cancelled",
+} as const;
+
 interface PostCardFooterProps {
   post: PostSignal;
   viewOnly: boolean;
@@ -194,25 +206,25 @@ const PostCardFooter = ({
   });
 
   const badgeText = useComputed(() => {
-    if (post.action?.state.value === ActionState.pending) {
-      return "To Do";
-    } else if (post.action?.state.value === ActionState.inProgress) {
-      return "In Progress";
-    } else if (post.action?.state.value === ActionState.completed) {
-      return "Done";
-    } else if (post.action?.state.value === ActionState.cancelled) {
-      return "Cancelled";
-    }
-    return "To Do";
+    return STATUS_TEXT[post.action?.state.value ?? ActionState.pending];
   });
 
-  const handleAssign = (member: MemberInfo) => {
-    assignPostAction(post.id, member.userId);
-    authedPostAssign({
-      postId: post.id,
-      boardId: post.boardId,
-      userId: member.userId,
-    });
+  const handleAssign = async (member: MemberInfo) => {
+    const oldAssigned = post.action?.assigned.value;
+    try {
+      assignPostAction(post.id, member.userId);
+      await authedPostAssign({
+        postId: post.id,
+        boardId: post.boardId,
+        userId: member.userId,
+      });
+    } catch (error) {
+      console.error("Error assigning task:", error);
+      toast.error("Failed to assign task");
+      if (oldAssigned) {
+        assignPostAction(post.id, oldAssigned);
+      }
+    }
   };
 
   const fetchUserInfo = async (assigned: string) => {
@@ -234,7 +246,6 @@ const PostCardFooter = ({
       if (!data.ok) {
         throw new Error("Failed to fetch user info");
       }
-      console.log("Fetched user info:", { name, email });
 
       batch(() => {
         assignedUser.value.name.value = name;
@@ -394,14 +405,21 @@ const PostCard = memo(function PostCard({
       {!viewOnly && onDelete && (
         <PostCardHeader post={post} onDelete={onDelete} onUpdate={onUpdate} />
       )}
-      <CardContent className="px-3 py-2">
-        <p
-          className={`whitespace-pre-wrap text-balance break-words pt-1.5 ${
-            isAnonymous ? "blur-sm select-none" : ""
-          }`}
+      <CardContent className="px-3 py-1">
+        <Markdown
+          className={`${
+            isAnonymous ? "blur-sm select-none" : "select-text"
+          } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
+          components={{
+            a: ({ href, children }) => (
+              <CustomLink href={href || ""}>{children}</CustomLink>
+            ),
+          }}
+          remarkPlugins={[remarkGfm, remarkBreaks]}
+          rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
         >
-          {post.content}
-        </p>
+          {post.content.value}
+        </Markdown>
       </CardContent>
       <PostCardFooter post={post} viewOnly={viewOnly} handleVote={handleVote} />
     </Card>
@@ -409,4 +427,3 @@ const PostCard = memo(function PostCard({
 });
 
 export default PostCard;
-
