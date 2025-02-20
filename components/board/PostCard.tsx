@@ -32,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { Action, Post } from "@/db/schema";
 import { ActionState, PostType } from "@/db/schema";
 import {
   authedPostActionStateUpdate,
@@ -74,8 +75,8 @@ const EditDialog = dynamic(() => import("./EditDialog"), { ssr: false });
 
 interface PostCardHeaderProps {
   post: PostSignal;
-  onDelete: (id: string) => void;
-  onUpdate: (id: string, newContent: string) => void;
+  onDelete: (id: Post["id"]) => void;
+  onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
 }
 
 const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
@@ -90,7 +91,7 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
     setIsEditing(false);
   };
 
-  const handleStatusChange = async (newStatus: ActionState) => {
+  const handleStatusChange = async (newStatus: Action["state"]) => {
     if (post.action?.state.value === newStatus) return;
 
     const oldState = post.action?.state.value;
@@ -176,7 +177,7 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
   );
 };
 
-const STATUS_TEXT = {
+const STATUS_TEXT: Record<Action["state"], string> = {
   [ActionState.pending]: "To Do",
   [ActionState.inProgress]: "In Progress",
   [ActionState.completed]: "Done",
@@ -232,6 +233,10 @@ const PostCardFooter = ({
       const data = await fetch(`/api/user/${assigned}`, {
         signal: abortControllerRef.current.signal,
       });
+      if (!data.ok) {
+        throw new Error("Failed to fetch user info");
+      }
+
       const {
         user: { name, email },
       }: {
@@ -243,9 +248,6 @@ const PostCardFooter = ({
           createdAt: Date;
         };
       } = await data.json();
-      if (!data.ok) {
-        throw new Error("Failed to fetch user info");
-      }
 
       batch(() => {
         assignedUser.value.name.value = name;

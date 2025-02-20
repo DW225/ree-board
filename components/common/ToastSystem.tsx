@@ -1,8 +1,7 @@
 "use client";
 
 import { removeToast, toasts, type Toast } from "@/lib/signal/toastSignals";
-import { computed } from "@preact/signals-react";
-import { useSignalEffect, useSignals } from "@preact/signals-react/runtime";
+import { useComputed, useSignalEffect, useSignal } from "@preact/signals-react";
 import { X } from "lucide-react";
 import { useRef } from "react";
 
@@ -41,10 +40,10 @@ const StackedToast = ({ count }: { count: number }) => {
 
 export default function ToastSystem() {
   const toastContainerRef = useRef<HTMLDivElement>(null);
-  const visibleToasts = computed(() => toasts.value.slice(0, 5));
-  const stackedCount = computed(() => toasts.value.length - 5);
+  const visibleToasts = useComputed(() => toasts.value.slice(0, 5));
+  const stackedCount = useComputed(() => toasts.value.length - 5);
 
-  useSignals();
+  useSignal();
 
   const TOAST_HEIGHT = 70;
   // const STACKED_TOAST_HEIGHT = 70;
