@@ -33,7 +33,7 @@ export function AvatarStack() {
 
   return (
     <div className="flex -space-x-3 hover:-space-x-1 transition-all duration-200 cursor-pointer">
-      {memberSignal.value.slice(0, 5).map((member) => (
+      {useComputed(() => memberSignal.value.slice(0, 5)).value.map((member) => (
         <AvatarIconWithFallback
           key={member.id}
           email={member.email}
