@@ -32,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { Action, Post, User } from "@/db/schema";
 import { ActionState, PostType } from "@/db/schema";
 import {
   authedPostActionStateUpdate,
@@ -74,8 +75,8 @@ const EditDialog = dynamic(() => import("./EditDialog"), { ssr: false });
 
 interface PostCardHeaderProps {
   post: PostSignal;
-  onDelete: (id: string) => void;
-  onUpdate: (id: string, newContent: string) => void;
+  onDelete: (id: Post["id"]) => void;
+  onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
 }
 
 const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
@@ -90,14 +91,14 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
     setIsEditing(false);
   };
 
-  const handleStatusChange = async (newStatus: ActionState) => {
+  const handleStatusChange = async (newStatus: Action["state"]) => {
     if (post.action?.state.value === newStatus) return;
 
     const oldState = post.action?.state.value;
     try {
       updatePostState(post.id, newStatus);
       await authedPostActionStateUpdate({
-        postId: post.id,
+        postID: post.id,
         state: newStatus,
         boardId: post.boardId,
       });
@@ -176,7 +177,7 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
   );
 };
 
-const STATUS_TEXT = {
+const STATUS_TEXT: Record<Action["state"], string> = {
   [ActionState.pending]: "To Do",
   [ActionState.inProgress]: "In Progress",
   [ActionState.completed]: "Done",
@@ -198,8 +199,8 @@ const PostCardFooter = ({
   const abortControllerRef = useRef(new AbortController());
 
   const assignedUser = useSignal<{
-    name: Signal<string>;
-    email: Signal<string>;
+    name: Signal<User["name"]>;
+    email: Signal<User["email"]>;
   }>({
     name: useSignal(""),
     email: useSignal(""),
@@ -214,7 +215,7 @@ const PostCardFooter = ({
     try {
       assignPostAction(post.id, member.userId);
       await authedPostAssign({
-        postId: post.id,
+        postID: post.id,
         boardId: post.boardId,
         userId: member.userId,
       });
@@ -232,20 +233,15 @@ const PostCardFooter = ({
       const data = await fetch(`/api/user/${assigned}`, {
         signal: abortControllerRef.current.signal,
       });
-      const {
-        user: { name, email },
-      }: {
-        user: {
-          id: string;
-          name: string;
-          kinde_id: string;
-          email: string;
-          createdAt: Date;
-        };
-      } = await data.json();
       if (!data.ok) {
         throw new Error("Failed to fetch user info");
       }
+
+      const {
+        user: { name, email },
+      }: {
+        user: User;
+      } = await data.json();
 
       batch(() => {
         assignedUser.value.name.value = name;
@@ -328,12 +324,19 @@ const PostCardFooter = ({
   );
 };
 
+const cardTypes: Record<Post["type"], string> = {
+  [PostType.went_well]: "bg-green-100",
+  [PostType.to_improvement]: "bg-red-100",
+  [PostType.to_discuss]: "bg-yellow-100",
+  [PostType.action_item]: "bg-purple-100",
+} as const;
+
 interface PostCardProps {
   post: PostSignal;
   viewOnly?: boolean;
-  onDelete?: (id: string) => void;
-  onUpdate: (id: string, newContent: string) => void;
-  userId: string;
+  onDelete?: (id: Post["id"]) => void;
+  onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
+  userId: User["id"];
 }
 
 const PostCard = memo(function PostCard({
@@ -349,13 +352,6 @@ const PostCard = memo(function PostCard({
   const { addVotedPost, removeVotedPost, hasVoted } = useVotedPosts();
 
   const ref = useRef<HTMLDivElement>(null);
-
-  const cardTypes = {
-    [PostType.went_well]: "bg-green-100",
-    [PostType.to_improvement]: "bg-red-100",
-    [PostType.to_discuss]: "bg-yellow-100",
-    [PostType.action_item]: "bg-purple-100",
-  };
 
   const handleVote = useCallback(async () => {
     if (viewOnly) return;

@@ -13,8 +13,7 @@ import {
 import { Role } from "@/db/schema";
 import { memberSignal } from "@/lib/signal/memberSingals";
 import { getEnumKeys } from "@/lib/utils";
-import { computed } from "@preact/signals-react";
-import { useSignals } from "@preact/signals-react/runtime";
+import { useComputed } from "@preact/signals-react";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useDebounce } from "react-use";
@@ -49,7 +48,6 @@ export default function MemberList({
   handleRoleChange,
   onAssign,
 }: Readonly<MemberListProps>) {
-  useSignals();
   const [searchTerm, setSearchTerm] = useState("");
   const [val, setVal] = useState("");
 
@@ -61,7 +59,7 @@ export default function MemberList({
     [val]
   );
 
-  const filteredMembers = computed(() =>
+  const filteredMembers = useComputed(() =>
     memberSignal.value.filter(
       (member) =>
         member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||

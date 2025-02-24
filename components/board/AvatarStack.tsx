@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { memberSignal } from "@/lib/signal/memberSingals";
-import { computed } from "@preact/signals-react";
+import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import MD5 from "crypto-js/md5";
 import { memo } from "react";
@@ -29,7 +29,7 @@ export const AvatarIconWithFallback = memo(function AvatarIconWithFallback({
 
 export function AvatarStack() {
   useSignals();
-  const memberCount = computed(() => memberSignal.value.length);
+  const memberCount = useComputed(() => memberSignal.value.length);
 
   return (
     <div className="flex -space-x-3 hover:-space-x-1 transition-all duration-200 cursor-pointer">

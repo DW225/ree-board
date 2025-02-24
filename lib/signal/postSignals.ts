@@ -4,15 +4,15 @@ import type { Signal } from "@preact/signals-react";
 import { signal } from "@preact/signals-react";
 
 interface ActionSignal {
-  assigned: Signal<string | null>; // username
-  state: Signal<ActionState>;
+  assigned: Signal<Action["userId"] | null>; // userId or null
+  state: Signal<Action["state"]>;
 }
 
 export interface PostSignal
   extends Omit<Post, "content" | "type" | "voteCount"> {
-  content: Signal<string>;
-  type: Signal<PostType>;
-  voteCount: Signal<number>;
+  content: Signal<Post["content"]>;
+  type: Signal<Post["type"]>;
+  voteCount: Signal<Post["voteCount"]>;
   action?: ActionSignal;
 }
 
@@ -51,7 +51,7 @@ export const addPost = (newPost: Post) => {
   ];
 };
 
-export const removePost = (postID: string) => {
+export const removePost = (postID: Post["id"]) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index !== -1) {
     postSignal.value = [
@@ -61,28 +61,31 @@ export const removePost = (postID: string) => {
   }
 };
 
-export const updatePostContent = (postID: string, newContent: string) => {
+export const updatePostContent = (
+  postID: Post["id"],
+  newContent: Post["content"]
+) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index !== -1) {
     postSignal.value[index].content.value = newContent;
   }
 };
 
-export const updatePostType = (postID: string, newType: PostType) => {
+export const updatePostType = (postID: Post["id"], newType: PostType) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index !== -1) {
     postSignal.value[index].type.value = newType;
   }
 };
 
-export const incrementPostVoteCount = (postID: string) => {
+export const incrementPostVoteCount = (postID: Post["id"]) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index !== -1) {
     postSignal.value[index].voteCount.value += 1;
   }
 };
 
-export const decrementPostVoteCount = (postID: string) => {
+export const decrementPostVoteCount = (postID: Post["id"]) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index !== -1 && postSignal.value[index].voteCount.value > 0) {
     postSignal.value[index].voteCount.value -= 1;
@@ -107,8 +110,11 @@ export const addPostAction = (action: NewAction) => {
   }
 };
 
-export const assignPostAction = (postId: string, userId: string | null) => {
-  const index = postSignal.value.findIndex((post) => post.id === postId);
+export const assignPostAction = (
+  postID: Post["id"],
+  userId: Action["userId"] | null
+) => {
+  const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index === -1) return;
 
   if (postSignal.value[index].action) {
@@ -121,8 +127,8 @@ export const assignPostAction = (postId: string, userId: string | null) => {
   }
 };
 
-export const updatePostState = (postId: string, state: ActionState) => {
-  const index = postSignal.value.findIndex((post) => post.id === postId);
+export const updatePostState = (postID: Post["id"], state: Action["state"]) => {
+  const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index === -1) return;
 
   if (postSignal.value[index].action) {

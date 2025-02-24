@@ -51,9 +51,9 @@ const AddPostFormContextProvider = ({
 
 interface VotedPostsContextType {
   votedPosts: Set<string>;
-  addVotedPost: (postId: string) => void;
-  removeVotedPost: (postId: string) => void;
-  hasVoted: (postId: string) => boolean;
+  addVotedPost: (postID: Post["id"]) => void;
+  removeVotedPost: (postID: Post["id"]) => void;
+  hasVoted: (postID: Post["id"]) => boolean;
 }
 
 const VotedPostsContext = createContext<VotedPostsContextType | undefined>(
@@ -76,17 +76,17 @@ export const VotedPostsProvider: React.FC<VotedPostsProviderProps> = ({
   );
 
   const addVotedPost = useCallback(
-    (postId: string) => {
-      setVotedPosts((prev) => new Set(prev).add(postId));
+    (postID: Post["id"]) => {
+      setVotedPosts((prev) => new Set(prev).add(postID));
     },
     [setVotedPosts]
   );
 
   const removeVotedPost = useCallback(
-    (postId: string) => {
+    (postID: Post["id"]) => {
       setVotedPosts((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(postId);
+        newSet.delete(postID);
         return newSet;
       });
     },
@@ -94,7 +94,7 @@ export const VotedPostsProvider: React.FC<VotedPostsProviderProps> = ({
   );
 
   const hasVoted = useCallback(
-    (postId: string) => votedPosts.has(postId),
+    (postID: Post["id"]) => votedPosts.has(postID),
     [votedPosts]
   );
 
