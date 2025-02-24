@@ -53,12 +53,12 @@ export const addPost = (newPost: Post) => {
 
 export const removePost = (postID: Post["id"]) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index !== -1) {
-    postSignal.value = [
-      ...postSignal.value.slice(0, index),
-      ...postSignal.value.slice(index + 1),
-    ];
-  }
+  if (index === -1) return;
+
+  postSignal.value = [
+    ...postSignal.value.slice(0, index),
+    ...postSignal.value.slice(index + 1),
+  ];
 };
 
 export const updatePostContent = (
@@ -66,23 +66,23 @@ export const updatePostContent = (
   newContent: Post["content"]
 ) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index !== -1) {
-    postSignal.value[index].content.value = newContent;
-  }
+  if (index === -1) return;
+
+  postSignal.value[index].content.value = newContent;
 };
 
 export const updatePostType = (postID: Post["id"], newType: PostType) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index !== -1) {
-    postSignal.value[index].type.value = newType;
-  }
+  if (index === -1) return;
+
+  postSignal.value[index].type.value = newType;
 };
 
 export const incrementPostVoteCount = (postID: Post["id"]) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index !== -1) {
-    postSignal.value[index].voteCount.value += 1;
-  }
+  if (index === -1) return;
+
+  postSignal.value[index].voteCount.value += 1;
 };
 
 export const decrementPostVoteCount = (postID: Post["id"]) => {

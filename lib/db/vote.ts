@@ -1,13 +1,13 @@
-import type { Post } from "@/db/schema";
+import type { Board, Post, User } from "@/db/schema";
 import { voteTable } from "@/db/schema";
-import { db } from "./client";
-import { nanoid } from "nanoid";
 import { and, eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { db } from "./client";
 
 export async function upVote(
   postID: Post["id"],
-  userId: string,
-  boardId: string
+  userId: User["id"],
+  boardId: Board["id"]
 ) {
   await db.insert(voteTable).values({
     id: nanoid(),
@@ -19,7 +19,7 @@ export async function upVote(
 
 export async function downVote(
   postID: Post["id"],
-  userId: string,
+  userId: User["id"],
   boardId: string
 ) {
   await db
@@ -33,7 +33,9 @@ export async function downVote(
     );
 }
 
-export async function fetchUserVotedPost(userId: string): Promise<string[]> {
+export async function fetchUserVotedPost(
+  userId: User["id"]
+): Promise<string[]> {
   const result = await db
     .select({
       postId: voteTable.postId,
