@@ -1,6 +1,6 @@
-import { eq, or } from "drizzle-orm";
-
+import type { NewUser, User} from "@/db/schema";
 import { userTable } from "@/db/schema";
+import { eq, or } from "drizzle-orm";
 import { db } from "./client";
 
 export async function findUserIdByKindeID(kindeId: string) {
@@ -17,7 +17,7 @@ export async function findUserIdByKindeID(kindeId: string) {
   }
 }
 
-export async function createUser(user: typeof userTable.$inferInsert) {
+export async function createUser(user: NewUser) {
   await db.insert(userTable).values({
     id: user.id,
     kinde_id: user.kinde_id,
@@ -26,7 +26,7 @@ export async function createUser(user: typeof userTable.$inferInsert) {
   });
 }
 
-export const getUserByKindeID = async (kindeId: string) => {
+export const getUserByKindeID = async (kindeId: User["kinde_id"]) => {
   const result = await db
     .select()
     .from(userTable)
@@ -56,5 +56,5 @@ export const getUserByUserID = async (userID: string) => {
     .select()
     .from(userTable)
     .where(eq(userTable.id, userID));
-  return result.length > 0? result[0] : undefined;
-}
+  return result.length > 0 ? result[0] : undefined;
+};

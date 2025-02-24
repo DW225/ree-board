@@ -12,7 +12,7 @@ export const addBoard = (newBoard: Board) => {
   boardSignal.value = [...boardSignal.value, newBoard];
 };
 
-export const removeBoard = (boardId: string) => {
+export const removeBoard = (boardId: Board["id"]) => {
   const index = boardSignal.value.findIndex((board) => board.id === boardId);
   if (index !== -1) {
     boardSignal.value = [

@@ -1,11 +1,14 @@
-import type { Board } from "@/db/schema";
+import type { Board, User } from "@/db/schema";
 import { boardTable, memberTable, Role, userTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
 import { addMember, checkMemberRole } from "./member";
 import { nanoid } from "nanoid";
 
-export async function fetchBoards(userId: string, useKindeId: boolean = true) {
+export async function fetchBoards(
+  userId: User["id"] | User["kinde_id"],
+  useKindeId: boolean = true
+) {
   if (userId === null) {
     throw new Error("User ID is required");
   }
@@ -40,7 +43,7 @@ export async function fetchBoards(userId: string, useKindeId: boolean = true) {
   }
 }
 
-export async function createBoard(newBoard: Board, userID: string) {
+export async function createBoard(newBoard: Board, userID: User["id"]) {
   const board = await db
     .insert(boardTable)
     .values({
@@ -64,14 +67,14 @@ export async function createBoard(newBoard: Board, userID: string) {
   }
 }
 
-export async function deleteBoard(boardId: string, userId: string) {
+export async function deleteBoard(boardId: Board["id"], userId: User["id"]) {
   const role = await checkMemberRole(userId, boardId);
 
   if (role === Role.owner) {
     return await db
-     .delete(boardTable)
-     .where(eq(boardTable.id, boardId))
-     .execute();
+      .delete(boardTable)
+      .where(eq(boardTable.id, boardId))
+      .execute();
   }
   return new Error("Insufficient permissions to delete board");
 }

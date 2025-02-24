@@ -1,4 +1,4 @@
-import type { ActionState } from "@/db/schema";
+import type { ActionState, Post } from "@/db/schema";
 import { actionsTable, type NewAction } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
@@ -25,16 +25,19 @@ export async function fetchActions(boardId: string) {
     .where(eq(actionsTable.boardId, boardId));
 }
 
-export async function assignPostAction(postId: string, userId: string | null) {
-  if (!postId) throw new Error("postId is required");
+export async function assignPostAction(
+  postID: Post["id"],
+  userId: string | null
+) {
+  if (!postID) throw new Error("postId is required");
   try {
     await db
       .update(actionsTable)
       .set({ userId, updatedAt: new Date() })
-      .where(eq(actionsTable.postId, postId))
+      .where(eq(actionsTable.postId, postID))
       .execute();
   } catch (error) {
-    console.error(`Failed to assign action for post ${postId}:`, error);
+    console.error(`Failed to assign action for post ${postID}:`, error);
     throw error;
   }
 }
@@ -46,10 +49,13 @@ export async function assignPostAction(postId: string, userId: string | null) {
  * @param newState - The new state to be set for the action, of type ActionState.
  * @returns A Promise that resolves when the update operation is complete.
  */
-export async function updateActionState(postId: string, newState: ActionState) {
+export async function updateActionState(
+  postID: Post["id"],
+  newState: ActionState
+) {
   await db
     .update(actionsTable)
     .set({ state: newState, updatedAt: new Date() })
-    .where(eq(actionsTable.postId, postId))
+    .where(eq(actionsTable.postId, postID))
     .execute();
 }

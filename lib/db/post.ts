@@ -1,4 +1,4 @@
-import type { NewPost, PostType } from "@/db/schema";
+import type { Board, NewPost, Post } from "@/db/schema";
 import { postTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
@@ -20,18 +20,18 @@ export const createPost = async (post: NewPost) => {
   return newPosts[0];
 };
 
-export const fetchPostsByBoardID = async (boardId: string) => {
+export const fetchPostsByBoardID = async (boardId: Board["id"]) => {
   return await db
     .select()
     .from(postTable)
     .where(eq(postTable.boardId, boardId));
 };
 
-export const deletePost = async (postId: string) => {
-  await db.delete(postTable).where(eq(postTable.id, postId)).execute();
+export const deletePost = async (postID: Post["id"]) => {
+  await db.delete(postTable).where(eq(postTable.id, postID)).execute();
 };
 
-export const updatePostType = async (id: string, newType: PostType) => {
+export const updatePostType = async (id: Post["id"], newType: Post["type"]) => {
   await db
     .update(postTable)
     .set({
@@ -42,7 +42,10 @@ export const updatePostType = async (id: string, newType: PostType) => {
     .execute();
 };
 
-export const updatePostContent = async (id: string, newContent: string) => {
+export const updatePostContent = async (
+  id: Post["id"],
+  newContent: Post["content"]
+) => {
   await db
     .update(postTable)
     .set({
@@ -51,4 +54,4 @@ export const updatePostContent = async (id: string, newContent: string) => {
     })
     .where(eq(postTable.id, id))
     .execute();
-}
+};

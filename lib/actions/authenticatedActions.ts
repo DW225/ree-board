@@ -6,6 +6,7 @@ import type {
   NewBoard,
   NewMember,
   NewPost,
+  Post,
   PostType,
 } from "@/db/schema";
 import {
@@ -155,13 +156,13 @@ export const authenticatedRemoveMemberFromBoard = async (
 ) => authenticatedAction(() => removeMember(userId, boardId));
 
 export const authenticatedUpVotePost = async (
-  postId: string,
+  postID: Post["id"],
   userId: string,
   boardId: string
 ) =>
   authenticatedAction(() =>
     Promise.all([
-      upVote(postId, userId, boardId),
+      upVote(postID, userId, boardId),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPVOTE,
         extras: {
@@ -169,19 +170,19 @@ export const authenticatedUpVotePost = async (
             user: userId,
           },
         },
-        data: JSON.stringify({ id: postId }),
+        data: JSON.stringify({ id: postID }),
       }),
     ])
   );
 
 export const authenticatedDownVotePost = async (
-  postId: string,
+  postID: Post["id"],
   userId: string,
   boardId: string
 ) =>
   authenticatedAction(() =>
     Promise.all([
-      downVote(postId, userId, boardId),
+      downVote(postID, userId, boardId),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.DOWNVOTE,
         extras: {
@@ -189,7 +190,7 @@ export const authenticatedDownVotePost = async (
             user: userId,
           },
         },
-        data: JSON.stringify({ id: postId }),
+        data: JSON.stringify({ id: postID }),
       }),
     ])
   );
@@ -206,13 +207,13 @@ export const authedCreateAction = async (action: NewAction) =>
   );
 
 export const authedPostAssign = async (action: {
-  postId: string;
+  postID: Post["id"];
   userId: string | null;
   boardId: string;
 }) =>
   authenticatedAction(() =>
     Promise.all([
-      assignPostAction(action.postId, action.userId),
+      assignPostAction(action.postID, action.userId),
       // Publish the action to Ably for real-time updates on the client-side.
       ablyClient(action.boardId).publish({
         name: EVENT_TYPE.ACTION.ASSIGN,
@@ -227,14 +228,14 @@ export const authedPostAssign = async (action: {
   );
 
 export const authedPostActionStateUpdate = async (action: {
-  postId: string;
+  postID: Post["id"];
   state: ActionState;
   boardId: string;
 }) =>
   authenticatedAction(() =>
     Promise.all([
       // Update the action state in the database.
-      updateActionState(action.postId, action.state),
+      updateActionState(action.postID, action.state),
       // Publish the action state update to Ably for real-time updates on the client-side.
       ablyClient(action.boardId).publish({
         name: EVENT_TYPE.ACTION.STATE_UPDATE,

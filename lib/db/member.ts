@@ -1,7 +1,7 @@
-import type { NewMember } from "@/db/schema";
+import type { Board, NewMember, User } from "@/db/schema";
 import { memberTable, userTable } from "@/db/schema";
-import { db } from "./client";
 import { and, eq } from "drizzle-orm";
+import { db } from "./client";
 
 export const addMember = async (newMember: NewMember) => {
   await db.insert(memberTable).values({
@@ -12,7 +12,10 @@ export const addMember = async (newMember: NewMember) => {
   });
 };
 
-export const removeMember = async (userID: string, boardID: string) => {
+export const removeMember = async (
+  userID: User["id"],
+  boardID: Board["id"]
+) => {
   await db
     .delete(memberTable)
     .where(
@@ -21,7 +24,7 @@ export const removeMember = async (userID: string, boardID: string) => {
     .execute();
 };
 
-export const fetchMembersByBoardID = async (boardID: string) => {
+export const fetchMembersByBoardID = async (boardID: Board["id"]) => {
   return await db
     .select({
       id: memberTable.id,
@@ -36,7 +39,10 @@ export const fetchMembersByBoardID = async (boardID: string) => {
     .where(eq(memberTable.boardId, boardID));
 };
 
-export const checkMemberRole = async (userID: string, boardID: string) => {
+export const checkMemberRole = async (
+  userID: User["id"],
+  boardID: Board["id"]
+) => {
   const member = await db
     .select()
     .from(memberTable)

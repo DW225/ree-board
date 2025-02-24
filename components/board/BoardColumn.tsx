@@ -12,7 +12,8 @@ import {
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { computed, effect, signal } from "@preact/signals-react";
+import type { Signal } from "@preact/signals-react";
+import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -44,17 +45,16 @@ export default function BoardColumn({
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
   const [isDragginOver, setIsDraggingOver] = useState<boolean>(false);
-  const filteredPosts = computed(() =>
+  const filteredPosts = useComputed(() =>
     postSignal.value.filter((post) => post.type.value === postType)
   );
-  const animatedPosts = signal<AnimatedPost[]>([]);
 
-  effect(() => {
-    animatedPosts.value = filteredPosts.value.map((post) => ({
+  const animatedPosts: Signal<AnimatedPost[]> = useComputed(() =>
+    filteredPosts.value.map((post) => ({
       id: post.id,
       isRemoving: false,
-    }));
-  });
+    }))
+  );
 
   const handlePostDelete = useCallback(
     async (id: string) => {

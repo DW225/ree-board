@@ -28,6 +28,7 @@ export const userTable = sqliteTable(
 export const insertUserSchema = createInsertSchema(userTable);
 export const selectUserSchema = createSelectSchema(userTable);
 export type NewUser = typeof userTable.$inferInsert;
+export type User = typeof userTable.$inferSelect;
 
 export enum BoardState {
   active,
@@ -141,6 +142,7 @@ export const memberTable = sqliteTable(
 export const insertMemberSchema = createInsertSchema(memberTable);
 export const selectMemberSchema = createSelectSchema(memberTable);
 export type NewMember = typeof memberTable.$inferInsert;
+export type Member = typeof memberTable.$inferSelect;
 
 export const voteTable = sqliteTable(
   "vote",
