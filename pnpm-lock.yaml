@@ -82,7 +82,7 @@ importers:
         version: 0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)
       drizzle-zod:
         specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.1)
+        version: 0.5.1(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.2)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -132,8 +132,8 @@ importers:
         specifier: ^1.3.3
         version: 1.3.3
       zod:
-        specifier: ^3.24.1
-        version: 3.24.1
+        specifier: ^3.24.2
+        version: 3.24.2
     devDependencies:
       '@eslint/js':
         specifier: ^9.20.0
@@ -2454,6 +2454,9 @@ packages:
 
   '@types/node@22.13.4':
     resolution: {integrity: sha512-ywP2X0DYtX3y08eFVx5fNIw7/uIv8hYUKgXoK8oayJlLnKcRfEYCxWMVE1XagUdVtCJlZT1AU4LXEABW+L1Peg==}
+
+  '@types/node@22.13.5':
+    resolution: {integrity: sha512-+lTU0PxZXn0Dr1NBtC7Y8cR21AJr87dLLU953CWA6pMxxv/UDc7jYAY90upcrie1nRcD6XNG5HOYEDtgW5TxAg==}
 
   '@types/node@22.7.5':
     resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
@@ -5464,8 +5467,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.24.1:
-    resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
+  zod@3.24.2:
+    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -7815,6 +7818,10 @@ snapshots:
     dependencies:
       undici-types: 6.20.0
 
+  '@types/node@22.13.5':
+    dependencies:
+      undici-types: 6.20.0
+
   '@types/node@22.7.5':
     dependencies:
       undici-types: 6.19.8
@@ -8585,10 +8592,10 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.6.1
 
-  drizzle-zod@0.5.1(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.1):
+  drizzle-zod@0.5.1(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.2):
     dependencies:
       drizzle-orm: 0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)
-      zod: 3.24.1
+      zod: 3.24.2
 
   dunder-proto@1.0.1:
     dependencies:
@@ -9576,7 +9583,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.13.4
+      '@types/node': 22.13.5
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -11407,6 +11414,6 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.24.1: {}
+  zod@3.24.2: {}
 
   zwitch@2.0.4: {}
