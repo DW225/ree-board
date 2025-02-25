@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { Action, Post, User } from "@/db/schema";
 import { ActionState, PostType } from "@/db/schema";
+import { useAbortController } from "@/hooks/useAbortController";
 import {
   authedPostActionStateUpdate,
   authedPostAssign,
@@ -70,6 +71,7 @@ import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import type { MemberInfo } from "./MemberManageModalComponent";
 import { useVotedPosts } from "./PostProvider";
+import { useEffectOnce } from "@/lib/utils/effect";
 
 const EditDialog = dynamic(() => import("./EditDialog"), { ssr: false });
 
@@ -182,7 +184,7 @@ const STATUS_TEXT: Record<Action["state"], string> = {
   [ActionState.inProgress]: "In Progress",
   [ActionState.completed]: "Done",
   [ActionState.cancelled]: "Cancelled",
-} as const;
+} as const satisfies Record<Action["state"], string>;
 
 interface PostCardFooterProps {
   post: PostSignal;
@@ -196,7 +198,7 @@ const PostCardFooter = ({
   handleVote,
 }: PostCardFooterProps) => {
   const { hasVoted } = useVotedPosts();
-  const abortControllerRef = useRef(new AbortController());
+  const abortControllerRef = useAbortController();
 
   const assignedUser = useSignal<{
     name: Signal<User["name"]>;
@@ -209,7 +211,6 @@ const PostCardFooter = ({
   const badgeText = useComputed(() => {
     return STATUS_TEXT[post.action?.state.value ?? ActionState.pending];
   });
-
   const handleAssign = async (member: MemberInfo) => {
     const oldAssigned = post.action?.assigned.value;
     try {
@@ -231,7 +232,7 @@ const PostCardFooter = ({
   const fetchUserInfo = async (assigned: string) => {
     try {
       const data = await fetch(`/api/user/${assigned}`, {
-        signal: abortControllerRef.current.signal,
+        signal: abortControllerRef.current?.signal,
       });
       if (!data.ok) {
         throw new Error("Failed to fetch user info");
@@ -243,10 +244,10 @@ const PostCardFooter = ({
         user: User;
       } = await data.json();
 
-      batch(() => {
-        assignedUser.value.name.value = name;
-        assignedUser.value.email.value = email;
-      });
+      return {
+        name,
+        email,
+      };
     } catch (error: unknown) {
       if (error instanceof Error && error.name === "AbortError") {
         console.log("Request was aborted");
@@ -256,18 +257,36 @@ const PostCardFooter = ({
     }
   };
 
-  useSignalEffect(() => {
+  const handleAssignUserUpdate = (name: User["name"], email: User["email"]) => {
+    batch(() => {
+      assignedUser.value.name.value = name;
+      assignedUser.value.email.value = email;
+    });
+  };
+
+  const handleUpdateAssignedUser = async () => {
     if (
       post.type.value === PostType.action_item &&
       post.action?.assigned.value
     ) {
       const assignedUserId = post.action.assigned.value;
-      fetchUserInfo(assignedUserId);
+      const userInfo = await fetchUserInfo(assignedUserId);
+      if (userInfo) {
+        handleAssignUserUpdate(userInfo.name, userInfo.email);
+      }
     }
+  };
+
+  useEffectOnce(() => {
+    handleUpdateAssignedUser();
+  });
+
+  useSignalEffect(() => {
+    handleUpdateAssignedUser();
   });
 
   useUnmount(() => {
-    abortControllerRef.current.abort();
+    abortControllerRef.current?.abort();
   });
 
   return (
@@ -329,7 +348,7 @@ const cardTypes: Record<Post["type"], string> = {
   [PostType.to_improvement]: "bg-red-100",
   [PostType.to_discuss]: "bg-yellow-100",
   [PostType.action_item]: "bg-purple-100",
-} as const;
+} as const satisfies Record<Post["type"], string>;
 
 interface PostCardProps {
   post: PostSignal;
