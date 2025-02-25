@@ -25,6 +25,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Action, Post, User } from "@/db/schema";
 import { ActionState, PostType } from "@/db/schema";
 import {
@@ -223,17 +229,31 @@ const PostCardFooter = memo(function PostCardFooter({
           <Badge className="flex items-center justify-center">
             <p className="text-xs">{badgeText}</p>
           </Badge>
-          <Dialog>
-            <DialogTrigger asChild>
-              <AvatarIcon userID={post.action?.assigned.value ?? ""} />
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Assign Task</DialogTitle>
-              </DialogHeader>
-              <MemberList viewOnly={true} onAssign={handleAssign} />
-            </DialogContent>
-          </Dialog>
+          <TooltipProvider>
+            <Tooltip>
+              <Dialog>
+                <DialogTrigger>
+                  <AvatarIcon
+                    userID={post.action?.assigned.value ?? ""}
+                    triggers={(user, avatarContent) => (
+                      <>
+                        <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
+                        <TooltipContent>
+                          <p>{user?.name ?? "Unknown"}</p>
+                        </TooltipContent>
+                      </>
+                    )}
+                  />
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Assign Task</DialogTitle>
+                  </DialogHeader>
+                  <MemberList viewOnly onAssign={handleAssign} />
+                </DialogContent>
+              </Dialog>
+            </Tooltip>
+          </TooltipProvider>
         </>
       )}
       {post.type.value !== PostType.action_item && (

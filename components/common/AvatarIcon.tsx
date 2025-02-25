@@ -4,51 +4,43 @@ import { useUser } from "@/hooks/useUser";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { MD5 } from "crypto-js";
-import { memo } from "react";
+import { forwardRef, type ReactNode } from "react";
 
 interface AvatarIconProps {
   userID: User["id"];
   className?: string;
+  triggers?: (user: User | undefined, children: ReactNode) => ReactNode;
 }
 
-export const AvatarIcon = memo(function AvatarIcon({
-  userID,
-  className,
-}: Readonly<AvatarIconProps>) {
-  const { user, isError, isLoading } = useUser(userID);
+export const AvatarIcon = forwardRef<HTMLDivElement, AvatarIconProps>(
+  ({ userID, className = "", triggers }, ref) => {
+    const { user, isLoading } = useUser(userID);
+    console.log("User:", userID);
 
-  if (isError) {
-    return (
-      <Avatar className={cn("h-8 w-8", className)}>
-        <AvatarFallback>?</AvatarFallback>
-      </Avatar>
-    );
-  }
-  if (isLoading) {
-    return (
-      <Avatar className={cn("h-8 w-8", className)}>
-        <Skeleton></Skeleton>
-      </Avatar>
-    );
-  }
+    if (isLoading) {
+      return <Skeleton className={cn("h-8 w-8 rounded-full", className)} />;
+    }
 
-  if (!user) {
-    return (
-      <Avatar className={cn("h-8 w-8", className)}>
-        <AvatarFallback>?</AvatarFallback>
+    const avatarContent = (
+      <Avatar className={cn("h-8 w-8", className)} ref={ref}>
+        <AvatarImage
+          src={`https://www.gravatar.com/avatar/${MD5(
+            user?.email ?? ""
+          )}?d=404&s=48`}
+          alt={user?.name ?? "Unknown User"}
+        />
+        <AvatarFallback>
+          {user?.name ? user.name.charAt(0).toUpperCase() : "UU"}
+        </AvatarFallback>
       </Avatar>
     );
+
+    if (triggers && user) {
+      return triggers(user, avatarContent);
+    }
+
+    return avatarContent;
   }
-  const { email, name } = user;
-  return (
-    <Avatar className={cn("h-8 w-8", className)}>
-      <AvatarImage
-        src={`https://www.gravatar.com/avatar/${MD5(email)}&s=48`}
-        alt={name}
-      />
-      <AvatarFallback>{name}</AvatarFallback>
-    </Avatar>
-  );
-});
+);
 
 AvatarIcon.displayName = "AvatarIcon";
