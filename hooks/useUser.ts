@@ -3,10 +3,14 @@ import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
 
 export function useUser(id: User["id"]) {
-  const { data, error, isLoading } = useSWR<User>(`/api/user/${id}`, fetcher);
+  const shouldFetch = id !== undefined && id !== null;
+  const { data, error, isLoading } = useSWR<{ user: User }>(
+    shouldFetch ? `/api/user/${id}` : null,
+    fetcher
+  );
 
   return {
-    user: data,
+    user: data?.user,
     isError: error,
     isLoading,
   };
