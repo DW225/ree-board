@@ -15,6 +15,7 @@ import { Role } from "@/db/schema";
 import { memberSignal } from "@/lib/signal/memberSingals";
 import { getEnumKeys } from "@/lib/utils";
 import { useComputed } from "@preact/signals-react";
+import { useSignals } from "@preact/signals-react/runtime";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useDebounce } from "react-use";
@@ -50,6 +51,8 @@ export default function MemberList({
 }: Readonly<MemberListProps>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [val, setVal] = useState("");
+
+  useSignals();
 
   useDebounce(
     () => {
