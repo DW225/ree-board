@@ -13,3 +13,5 @@ export function getEnumKeys<
 >(enumVariable: { [key in T]: TEnumValue }) {
   return Object.keys(enumVariable) as Array<T>;
 }
+
+export const fetcher = (...args: [RequestInfo, RequestInit?]) => fetch(...args).then((res) => res.json());

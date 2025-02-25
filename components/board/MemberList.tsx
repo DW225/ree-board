@@ -1,5 +1,6 @@
 "use client";
 
+import { AvatarIconWithFallback } from "@/components/common/AvatarWithFallback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,7 +18,6 @@ import { useComputed } from "@preact/signals-react";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useDebounce } from "react-use";
-import { AvatarIconWithFallback } from "./AvatarStack";
 import type { MemberInfo } from "./MemberManageModalComponent";
 
 interface MemberListProps {
@@ -80,10 +80,7 @@ export default function MemberList({
       <ScrollArea className="h-[50vh]">
         {filteredMembers.value.map((member) => (
           <div key={member.id} className="flex items-center space-x-4 mb-4">
-            <AvatarIconWithFallback
-              email={member.email}
-              username={member.username}
-            />
+            <AvatarIconWithFallback userID={member.userId} />
             <div className="flex-grow">
               <p className="text-sm font-medium">{member.username}</p>
               <p className="text-sm text-gray-500">{member.email}</p>

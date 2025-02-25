@@ -1,31 +1,10 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarIconWithFallback } from "@/components/common/AvatarWithFallback";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { memberSignal } from "@/lib/signal/memberSingals";
 import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
-import MD5 from "crypto-js/md5";
-import { memo } from "react";
-
-interface AvatarIconProps {
-  email: string;
-  username: string;
-}
-
-export const AvatarIconWithFallback = memo(function AvatarIconWithFallback({
-  email,
-  username,
-}: Readonly<AvatarIconProps>) {
-  return (
-    <Avatar className="h-8 w-8">
-      <AvatarImage
-        src={`https://www.gravatar.com/avatar/${MD5(email)}?d=404&s=48`}
-        alt={username}
-      />
-      <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
-    </Avatar>
-  );
-});
 
 export function AvatarStack() {
   useSignals();
@@ -36,12 +15,11 @@ export function AvatarStack() {
       {useComputed(() => memberSignal.value.slice(0, 5)).value.map((member) => (
         <AvatarIconWithFallback
           key={member.id}
-          email={member.email}
-          username={member.username}
+          userID={member.userId}
         />
       ))}
       {memberCount.value > 5 && (
-        <Avatar className="border-2 border-background">
+        <Avatar>
           <AvatarFallback>+{memberCount.value - 5}</AvatarFallback>
         </Avatar>
       )}
