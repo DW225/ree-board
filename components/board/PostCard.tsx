@@ -51,7 +51,7 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import invariant from "tiny-invariant";
-import { AvatarIconWithFallback } from "../common/AvatarWithFallback";
+import { AvatarIcon } from "../common/AvatarIcon";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import type { MemberInfo } from "./MemberManageModalComponent";
@@ -225,9 +225,7 @@ const PostCardFooter = memo(function PostCardFooter({
           </Badge>
           <Dialog>
             <DialogTrigger asChild>
-              <AvatarIconWithFallback
-                userID={post.action?.assigned.value ?? ""}
-              />
+              <AvatarIcon userID={post.action?.assigned.value ?? ""} />
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>

@@ -11,7 +11,7 @@ interface AvatarIconProps {
   className?: string;
 }
 
-export const AvatarIconWithFallback = memo(function AvatarIconWithFallback({
+export const AvatarIcon = memo(function AvatarIcon({
   userID,
   className,
 }: Readonly<AvatarIconProps>) {
@@ -51,4 +51,4 @@ export const AvatarIconWithFallback = memo(function AvatarIconWithFallback({
   );
 });
 
-AvatarIconWithFallback.displayName = "AvatarIconWithFallback";
+AvatarIcon.displayName = "AvatarIcon";
