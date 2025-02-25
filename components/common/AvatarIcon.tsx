@@ -14,8 +14,15 @@ interface AvatarIconProps {
 
 export const AvatarIcon = forwardRef<HTMLDivElement, AvatarIconProps>(
   ({ userID, className = "", triggers }, ref) => {
-    const { user, isLoading } = useUser(userID);
-    console.log("User:", userID);
+    const { user, isLoading, isError } = useUser(userID);
+
+    if (isError) {
+      return (
+        <Avatar className={cn("h-8 w-8", className)} ref={ref}>
+          <AvatarFallback>UU</AvatarFallback>
+        </Avatar>
+      );
+    }
 
     if (isLoading) {
       return <Skeleton className={cn("h-8 w-8 rounded-full", className)} />;
