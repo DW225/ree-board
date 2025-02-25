@@ -1,7 +1,6 @@
 "use client";
 
 import CustomLink from "@/components/common/Link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,15 +25,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { Action, Post, User } from "@/db/schema";
 import { ActionState, PostType } from "@/db/schema";
-import { useAbortController } from "@/hooks/useAbortController";
 import {
   authedPostActionStateUpdate,
   authedPostAssign,
@@ -50,28 +42,20 @@ import {
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import type { Signal } from "@preact/signals-react";
-import {
-  batch,
-  useComputed,
-  useSignal,
-  useSignalEffect,
-} from "@preact/signals-react";
-import MD5 from "crypto-js/md5";
+import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
 import dynamic from "next/dynamic";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
-import { useUnmount } from "react-use";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import invariant from "tiny-invariant";
+import { AvatarIconWithFallback } from "../common/AvatarWithFallback";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import type { MemberInfo } from "./MemberManageModalComponent";
 import { useVotedPosts } from "./PostProvider";
-import { useEffectOnce } from "@/lib/utils/effect";
 
 const EditDialog = dynamic(() => import("./EditDialog"), { ssr: false });
 
@@ -81,37 +65,44 @@ interface PostCardHeaderProps {
   onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
 }
 
-const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
+const PostCardHeader = memo(function PostCardHeader({
+  post,
+  onDelete,
+  onUpdate,
+}: PostCardHeaderProps) {
   const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     if (onUpdate) {
       onUpdate(post.id, message);
     }
     setIsEditing(false);
-  };
+  }, [onUpdate, post.id, message]);
 
-  const handleStatusChange = async (newStatus: Action["state"]) => {
-    if (post.action?.state.value === newStatus) return;
+  const handleStatusChange = useCallback(
+    async (newStatus: Action["state"]) => {
+      if (post.action?.state.value === newStatus) return;
 
-    const oldState = post.action?.state.value;
-    try {
-      updatePostState(post.id, newStatus);
-      await authedPostActionStateUpdate({
-        postID: post.id,
-        state: newStatus,
-        boardId: post.boardId,
-      });
-    } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Failed to update status");
-      if (oldState) {
-        updatePostState(post.id, oldState);
+      const oldState = post.action?.state.value;
+      try {
+        updatePostState(post.id, newStatus);
+        await authedPostActionStateUpdate({
+          postID: post.id,
+          state: newStatus,
+          boardId: post.boardId,
+        });
+      } catch (error) {
+        console.error("Error updating status:", error);
+        toast.error("Failed to update status");
+        if (oldState) {
+          updatePostState(post.id, oldState);
+        }
       }
-    }
-  };
+    },
+    [post.id, post.action?.state.value, post.boardId]
+  );
 
   return (
     <CardHeader className="flex flex-row items-center justify-end space-y-0 p-2">
@@ -177,7 +168,9 @@ const PostCardHeader = ({ post, onDelete, onUpdate }: PostCardHeaderProps) => {
       </DropdownMenu>
     </CardHeader>
   );
-};
+});
+
+PostCardHeader.displayName = "PostCardHeader";
 
 const STATUS_TEXT: Record<Action["state"], string> = {
   [ActionState.pending]: "To Do",
@@ -192,102 +185,36 @@ interface PostCardFooterProps {
   handleVote: () => Promise<void>;
 }
 
-const PostCardFooter = ({
+const PostCardFooter = memo(function PostCardFooter({
   post,
   viewOnly,
   handleVote,
-}: PostCardFooterProps) => {
+}: PostCardFooterProps) {
   const { hasVoted } = useVotedPosts();
-  const abortControllerRef = useAbortController();
-
-  const assignedUser = useSignal<{
-    name: Signal<User["name"]>;
-    email: Signal<User["email"]>;
-  }>({
-    name: useSignal(""),
-    email: useSignal(""),
-  });
 
   const badgeText = useComputed(() => {
     return STATUS_TEXT[post.action?.state.value ?? ActionState.pending];
   });
-  const handleAssign = async (member: MemberInfo) => {
-    const oldAssigned = post.action?.assigned.value;
-    try {
-      assignPostAction(post.id, member.userId);
-      await authedPostAssign({
-        postID: post.id,
-        boardId: post.boardId,
-        userId: member.userId,
-      });
-    } catch (error) {
-      console.error("Error assigning task:", error);
-      toast.error("Failed to assign task");
-      if (oldAssigned) {
-        assignPostAction(post.id, oldAssigned);
+
+  const handleAssign = useCallback(
+    async (member: MemberInfo) => {
+      const oldAssigned = post.action?.assigned.value;
+      try {
+        await authedPostAssign({
+          postID: post.id,
+          boardId: post.boardId,
+          userId: member.userId,
+        });
+      } catch (error) {
+        console.error("Error assigning task:", error);
+        toast.error("Failed to assign task");
+        if (oldAssigned) {
+          assignPostAction(post.id, oldAssigned);
+        }
       }
-    }
-  };
-
-  const fetchUserInfo = async (assigned: string) => {
-    try {
-      const data = await fetch(`/api/user/${assigned}`, {
-        signal: abortControllerRef.current?.signal,
-      });
-      if (!data.ok) {
-        throw new Error("Failed to fetch user info");
-      }
-
-      const {
-        user: { name, email },
-      }: {
-        user: User;
-      } = await data.json();
-
-      return {
-        name,
-        email,
-      };
-    } catch (error: unknown) {
-      if (error instanceof Error && error.name === "AbortError") {
-        console.log("Request was aborted");
-      } else {
-        console.error("Error fetching user info:", error);
-      }
-    }
-  };
-
-  const handleAssignUserUpdate = (name: User["name"], email: User["email"]) => {
-    batch(() => {
-      assignedUser.value.name.value = name;
-      assignedUser.value.email.value = email;
-    });
-  };
-
-  const handleUpdateAssignedUser = async () => {
-    if (
-      post.type.value === PostType.action_item &&
-      post.action?.assigned.value
-    ) {
-      const assignedUserId = post.action.assigned.value;
-      const userInfo = await fetchUserInfo(assignedUserId);
-      if (userInfo) {
-        handleAssignUserUpdate(userInfo.name, userInfo.email);
-      }
-    }
-  };
-
-  useEffectOnce(() => {
-    handleUpdateAssignedUser();
-  });
-
-  useSignalEffect(() => {
-    handleUpdateAssignedUser();
-  });
-
-  useUnmount(() => {
-    abortControllerRef.current?.abort();
-  });
+    },
+    [post.id, post.boardId, post.action?.assigned.value]
+  );
 
   return (
     <CardFooter className="flex justify-between p-2">
@@ -296,34 +223,19 @@ const PostCardFooter = ({
           <Badge className="flex items-center justify-center">
             <p className="text-xs">{badgeText}</p>
           </Badge>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={`https://www.gravatar.com/avatar/${MD5(
-                          assignedUser.value.email.value
-                        )}?d=404&s=48`}
-                        alt={assignedUser.value.name.value}
-                      />
-                      <AvatarFallback>{assignedUser.value.name}</AvatarFallback>
-                    </Avatar>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Assign Task</DialogTitle>
-                    </DialogHeader>
-                    <MemberList viewOnly={true} onAssign={handleAssign} />
-                  </DialogContent>
-                </Dialog>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{assignedUser.value.name}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Dialog>
+            <DialogTrigger asChild>
+              <AvatarIconWithFallback
+                userID={post.action?.assigned.value ?? ""}
+              />
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Assign Task</DialogTitle>
+              </DialogHeader>
+              <MemberList viewOnly={true} onAssign={handleAssign} />
+            </DialogContent>
+          </Dialog>
         </>
       )}
       {post.type.value !== PostType.action_item && (
@@ -341,7 +253,9 @@ const PostCardFooter = ({
       )}
     </CardFooter>
   );
-};
+});
+
+PostCardFooter.displayName = "PostCardFooter";
 
 const cardTypes: Record<Post["type"], string> = {
   [PostType.went_well]: "bg-green-100",
@@ -391,13 +305,21 @@ const PostCard = memo(function PostCard({
       console.error("Error while voting:", error);
       toast.error("Failed to vote.");
     }
-  }, [viewOnly, hasVoted, post, userId, addVotedPost, removeVotedPost]);
+  }, [
+    viewOnly,
+    hasVoted,
+    post.id,
+    userId,
+    post.boardId,
+    addVotedPost,
+    removeVotedPost,
+  ]);
 
   useEffect(() => {
     if (!viewOnly) {
       const postCardEl = ref.current;
       invariant(postCardEl, "postCardEl is null");
-      return draggable({
+      const cleanup = draggable({
         element: postCardEl,
         getInitialData: () => ({
           id: post.id,
@@ -407,6 +329,7 @@ const PostCard = memo(function PostCard({
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
       });
+      return () => cleanup();
     }
   }, [post, viewOnly]);
 
@@ -440,5 +363,7 @@ const PostCard = memo(function PostCard({
     </Card>
   );
 });
+
+PostCard.displayName = "PostCard";
 
 export default PostCard;
