@@ -18,25 +18,50 @@ export const AvatarIcon = forwardRef<HTMLDivElement, AvatarIconProps>(
 
     if (isError) {
       return (
-        <Avatar className={cn("h-8 w-8", className)} ref={ref}>
-          <AvatarFallback>UU</AvatarFallback>
+        <Avatar
+          className={cn(
+            "inline-flex size-[36px] select-none items-center justify-center overflow-hidden rounded-full bg-blackA1 align-middle",
+            className
+          )}
+          ref={ref}
+        >
+          <AvatarFallback className="leading-1 flex size-full items-center justify-center bg-white text-[15px] font-medium text-violet11">
+            Error
+          </AvatarFallback>
         </Avatar>
       );
     }
 
     if (isLoading) {
-      return <Skeleton className={cn("h-8 w-8 rounded-full", className)} />;
+      return (
+        <Avatar
+          className={cn(
+            "inline-flex size-[36px] select-none items-center justify-center overflow-hidden rounded-full bg-blackA1 align-middle",
+            className
+          )}
+          ref={ref}
+        >
+          <Skeleton className="size-full rounded-[inherit] object-cover" />
+        </Avatar>
+      );
     }
 
     const avatarContent = (
-      <Avatar className={cn("h-8 w-8", className)} ref={ref}>
+      <Avatar
+        className={cn(
+          "inline-flex size-[36px] select-none items-center justify-center overflow-hidden rounded-full bg-blackA1 align-middle",
+          className
+        )}
+        ref={ref}
+      >
         <AvatarImage
           src={`https://www.gravatar.com/avatar/${MD5(
             user?.email ?? ""
-          )}?d=404&s=48`}
+          )}?d=404&s=36`}
           alt={user?.name ?? "Unknown User"}
+          className="size-full rounded-[inherit] object-cover"
         />
-        <AvatarFallback>
+        <AvatarFallback className="leading-1 flex size-full items-center justify-center bg-white text-[15px] font-medium text-violet11">
           {user?.name ? user.name.charAt(0).toUpperCase() : "UU"}
         </AvatarFallback>
       </Avatar>
