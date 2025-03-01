@@ -1,5 +1,7 @@
 "use client";
 
+import { AvatarIcon } from "@/components/common/AvatarIcon";
+import { DialogItem } from "@/components/common/DialogItem";
 import CustomLink from "@/components/common/Link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,8 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -25,6 +29,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -50,20 +55,16 @@ import { toast } from "@/lib/signal/toastSignals";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
-import dynamic from "next/dynamic";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import invariant from "tiny-invariant";
-import { AvatarIcon } from "../common/AvatarIcon";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import type { MemberInfo } from "./MemberManageModalComponent";
 import { useVotedPosts } from "./PostProvider";
-
-const EditDialog = dynamic(() => import("./EditDialog"), { ssr: false });
 
 interface PostCardHeaderProps {
   post: PostSignal;
@@ -79,6 +80,8 @@ const PostCardHeader = memo(function PostCardHeader({
   const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownTriggerRef = useRef(null);
+  const focusRef = useRef(null);
 
   const handleEdit = useCallback(() => {
     if (onUpdate) {
@@ -110,16 +113,43 @@ const PostCardHeader = memo(function PostCardHeader({
     [post.id, post.action?.state.value, post.boardId]
   );
 
+  function handleDialogItemSelect() {
+    focusRef.current = dropdownTriggerRef.current;
+  }
+
+  function handleDialogItemOpenChange(open: boolean) {
+    setIsEditing(open);
+    if (open === false) {
+      setIsDropdownOpen(false);
+    }
+  }
+
   return (
     <CardHeader className="flex flex-row items-center justify-end space-y-0 p-2">
-      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+      <DropdownMenu
+        open={isDropdownOpen}
+        onOpenChange={setIsDropdownOpen}
+        modal={false}
+      >
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          sideOffset={5}
+          hidden={isEditing}
+          onCloseAutoFocus={(event) => {
+            if (focusRef.current) {
+              // Type assertion to tell TypeScript that focusRef.current has a focus method
+              (focusRef.current as HTMLElement).focus();
+              focusRef.current = null;
+              event.preventDefault();
+            }
+          }}
+        >
           {post.type.value === PostType.action_item && (
             <>
               <DropdownMenuSub>
@@ -144,26 +174,45 @@ const PostCardHeader = memo(function PostCardHeader({
               </DropdownMenuSub>
             </>
           )}
-          <EditDialog
-            isOpen={isEditing}
-            onOpenChange={setIsEditing}
-            content={message}
-            onContentChange={setMessage}
-            onSave={handleEdit}
-            variant="edit"
-            trigger={
-              <DropdownMenuItem
-                onClick={(e) => {
-                  setIsEditing(true);
-                  setMessage(post.content.value);
-                  e.preventDefault();
-                }}
-                className="text-blue-500 focus:text-blue-500 focus:bg-blue-50"
-              >
+          <DialogItem
+            triggerChildren={
+              <span className="text-blue-500 focus:text-blue-500 focus:bg-blue-50">
                 Edit
-              </DropdownMenuItem>
+              </span>
             }
-          />
+            onSelect={() => {
+              handleDialogItemSelect();
+              setMessage(post.content.value);
+            }}
+            onOpenChange={handleDialogItemOpenChange}
+            className="~max-w-[425px] ~md:~max-w-[31.25rem]/[43.75rem]"
+          >
+            <DialogHeader>
+              <DialogTitle>Edit Post</DialogTitle>
+              <DialogDescription>
+                Edit your post below and click save when you&apos;re done.
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="min-h-[200px] w-full ~md:~min-w-[21.875rem]/[34.375rem]"
+              aria-label="Edit post content"
+              autoComplete="on"
+              spellCheck="true"
+            />
+            <DialogFooter className="mt-4">
+              <Button
+                onClick={() => {
+                  handleEdit();
+                  handleDialogItemOpenChange(false);
+                }}
+                type="submit"
+              >
+                Save
+              </Button>
+            </DialogFooter>
+          </DialogItem>
           <DropdownMenuItem
             onClick={() => onDelete(post.id)}
             className="text-red-500 focus:text-red-500 focus:bg-red-50"
@@ -290,7 +339,7 @@ interface PostCardProps {
   userId: User["id"];
 }
 
-const PostCard = memo(function PostCard({
+function PostCard({
   post,
   viewOnly = false,
   onDelete,
@@ -351,6 +400,20 @@ const PostCard = memo(function PostCard({
     }
   }, [post, viewOnly]);
 
+  const parsedContent = useComputed(() => (
+    <Markdown
+      components={{
+        a: ({ href, children }) => (
+          <CustomLink href={href || ""}>{children}</CustomLink>
+        ),
+      }}
+      remarkPlugins={[remarkGfm, remarkBreaks]}
+      rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
+    >
+      {post.content.value}
+    </Markdown>
+  ));
+
   return (
     <Card
       className={`w-full ${cardTypes[post.type.value]} ${
@@ -362,25 +425,18 @@ const PostCard = memo(function PostCard({
         <PostCardHeader post={post} onDelete={onDelete} onUpdate={onUpdate} />
       )}
       <CardContent className="px-3 py-1">
-        <Markdown
+        <div
           className={`${
             isAnonymous ? "blur-sm select-none" : "select-text"
           } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
-          components={{
-            a: ({ href, children }) => (
-              <CustomLink href={href || ""}>{children}</CustomLink>
-            ),
-          }}
-          remarkPlugins={[remarkGfm, remarkBreaks]}
-          rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
         >
-          {post.content.value}
-        </Markdown>
+          {parsedContent}
+        </div>
       </CardContent>
       <PostCardFooter post={post} viewOnly={viewOnly} handleVote={handleVote} />
     </Card>
   );
-});
+}
 
 PostCard.displayName = "PostCard";
 

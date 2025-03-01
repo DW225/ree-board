@@ -72,18 +72,17 @@ export default function BoardColumn({
   const handlePostUpdate = useCallback(
     async (id: string, newContent: string) => {
       try {
-        animatedPosts.value = animatedPosts.value.map((post) =>
-          post.id === id ? { ...post, isRemoving: true } : post
-        );
-        await new Promise((resolve) => setTimeout(resolve, 300)); // Wait for animation
+        // Update the post content on the server
         await authenticatedUpdatePostContent(id, boardID, newContent, userId);
+
+        // Update the post content in the local state
         updatePostContent(id, newContent);
       } catch (error) {
         toast.error("Failed to update post");
         console.error("Failed to update post:", error);
       }
     },
-    [animatedPosts, boardID, userId]
+    [boardID, userId]
   );
 
   useEffect(() => {
