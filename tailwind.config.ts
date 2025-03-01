@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import type { Config } from "tailwindcss";
-import fluid, { extract } from "fluid-tailwind";
+import fluid, { extract, screens, fontSize } from "fluid-tailwind";
 import typography from "@tailwindcss/typography";
 import tailwindcssAnimate from "tailwindcss-animate";
 
@@ -15,6 +15,8 @@ const config: Config = {
     extract,
   },
   theme: {
+    screens, // Tailwind's default screens, in `rem`
+    fontSize, // Tailwind's default font sizes, in `rem` (including line heights)
     extend: {
       borderRadius: {
         lg: "var(--radius)",
