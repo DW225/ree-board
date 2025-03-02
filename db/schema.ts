@@ -1,13 +1,12 @@
 import { sql } from "drizzle-orm";
 import {
-  text,
-  sqliteTable,
-  integer,
-  index,
-  unique,
   check,
+  index,
+  integer,
+  sqliteTable,
+  text,
+  unique,
 } from "drizzle-orm/sqlite-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const userTable = sqliteTable(
   "user",
@@ -20,13 +19,9 @@ export const userTable = sqliteTable(
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
   },
-  (table) => ({
-    nameIdx: index("user_name_index").on(table.name),
-  })
+  (table) => [index("user_name_index").on(table.name)]
 );
 
-export const insertUserSchema = createInsertSchema(userTable);
-export const selectUserSchema = createSelectSchema(userTable);
 export type NewUser = typeof userTable.$inferInsert;
 export type User = typeof userTable.$inferSelect;
 
@@ -51,13 +46,9 @@ export const boardTable = sqliteTable(
       onDelete: "set null",
     }),
   },
-  (table) => ({
-    stateIdx: index("board_state_index").on(table.state),
-  })
+  (table) => [index("board_state_index").on(table.state)]
 );
 
-export const insertBoardSchema = createInsertSchema(boardTable);
-export const selectBoardSchema = createSelectSchema(boardTable);
 export type NewBoard = typeof boardTable.$inferInsert;
 export type Board = typeof boardTable.$inferSelect;
 
@@ -90,17 +81,12 @@ export const postTable = sqliteTable(
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
   },
-  (table) => ({
-    boardIdIdx: index("post_board_id_index").on(table.boardId),
-    voteCountConstraint: check(
-      "vote_count_check",
-      sql`${table.voteCount} >= 0`
-    ),
-  })
+  (table) => [
+    index("post_board_id_index").on(table.boardId),
+    check("vote_count_check", sql`${table.voteCount} >= 0`),
+  ]
 );
 
-export const insertPostSchema = createInsertSchema(postTable);
-export const selectPostSchema = createSelectSchema(postTable);
 export type NewPost = typeof postTable.$inferInsert;
 export type Post = typeof postTable.$inferSelect;
 
@@ -132,15 +118,13 @@ export const memberTable = sqliteTable(
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
   },
-  (table) => ({
-    userIdIdx: index("members_user_id_index").on(table.userId),
-    boardIdIdx: index("members_board_id_index").on(table.boardId),
-    boardUserUnique: unique().on(table.boardId, table.userId),
-  })
+  (table) => [
+    index("members_user_id_index").on(table.userId),
+    index("members_board_id_index").on(table.boardId),
+    unique().on(table.boardId, table.userId),
+  ]
 );
 
-export const insertMemberSchema = createInsertSchema(memberTable);
-export const selectMemberSchema = createSelectSchema(memberTable);
 export type NewMember = typeof memberTable.$inferInsert;
 export type Member = typeof memberTable.$inferSelect;
 
@@ -164,14 +148,14 @@ export const voteTable = sqliteTable(
       })
       .notNull(),
   },
-  (table) => ({
-    compositeIdx: index("votes_composite_index").on(
+  (table) => [
+    index("votes_composite_index").on(
       table.boardId,
       table.userId,
       table.postId
     ),
-    uniqueVote: unique().on(table.boardId, table.userId, table.postId),
-  })
+    unique().on(table.boardId, table.userId, table.postId),
+  ]
 );
 
 export enum ActionState {
@@ -209,11 +193,11 @@ export const actionsTable = sqliteTable(
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
   },
-  (table) => ({
-    uniqueAction: unique().on(table.boardId, table.userId, table.postId),
-    userIdx: index("actions_user_id_index").on(table.userId),
-    boardIdx: index("actions_board_id_index").on(table.boardId),
-  })
+  (table) => [
+    unique().on(table.boardId, table.userId, table.postId),
+    index("actions_user_id_index").on(table.userId),
+    index("actions_board_id_index").on(table.boardId),
+  ]
 );
 
 export type NewAction = typeof actionsTable.$inferInsert;
