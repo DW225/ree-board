@@ -61,7 +61,7 @@ const VotedPostsContext = createContext<VotedPostsContextType | undefined>(
 );
 
 interface VotedPostsProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
   initial: {
     votedPosts: string[];
   };

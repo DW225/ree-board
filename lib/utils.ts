@@ -2,10 +2,10 @@ import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 import { withFluid } from "@fluid-tailwind/tailwind-merge";
 
-  export function cn(...inputs: ClassValue[]) {
-    const twMerge = extendTailwindMerge(withFluid);
-    return twMerge(clsx(inputs));
-  }
+export function cn(...inputs: ClassValue[]) {
+  const twMerge = extendTailwindMerge(withFluid);
+  return twMerge(clsx(inputs));
+}
 
 export function getEnumKeys<
   T extends string,
@@ -14,4 +14,5 @@ export function getEnumKeys<
   return Object.keys(enumVariable) as Array<T>;
 }
 
-export const fetcher = (...args: [RequestInfo, RequestInit?]) => fetch(...args).then((res) => res.json());
+export const fetcher = (...args: [RequestInfo, RequestInit?]) =>
+  fetch(...args).then((res) => res.json());
