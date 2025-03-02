@@ -1,9 +1,9 @@
-import type { Board, User } from "@/db/schema";
 import { boardTable, memberTable, Role, userTable } from "@/db/schema";
+import type { Board, User } from "@/lib/types";
 import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import { db } from "./client";
 import { addMember, checkMemberRole } from "./member";
-import { nanoid } from "nanoid";
 
 export async function fetchBoards(
   userId: User["id"] | User["kinde_id"],

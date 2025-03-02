@@ -1,4 +1,4 @@
-import type { User } from "@/db/schema";
+import type { User } from "@/lib/types";
 import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
 

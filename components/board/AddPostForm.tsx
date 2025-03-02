@@ -6,7 +6,7 @@ import React, { useState } from "react";
 import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { NewAction, Post } from "@/db/schema";
+import type { NewAction, Post } from "@/lib/types";
 import { PostType } from "@/db/schema";
 import {
   authedCreateAction,

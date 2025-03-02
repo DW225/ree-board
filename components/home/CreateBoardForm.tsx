@@ -1,11 +1,12 @@
 "use client";
 
-import React from "react";
-import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
-import { BoardState, type NewBoard } from "@/db/schema";
-import { nanoid } from "nanoid";
+import { BoardState } from "@/db/schema";
 import { authenticatedCreateBoard } from "@/lib/actions/authenticatedActions";
+import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
 import { toast } from "@/lib/signal/toastSignals";
+import type { NewBoard } from "@/lib/types";
+import { nanoid } from "nanoid";
+import React from "react";
 
 interface CreateBoardFormProps {
   userID: string;

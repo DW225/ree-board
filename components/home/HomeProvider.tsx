@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react";
 import { boardSignalInitial } from "@/lib/signal/boardSignals";
-import type { Board } from "@/db/schema";
+import type { Board } from "@/lib/types";
 import { useEffectOnce } from "@/lib/utils/effect";
+import React from "react";
 
 interface HomeProviderProps {
   children: React.ReactNode;

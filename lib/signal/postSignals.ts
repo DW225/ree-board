@@ -1,5 +1,5 @@
-import type { Action, NewAction, Post, PostType } from "@/db/schema";
 import { ActionState } from "@/db/schema";
+import type { Action, NewAction, Post } from "@/lib/types";
 import type { Signal } from "@preact/signals-react";
 import { signal } from "@preact/signals-react";
 
@@ -71,7 +71,7 @@ export const updatePostContent = (
   postSignal.value[index].content.value = newContent;
 };
 
-export const updatePostType = (postID: Post["id"], newType: PostType) => {
+export const updatePostType = (postID: Post["id"], newType: Post["type"]) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index === -1) return;
 

@@ -1,5 +1,5 @@
-import type { ActionState, Post } from "@/db/schema";
-import { actionsTable, type NewAction } from "@/db/schema";
+import { actionsTable } from "@/db/schema";
+import type { Action, Board, NewAction, Post, User } from "@/lib/types";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
 
@@ -18,7 +18,7 @@ export async function createAction(action: NewAction) {
   return result[0].id;
 }
 
-export async function fetchActions(boardId: string) {
+export async function fetchActions(boardId: Board["id"]) {
   return await db
     .select()
     .from(actionsTable)
@@ -27,7 +27,7 @@ export async function fetchActions(boardId: string) {
 
 export async function assignPostAction(
   postID: Post["id"],
-  userId: string | null
+  userId: User["id"] | null
 ) {
   if (!postID) throw new Error("postId is required");
   try {
@@ -51,7 +51,7 @@ export async function assignPostAction(
  */
 export async function updateActionState(
   postID: Post["id"],
-  newState: ActionState
+  newState: Action["state"]
 ) {
   await db
     .update(actionsTable)
