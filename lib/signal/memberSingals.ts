@@ -1,5 +1,5 @@
 import type { MemberInfo } from "@/components/board/MemberManageModalComponent";
-import type { Member } from "@/db/schema";
+import type { Member } from "@/lib/types";
 import { signal } from "@preact/signals-react";
 
 export const memberSignal = signal<MemberInfo[]>([]);

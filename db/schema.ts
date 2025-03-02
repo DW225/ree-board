@@ -22,9 +22,6 @@ export const userTable = sqliteTable(
   (table) => [index("user_name_index").on(table.name)]
 );
 
-export type NewUser = typeof userTable.$inferInsert;
-export type User = typeof userTable.$inferSelect;
-
 export enum BoardState {
   active,
   archived,
@@ -48,9 +45,6 @@ export const boardTable = sqliteTable(
   },
   (table) => [index("board_state_index").on(table.state)]
 );
-
-export type NewBoard = typeof boardTable.$inferInsert;
-export type Board = typeof boardTable.$inferSelect;
 
 export enum PostType {
   "went_well",
@@ -87,9 +81,6 @@ export const postTable = sqliteTable(
   ]
 );
 
-export type NewPost = typeof postTable.$inferInsert;
-export type Post = typeof postTable.$inferSelect;
-
 export enum Role {
   owner,
   member,
@@ -124,9 +115,6 @@ export const memberTable = sqliteTable(
     unique().on(table.boardId, table.userId),
   ]
 );
-
-export type NewMember = typeof memberTable.$inferInsert;
-export type Member = typeof memberTable.$inferSelect;
 
 export const voteTable = sqliteTable(
   "vote",
@@ -199,6 +187,3 @@ export const actionsTable = sqliteTable(
     index("actions_board_id_index").on(table.boardId),
   ]
 );
-
-export type NewAction = typeof actionsTable.$inferInsert;
-export type Action = typeof actionsTable.$inferSelect;

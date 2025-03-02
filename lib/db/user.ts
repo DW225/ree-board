@@ -1,5 +1,5 @@
-import type { NewUser, User} from "@/db/schema";
 import { userTable } from "@/db/schema";
+import type { NewUser, User } from "@/lib/types";
 import { eq, or } from "drizzle-orm";
 import { db } from "./client";
 
@@ -34,7 +34,7 @@ export const getUserByKindeID = async (kindeId: User["kinde_id"]) => {
   return result.length > 0 ? result[0] : undefined;
 };
 
-export const deleteUser = async (userID: string) => {
+export const deleteUser = async (userID: User["id"] | User["kinde_id"]) => {
   const result = await db
     .delete(userTable)
     .where(or(eq(userTable.id, userID), eq(userTable.kinde_id, userID)))
@@ -42,7 +42,7 @@ export const deleteUser = async (userID: string) => {
   return result.length > 0 ? result[0] : "No user deleted";
 };
 
-export const findUserByEmail = async (email: string) => {
+export const findUserByEmail = async (email: User["email"]) => {
   const result = await db
     .select()
     .from(userTable)
@@ -51,7 +51,7 @@ export const findUserByEmail = async (email: string) => {
   return result.length > 0 ? result[0] : undefined;
 };
 
-export const getUserByUserID = async (userID: string) => {
+export const getUserByUserID = async (userID: User["id"]) => {
   const result = await db
     .select()
     .from(userTable)

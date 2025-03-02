@@ -1,5 +1,5 @@
-import type { Board, Post, User } from "@/db/schema";
 import { voteTable } from "@/db/schema";
+import type { Board, Post, User } from "@/lib/types";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./client";
@@ -20,7 +20,7 @@ export async function upVote(
 export async function downVote(
   postID: Post["id"],
   userId: User["id"],
-  boardId: string
+  boardId: Board["id"]
 ) {
   await db
     .delete(voteTable)

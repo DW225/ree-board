@@ -36,7 +36,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { Action, Post, User } from "@/db/schema";
 import { ActionState, PostType } from "@/db/schema";
 import {
   authedPostActionStateUpdate,
@@ -52,6 +51,7 @@ import {
   type PostSignal,
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
+import type { Action, Post, User } from "@/lib/types";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";

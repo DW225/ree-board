@@ -1,5 +1,5 @@
-import type { Board, NewPost, Post } from "@/db/schema";
 import { postTable } from "@/db/schema";
+import type { Board, NewPost, Post } from "@/lib/types";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
 

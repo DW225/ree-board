@@ -1,14 +1,5 @@
 "use server";
 
-import type {
-  ActionState,
-  NewAction,
-  NewBoard,
-  NewMember,
-  NewPost,
-  Post,
-  PostType,
-} from "@/db/schema";
 import {
   assignPostAction,
   createAction,
@@ -25,6 +16,16 @@ import {
 } from "@/lib/db/post";
 import { findUserByEmail } from "@/lib/db/user";
 import { downVote, upVote } from "@/lib/db/vote";
+import type {
+  Action,
+  Board,
+  NewAction,
+  NewBoard,
+  NewMember,
+  NewPost,
+  Post,
+  User,
+} from "@/lib/types";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
@@ -59,9 +60,9 @@ export const authenticatedCreatePost = async (post: NewPost) =>
   );
 
 export const authenticatedDeletePost = async (
-  id: string,
-  boardId: string,
-  updater: string
+  id: Post["id"],
+  boardId: Board["id"],
+  updater: User["id"]
 ) =>
   authenticatedAction(() =>
     Promise.all([
@@ -79,10 +80,10 @@ export const authenticatedDeletePost = async (
   );
 
 export const authenticatedUpdatePostType = async (
-  id: string,
-  boardId: string,
-  newType: PostType,
-  updater: string
+  id: Post["id"],
+  boardId: Board["id"],
+  newType: Post["type"],
+  updater: User["id"]
 ) =>
   authenticatedAction(() =>
     Promise.all([
@@ -100,10 +101,10 @@ export const authenticatedUpdatePostType = async (
   );
 
 export const authenticatedUpdatePostContent = async (
-  id: string,
-  boardId: string,
-  newContent: string,
-  updater: string
+  id: Post["id"],
+  boardId: Board["id"],
+  newContent: Post["content"],
+  updater: User["id"]
 ) =>
   authenticatedAction(() =>
     Promise.all([
@@ -120,12 +121,12 @@ export const authenticatedUpdatePostContent = async (
     ])
   );
 
-export const authenticatedFetchPostsByBoardID = async (boardId: string) =>
+export const authenticatedFetchPostsByBoardID = async (boardId: Board["id"]) =>
   authenticatedAction(() => fetchPostsByBoardID(boardId));
 
 export const authenticatedCreateBoard = async (
   board: NewBoard,
-  userId: string
+  userId: User["id"]
 ) =>
   authenticatedAction(() =>
     createBoard(
@@ -140,25 +141,25 @@ export const authenticatedCreateBoard = async (
   );
 
 export const authenticatedDeleteBoard = async (
-  boardId: string,
-  userId: string
+  boardId: Board["id"],
+  userId: User["id"]
 ) => authenticatedAction(() => deleteBoard(boardId, userId));
 
-export const authenticatedFindUserByEmail = async (email: string) =>
+export const authenticatedFindUserByEmail = async (email: User["email"]) =>
   authenticatedAction(() => findUserByEmail(email));
 
 export const authenticatedAddMemberToBoard = async (newMember: NewMember) =>
   authenticatedAction(() => addMember(newMember));
 
 export const authenticatedRemoveMemberFromBoard = async (
-  userId: string,
-  boardId: string
+  userId: User["id"],
+  boardId: Board["id"]
 ) => authenticatedAction(() => removeMember(userId, boardId));
 
 export const authenticatedUpVotePost = async (
   postID: Post["id"],
-  userId: string,
-  boardId: string
+  userId: User["id"],
+  boardId: Board["id"]
 ) =>
   authenticatedAction(() =>
     Promise.all([
@@ -177,8 +178,8 @@ export const authenticatedUpVotePost = async (
 
 export const authenticatedDownVotePost = async (
   postID: Post["id"],
-  userId: string,
-  boardId: string
+  userId: User["id"],
+  boardId: Board["id"]
 ) =>
   authenticatedAction(() =>
     Promise.all([
@@ -208,8 +209,8 @@ export const authedCreateAction = async (action: NewAction) =>
 
 export const authedPostAssign = async (action: {
   postID: Post["id"];
-  userId: string | null;
-  boardId: string;
+  userId: User["id"] | null;
+  boardId: Board["id"];
 }) =>
   authenticatedAction(() =>
     Promise.all([
@@ -229,8 +230,8 @@ export const authedPostAssign = async (action: {
 
 export const authedPostActionStateUpdate = async (action: {
   postID: Post["id"];
-  state: ActionState;
-  boardId: string;
+  state: Action["state"];
+  boardId: Board["id"];
 }) =>
   authenticatedAction(() =>
     Promise.all([

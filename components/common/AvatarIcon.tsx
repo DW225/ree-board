@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import type { User } from "@/db/schema";
 import { useUser } from "@/hooks/useUser";
+import type { User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { MD5 } from "crypto-js";
