@@ -1,9 +1,8 @@
 "use client";
 
 import { boardSignal } from "@/lib/signal/boardSignals";
-import React from "react";
-import BoardCard from "./BoardCard";
 import { useSignals } from "@preact/signals-react/runtime";
+import BoardCard from "./BoardCard";
 
 export default function BoardList() {
   useSignals();

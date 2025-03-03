@@ -2,17 +2,14 @@
 
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import React from "react";
+import type { FC } from "react";
 
 interface BoardCardProps {
   boardId: string;
   title: string;
 }
 
-const BoardCard: React.FC<BoardCardProps> = ({
-  boardId,
-  title
-}) => {
+const BoardCard: FC<BoardCardProps> = ({ boardId, title }) => {
   const router = useRouter();
 
   const handleClick = () => {

@@ -6,7 +6,7 @@ import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import type { NewBoard } from "@/lib/types";
 import { nanoid } from "nanoid";
-import React from "react";
+import type { FormEvent } from "react";
 
 interface CreateBoardFormProps {
   userID: string;
@@ -15,7 +15,7 @@ interface CreateBoardFormProps {
 export default function CreateBoardForm({
   userID,
 }: Readonly<CreateBoardFormProps>) {
-  const createNewBoard = async (e: React.FormEvent<HTMLFormElement>) => {
+  const createNewBoard = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const titleInput = form.elements.namedItem("title") as HTMLInputElement;

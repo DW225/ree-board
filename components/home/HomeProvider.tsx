@@ -1,30 +1,22 @@
-"use client"
+"use client";
 
 import { boardSignalInitial } from "@/lib/signal/boardSignals";
 import type { Board } from "@/lib/types";
 import { useEffectOnce } from "@/lib/utils/effect";
-import React from "react";
+import type { FC, ReactNode } from "react";
 
 interface HomeProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
   initialBoards: Board[];
 }
 
-const HomeProvider: React.FC<HomeProviderProps> = ({
-  children,
-  initialBoards,
-}) => {
-
+const HomeProvider: FC<HomeProviderProps> = ({ children, initialBoards }) => {
   // Initialize the boardSignal with the initial data
   useEffectOnce(() => {
     boardSignalInitial(initialBoards);
   });
 
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 };
 
 export default HomeProvider;

@@ -1,12 +1,8 @@
 "use client";
 
-import { nanoid } from "nanoid";
-import React, { useState } from "react";
-
 import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { NewAction, Post } from "@/lib/types";
 import { PostType } from "@/db/schema";
 import {
   authedCreateAction,
@@ -14,7 +10,11 @@ import {
 } from "@/lib/actions/authenticatedActions";
 import { addPost, addPostAction, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
+import type { NewAction, Post } from "@/lib/types";
 import { Plus, X } from "lucide-react";
+import { nanoid } from "nanoid";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
 interface AddPostFormProps {
   userId: string;
@@ -34,7 +34,7 @@ export default function AddPostForm({
   const formId = `${boardID}-${postType}`;
   const isAdding = openFormId === formId;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 

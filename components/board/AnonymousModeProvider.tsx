@@ -1,6 +1,7 @@
 "use client";
 
-import { useContext, useState, createContext, useMemo } from "react";
+import type { FC, ReactNode } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 interface AnonymousModeContextType {
   isAnonymous: boolean;
@@ -21,8 +22,8 @@ export const useAnonymousMode = () => {
   return context;
 };
 
-const AnonymousModeProvider: React.FC<{
-  children: React.ReactNode;
+const AnonymousModeProvider: FC<{
+  children: ReactNode;
   initialState?: boolean;
 }> = ({ children, initialState = false }) => {
   const [isAnonymous, setIsAnonymous] = useState(initialState);

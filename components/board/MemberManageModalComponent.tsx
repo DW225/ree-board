@@ -27,8 +27,8 @@ import { toast } from "@/lib/signal/toastSignals";
 import { PlusCircle } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
-import type { ReactNode } from "react";
-import React, { useCallback, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
+import { useCallback, useState } from "react";
 
 interface MemberManageProps {
   boardId: string;
@@ -56,7 +56,7 @@ export default function MemberManageModalComponent({
   const [newMember, setNewMember] = useState({ email: "" });
   const [memberToRemove, setMemberToRemove] = useState<MemberInfo | null>(null);
 
-  const handleAddMember = async (e: React.FormEvent) => {
+  const handleAddMember = async (e: FormEvent) => {
     e.preventDefault();
     if (!newMember.email) return;
 
