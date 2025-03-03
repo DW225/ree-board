@@ -2,15 +2,13 @@
 const stateIdentity = new Int32Array([
   1732584193, -271733879, -1732584194, 271733878,
 ]);
-const hexChars = "0123456789abcdef";
-const hexOut: string[] = [];
 
 /**
  * Converts an Int32Array to a hexadecimal string
  */
 function _hex(x: Int32Array): string {
-  const hc = hexChars;
-  const ho = hexOut;
+  const hc = "0123456789abcdef";
+  const ho: string[] = [];
   let n;
   let offset;
   let j;
