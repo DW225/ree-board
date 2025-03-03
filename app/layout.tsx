@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ const VercelToolbar = dynamic(
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   const shouldInjectToolbar = process.env.NODE_ENV === "development";
   const shouldInjectSpeedInsights = process.env.NODE_ENV !== "development";

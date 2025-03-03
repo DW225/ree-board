@@ -1,5 +1,4 @@
-import type { ReactNode } from "react";
-import React from "react";
+import type { FC, ReactNode } from "react";
 
 interface NavBarItemProps {
   children: ReactNode;
@@ -8,7 +7,12 @@ interface NavBarItemProps {
   testId?: string;
 }
 
-const NavBarItem: React.FC<NavBarItemProps> = ({ children, className, tabIndex, testId }) => {
+const NavBarItem: FC<NavBarItemProps> = ({
+  children,
+  className,
+  tabIndex,
+  testId,
+}) => {
   const defaultClasses = "btn btn-ghost";
   const btnClasses = className
     ? `${className} ${defaultClasses}`

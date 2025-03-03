@@ -9,8 +9,8 @@ import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
 import type { Action, Post } from "@/lib/types";
 import { useEffectOnce } from "@/lib/utils/effect";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import type { ReactNode } from "react";
-import React, {
+import type { FC, ReactNode } from "react";
+import  {
   createContext,
   useCallback,
   useContext,
@@ -67,7 +67,7 @@ interface VotedPostsProviderProps {
   };
 }
 
-export const VotedPostsProvider: React.FC<VotedPostsProviderProps> = ({
+export const VotedPostsProvider: FC<VotedPostsProviderProps> = ({
   children,
   initial,
 }) => {
@@ -116,7 +116,7 @@ export const VotedPostsProvider: React.FC<VotedPostsProviderProps> = ({
 };
 
 interface PostProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
   initials: {
     posts: Post[];
     members: MemberInfo[];
@@ -127,7 +127,7 @@ interface PostProviderProps {
   userId: string;
 }
 
-const PostProvider: React.FC<PostProviderProps> = ({
+const PostProvider: FC<PostProviderProps> = ({
   children,
   initials,
   boardId,

@@ -2,11 +2,12 @@
 
 import { BaseRealtime, FetchRequest, WebSocketTransport } from "ably/modular";
 import { AblyProvider, ChannelProvider } from "ably/react";
+import type { ReactNode } from "react";
 import { useMemo } from "react";
 
 interface RTLProviderProps {
   boardId: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function RTLProvider({

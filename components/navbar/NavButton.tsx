@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
+import type { ReactNode } from "react";
 
 type NavButtonProps = {
   onClick?: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   ariaLabel: string;
   className?: string;
 };

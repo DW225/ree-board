@@ -1,7 +1,7 @@
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { PostType } from "@/db/schema";
 import dynamic from "next/dynamic";
-import React from "react";
+import type { FC } from "react";
 
 const BoardColumn = dynamic(() => import("@/components/board/BoardColumn"), {
   loading: () => <LoadingSpinner />,
@@ -14,7 +14,7 @@ interface BoardGridProps {
   userId: string;
 }
 
-const BoardGrid: React.FC<BoardGridProps> = async ({
+const BoardGrid: FC<BoardGridProps> = async ({
   boardID,
   viewOnly,
   userId,

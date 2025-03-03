@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 type NavLinkProps = {
   href: string;
-  children: React.ReactNode;
+  children: ReactNode;
   onClick?: () => void;
   className?: string;
 };
