@@ -37,7 +37,7 @@
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",
-    "drizzle-zod": "^0.5.1",
+    "drizzle-zod": "^0.7.0",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
     "lodash": "^4.17.21",
