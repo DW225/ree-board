@@ -1,4 +1,4 @@
-import type { Board } from "@/lib/types";
+import type { Board } from "@/lib/types/board";
 import { signal } from "@preact/signals-react";
 
 // Create a signal to store the boards

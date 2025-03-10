@@ -1,5 +1,6 @@
 import { ActionState } from "@/db/schema";
-import type { Action, NewAction, Post } from "@/lib/types";
+import type { Action, NewAction } from "@/lib/types/action";
+import type { Post } from "@/lib/types/post";
 import type { Signal } from "@preact/signals-react";
 import { signal } from "@preact/signals-react";
 

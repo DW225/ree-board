@@ -1,5 +1,8 @@
 import { actionsTable } from "@/db/schema";
-import type { Action, Board, NewAction, Post, User } from "@/lib/types";
+import type { Action, NewAction } from "@/lib/types/action";
+import type { Board } from "@/lib/types/board";
+import type { Post } from "@/lib/types/post";
+import type { User } from "@/lib/types/user";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
 
