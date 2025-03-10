@@ -18,14 +18,15 @@ import { findUserByEmail } from "@/lib/db/user";
 import { downVote, upVote } from "@/lib/db/vote";
 import type {
   Action,
-  Board,
   NewAction,
+} from "@/lib/types/action";
+import type {
+  Board,
   NewBoard,
-  NewMember,
-  NewPost,
-  Post,
-  User,
-} from "@/lib/types";
+} from "@/lib/types/board";
+import type { NewMember } from "@/lib/types/member";
+import type { NewPost, Post } from "@/lib/types/post";
+import type { User } from "@/lib/types/user";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";

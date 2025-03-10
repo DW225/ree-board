@@ -1,4 +1,4 @@
-import type { User } from "@/lib/types";
+import type { User } from "@/lib/types/user";
 import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
 
