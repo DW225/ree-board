@@ -1,7 +1,7 @@
 "use client";
 
 import { boardSignalInitial } from "@/lib/signal/boardSignals";
-import type { Board } from "@/lib/types";
+import type { Board } from "@/lib/types/board";
 import { useEffectOnce } from "@/lib/utils/effect";
 import type { FC, ReactNode } from "react";
 
