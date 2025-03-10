@@ -10,7 +10,8 @@ import {
 } from "@/lib/actions/authenticatedActions";
 import { addPost, addPostAction, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
-import type { NewAction, Post } from "@/lib/types";
+import type { NewAction } from "@/lib/types/action";
+import type { Post } from "@/lib/types/post";
 import { Plus, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { FormEvent } from "react";

@@ -6,11 +6,13 @@ import { useSetState } from "@/hooks/useSetState";
 import { authenticatedUpdatePostType } from "@/lib/actions/authenticatedActions";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
 import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
-import type { Action, Post } from "@/lib/types";
+import type { Action } from "@/lib/types/action";
+import type { MemberSignal } from "@/lib/types/member";
+import type { Post } from "@/lib/types/post";
 import { useEffectOnce } from "@/lib/utils/effect";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { FC, ReactNode } from "react";
-import  {
+import {
   createContext,
   useCallback,
   useContext,
@@ -19,7 +21,6 @@ import  {
   useState,
 } from "react";
 import invariant from "tiny-invariant";
-import type { MemberInfo } from "./MemberManageModalComponent";
 
 interface AddPostFormContextType {
   openFormId: string | null;
@@ -119,7 +120,7 @@ interface PostProviderProps {
   children: ReactNode;
   initials: {
     posts: Post[];
-    members: MemberInfo[];
+    members: MemberSignal[];
     votedPosts: string[];
     actions: Action[];
   };

@@ -24,6 +24,7 @@ import {
   updateMember,
 } from "@/lib/signal/memberSingals";
 import { toast } from "@/lib/signal/toastSignals";
+import type { Member, MemberSignal } from "@/lib/types/member";
 import { PlusCircle } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
@@ -36,15 +37,6 @@ interface MemberManageProps {
   children: ReactNode;
 }
 
-export interface MemberInfo {
-  id: string;
-  userId: string;
-  role: Role;
-  username: string;
-  email: string;
-  updateAt: Date;
-}
-
 const MemberList = dynamic(() => import("@/components/board/MemberList"));
 
 export default function MemberManageModalComponent({
@@ -54,7 +46,7 @@ export default function MemberManageModalComponent({
 }: Readonly<MemberManageProps>) {
   const [isOpen, setIsOpen] = useState(false);
   const [newMember, setNewMember] = useState({ email: "" });
-  const [memberToRemove, setMemberToRemove] = useState<MemberInfo | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<MemberSignal | null>(null);
 
   const handleAddMember = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,13 +59,12 @@ export default function MemberManageModalComponent({
       }
 
       const memberId = nanoid();
-      const newMemberInfo = {
+      const newMemberSignal = {
         id: memberId,
         userId: user.id,
         username: user.name,
         email: newMember.email,
         role: Role.member,
-        updateAt: new Date(),
       };
 
       await authenticatedAddMemberToBoard({
@@ -83,7 +74,7 @@ export default function MemberManageModalComponent({
         userId: user.id,
       });
 
-      addMember(newMemberInfo);
+      addMember(newMemberSignal);
       setNewMember({ email: "" });
     } catch (error) {
       toast.error("Error adding member. User might not exist.");
@@ -92,7 +83,7 @@ export default function MemberManageModalComponent({
   };
 
   const handleRoleChange = useCallback(
-    (memberToUpdate: MemberInfo, newRole: MemberInfo["role"]) => {
+    (memberToUpdate: MemberSignal, newRole: Member["role"]) => {
       updateMember({
         ...memberToUpdate,
         role: newRole,
@@ -101,7 +92,7 @@ export default function MemberManageModalComponent({
     []
   );
 
-  const handleRemoveMember = (member: MemberInfo) => {
+  const handleRemoveMember = (member: MemberSignal) => {
     setMemberToRemove(member);
   };
 

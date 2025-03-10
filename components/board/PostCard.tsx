@@ -51,7 +51,10 @@ import {
   type PostSignal,
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
-import type { Action, Post, User } from "@/lib/types";
+import type { Action } from "@/lib/types/action";
+import type { MemberSignal } from "@/lib/types/member";
+import type { Post } from "@/lib/types/post";
+import type { User } from "@/lib/types/user";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
@@ -63,7 +66,6 @@ import remarkGfm from "remark-gfm";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
-import type { MemberInfo } from "./MemberManageModalComponent";
 import { useVotedPosts } from "./PostProvider";
 
 interface PostCardHeaderProps {
@@ -252,7 +254,7 @@ const PostCardFooter = memo(function PostCardFooter({
   });
 
   const handleAssign = useCallback(
-    async (member: MemberInfo) => {
+    async (member: MemberSignal) => {
       const oldAssigned = post.action?.assigned.value;
       try {
         await authedPostAssign({

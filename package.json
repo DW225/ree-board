@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.4.0",
-    "@kinde-oss/kinde-auth-nextjs": "2.5.3",
+    "@kinde-oss/kinde-auth-nextjs": "^2.5.3",
     "@kinde/management-api-js": "^0.13.0",
     "@libsql/client": "^0.14.0",
     "@next/env": "^15.1.7",
