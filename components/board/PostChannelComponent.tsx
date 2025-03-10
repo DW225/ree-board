@@ -11,7 +11,8 @@ import {
   updatePostState,
   updatePostType,
 } from "@/lib/signal/postSignals";
-import type { Action, Post } from "@/lib/types";
+import type { Action } from "@/lib/types/action";
+import type { Post } from "@/lib/types/post";
 import { EVENT_PREFIX, EVENT_TYPE } from "@/lib/utils/ably";
 import { useChannel } from "ably/react";
 

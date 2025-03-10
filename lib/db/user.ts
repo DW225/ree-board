@@ -1,5 +1,5 @@
 import { userTable } from "@/db/schema";
-import type { NewUser, User } from "@/lib/types";
+import type { NewUser, User } from "@/lib/types/user";
 import { eq, or } from "drizzle-orm";
 import { db } from "./client";
 

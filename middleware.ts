@@ -1,7 +1,6 @@
 import { withAuth } from "@kinde-oss/kinde-auth-nextjs/middleware";
-import type { NextRequest } from "next/server";
 
-export default withAuth(async function middleware(_: NextRequest) {}, {
+export default withAuth(async function middleware() {}, {
   publicPaths: ["/", "/api/kinde-webhook"],
 });
 

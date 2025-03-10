@@ -1,5 +1,7 @@
 import { memberTable, userTable } from "@/db/schema";
-import type { Board, NewMember, User } from "@/lib/types";
+import type { Board } from "@/lib/types/board";
+import type { NewMember } from "@/lib/types/member";
+import type { User } from "@/lib/types/user";
 import { and, eq } from "drizzle-orm";
 import { db } from "./client";
 
