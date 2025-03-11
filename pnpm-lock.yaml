@@ -75,8 +75,8 @@ importers:
         specifier: ^0.39.3
         version: 0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)
       drizzle-zod:
-        specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.2)
+        specifier: ^0.7.0
+        version: 0.7.0(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.2)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -3437,11 +3437,11 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.5.1:
-    resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
+  drizzle-zod@0.7.0:
+    resolution: {integrity: sha512-xgCRYYVEzRkeXTS33GSMgoowe3vKsMNBjSI+cwG1oLQVEhAWWbqtb/AAMlm7tkmV4fG/uJjEmWzdzlEmTgWOoQ==}
     peerDependencies:
-      drizzle-orm: '>=0.23.13'
-      zod: '*'
+      drizzle-orm: '>=0.36.0'
+      zod: '>=3.0.0'
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -9541,7 +9541,7 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.6.1
 
-  drizzle-zod@0.5.1(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.2):
+  drizzle-zod@0.7.0(drizzle-orm@0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1))(zod@3.24.2):
     dependencies:
       drizzle-orm: 0.39.3(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)
       zod: 3.24.2
