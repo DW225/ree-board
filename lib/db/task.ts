@@ -1,14 +1,14 @@
-import { actionsTable } from "@/db/schema";
-import type { Action, NewAction } from "@/lib/types/action";
+import { taskTable } from "@/db/schema";
+import type { Task, NewTask } from "@/lib/types/task";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
 import { eq } from "drizzle-orm";
 import { db } from "./client";
 
-export async function createAction(action: NewAction) {
+export async function createTask(action: NewTask) {
   const result = await db
-    .insert(actionsTable)
+    .insert(taskTable)
     .values({
       id: action.id,
       boardId: action.boardId,
@@ -16,28 +16,28 @@ export async function createAction(action: NewAction) {
       userId: action.userId,
       state: action.state,
     })
-    .returning({ id: actionsTable.id })
+    .returning({ id: taskTable.id })
     .execute();
   return result[0].id;
 }
 
-export async function fetchActions(boardId: Board["id"]) {
+export async function fetchTasks(boardId: Board["id"]) {
   return await db
     .select()
-    .from(actionsTable)
-    .where(eq(actionsTable.boardId, boardId));
+    .from(taskTable)
+    .where(eq(taskTable.boardId, boardId));
 }
 
-export async function assignPostAction(
+export async function assignTask(
   postID: Post["id"],
   userId: User["id"] | null
 ) {
   if (!postID) throw new Error("postId is required");
   try {
     await db
-      .update(actionsTable)
+      .update(taskTable)
       .set({ userId, updatedAt: new Date() })
-      .where(eq(actionsTable.postId, postID))
+      .where(eq(taskTable.postId, postID))
       .execute();
   } catch (error) {
     console.error(`Failed to assign action for post ${postID}:`, error);
@@ -49,16 +49,16 @@ export async function assignPostAction(
  * Updates the state of an action associated with a specific post.
  *
  * @param postId - The unique identifier of the post whose action state is being updated.
- * @param newState - The new state to be set for the action, of type ActionState.
+ * @param newState - The new state to be set for the action, of type TaskState.
  * @returns A Promise that resolves when the update operation is complete.
  */
-export async function updateActionState(
+export async function updateTaskState(
   postID: Post["id"],
-  newState: Action["state"]
+  newState: Task["state"]
 ) {
   await db
-    .update(actionsTable)
+    .update(taskTable)
     .set({ state: newState, updatedAt: new Date() })
-    .where(eq(actionsTable.postId, postID))
+    .where(eq(taskTable.postId, postID))
     .execute();
 }

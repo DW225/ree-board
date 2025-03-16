@@ -6,7 +6,7 @@ import { useSetState } from "@/hooks/useSetState";
 import { authenticatedUpdatePostType } from "@/lib/actions/authenticatedActions";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
 import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
-import type { Action } from "@/lib/types/action";
+import type { Task } from "@/lib/types/task";
 import type { MemberSignal } from "@/lib/types/member";
 import type { Post } from "@/lib/types/post";
 import { useEffectOnce } from "@/lib/utils/effect";
@@ -122,7 +122,7 @@ interface PostProviderProps {
     posts: Post[];
     members: MemberSignal[];
     votedPosts: string[];
-    actions: Action[];
+    actions: Task[];
   };
   boardId: string;
   userId: string;

@@ -1,12 +1,12 @@
-import { ActionState } from "@/db/schema";
-import type { Action, NewAction } from "@/lib/types/action";
+import { TaskState } from "@/db/schema";
+import type { Task, NewTask } from "@/lib/types/task";
 import type { Post } from "@/lib/types/post";
 import type { Signal } from "@preact/signals-react";
 import { signal } from "@preact/signals-react";
 
-interface ActionSignal {
-  assigned: Signal<Action["userId"] | null>; // userId or null
-  state: Signal<Action["state"]>;
+interface TaskSignal {
+  assigned: Signal<Task["userId"] | null>; // userId or null
+  state: Signal<Task["state"]>;
 }
 
 export interface PostSignal
@@ -14,12 +14,12 @@ export interface PostSignal
   content: Signal<Post["content"]>;
   type: Signal<Post["type"]>;
   voteCount: Signal<Post["voteCount"]>;
-  action?: ActionSignal;
+  task?: TaskSignal;
 }
 
 export const postSignal = signal<PostSignal[]>([]);
 
-export const postSignalInitial = (posts: Post[], actions: Action[]) => {
+export const postSignalInitial = (posts: Post[], tasks: Task[]) => {
   postSignal.value = posts.map((post) => ({
     ...post,
     content: signal(post.content),
@@ -27,14 +27,14 @@ export const postSignalInitial = (posts: Post[], actions: Action[]) => {
     voteCount: signal(post.voteCount),
   }));
 
-  for (const action of actions) {
+  for (const task of tasks) {
     const postIndex = postSignal.value.findIndex(
-      (post) => post.id === action.postId
+      (post) => post.id === task.postId
     );
     if (postIndex !== -1) {
-      postSignal.value[postIndex].action = {
-        assigned: signal(action.userId),
-        state: signal(action.state),
+      postSignal.value[postIndex].task = {
+        assigned: signal(task.userId),
+        state: signal(task.state),
       };
     }
   }
@@ -93,51 +93,51 @@ export const decrementPostVoteCount = (postID: Post["id"]) => {
   }
 };
 
-export const addPostAction = (action: NewAction) => {
+export const addPostAction = (action: NewTask) => {
   const postIndex = postSignal.value.findIndex(
     (post) => post.id === action.postId
   );
   if (postIndex !== -1) {
-    if (postSignal.value[postIndex].action) {
-      postSignal.value[postIndex].action.assigned.value = action.userId ?? null;
-      postSignal.value[postIndex].action.state.value =
-        action.state ?? ActionState.pending;
+    if (postSignal.value[postIndex].task) {
+      postSignal.value[postIndex].task.assigned.value = action.userId ?? null;
+      postSignal.value[postIndex].task.state.value =
+        action.state ?? TaskState.pending;
     } else {
-      postSignal.value[postIndex].action = {
+      postSignal.value[postIndex].task = {
         assigned: signal(action.userId ?? null),
-        state: signal(action.state ?? ActionState.pending),
+        state: signal(action.state ?? TaskState.pending),
       };
     }
   }
 };
 
-export const assignPostAction = (
+export const assignPostTask = (
   postID: Post["id"],
-  userId: Action["userId"] | null
+  userId: Task["userId"] | null
 ) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index === -1) return;
 
-  if (postSignal.value[index].action) {
-    postSignal.value[index].action.assigned.value = userId;
+  if (postSignal.value[index].task) {
+    postSignal.value[index].task.assigned.value = userId;
   } else {
-    postSignal.value[index].action = {
+    postSignal.value[index].task = {
       assigned: signal(userId),
-      state: signal(ActionState.pending),
+      state: signal(TaskState.pending),
     };
   }
 };
 
-export const updatePostState = (postID: Post["id"], state: Action["state"]) => {
+export const updatePostState = (postID: Post["id"], state: Task["state"]) => {
   const index = postSignal.value.findIndex((post) => post.id === postID);
   if (index === -1) return;
 
-  if (postSignal.value[index].action) {
-    postSignal.value[index].action.state.value = state;
+  if (postSignal.value[index].task) {
+    postSignal.value[index].task.state.value = state;
   } else {
-    postSignal.value[index].action = {
+    postSignal.value[index].task = {
       assigned: signal(null),
-      state: signal(ActionState.pending),
+      state: signal(TaskState.pending),
     };
   }
 };

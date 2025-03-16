@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
-import { actionsTable, ActionState, postTable, PostType } from "./schema";
+import { taskTable, TaskState, postTable, PostType } from "./schema";
 import { nanoid } from "nanoid";
 
 import "../envConfig";
@@ -36,12 +36,12 @@ async function main() {
   await db.transaction(async (tx) => {
     for (let i = 0; i < posts.length; i += batchSize) {
       const batch = posts.slice(i, i + batchSize);
-      await tx.insert(actionsTable).values(
+      await tx.insert(taskTable).values(
         batch.map((post) => ({
           id: nanoid(),
           boardId: post.boardId,
           postId: post.id,
-          state: ActionState.pending, // Initialize with default state
+          state: TaskState.pending, // Initialize with default state
         }))
       );
       console.log(
