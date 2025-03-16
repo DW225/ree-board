@@ -111,7 +111,7 @@ export const addPostAction = (action: NewTask) => {
   }
 };
 
-export const assignPostTask = (
+export const assignTask = (
   postID: Post["id"],
   userId: Task["userId"] | null
 ) => {

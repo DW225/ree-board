@@ -93,6 +93,10 @@ const PostCardHeader = memo(function PostCardHeader({
       const oldState = post.task?.state.value;
       try {
         updatePostState(post.id, newStatus);
+
+        const authedPostActionStateUpdate = (
+          await import("@/lib/actions/task/action")
+        ).authedPostActionStateUpdate;
         await authedPostActionStateUpdate({
           postID: post.id,
           state: newStatus,
@@ -251,6 +255,8 @@ const PostCardFooter = memo(function PostCardFooter({
     async (member: MemberSignal) => {
       const oldAssigned = post.task?.assigned.value;
       try {
+        const authedPostAssign = (await import("@/lib/actions/task/action"))
+          .authedPostAssign;
         await authedPostAssign({
           postID: post.id,
           boardId: post.boardId,
@@ -353,8 +359,8 @@ function PostCard({
     if (viewOnly) return;
     const isVoted = hasVoted(post.id);
     const voteAction = isVoted
-      ? authenticatedDownVotePost
-      : authenticatedUpVotePost;
+      ? (await import("@/lib/actions/vote/action")).authenticatedDownVotePost
+      : (await import("@/lib/actions/vote/action")).authenticatedUpVotePost;
     const voteCountAction = isVoted
       ? decrementPostVoteCount
       : incrementPostVoteCount;
