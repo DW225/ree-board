@@ -10,7 +10,7 @@ import {
 } from "@/lib/actions/authenticatedActions";
 import { addPost, addPostAction, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
-import type { NewAction } from "@/lib/types/action";
+import type { NewTask } from "@/lib/types/task";
 import type { Post } from "@/lib/types/post";
 import { Plus, X } from "lucide-react";
 import { nanoid } from "nanoid";
@@ -58,7 +58,7 @@ export default function AddPostForm({
 
       await authenticatedCreatePost(newPost);
       if (postType === PostType.action_item) {
-        const newAction: NewAction = {
+        const NewTask: NewTask = {
           id: nanoid(),
           postId,
           boardId: boardID,
