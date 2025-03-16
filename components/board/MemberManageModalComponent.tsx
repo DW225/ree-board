@@ -14,11 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Role } from "@/db/schema";
 import {
-  authenticatedAddMemberToBoard,
-  authenticatedFindUserByEmail,
-  authenticatedRemoveMemberFromBoard,
-} from "@/lib/actions/authenticatedActions";
-import {
   addMember,
   removeMember,
   updateMember,
@@ -46,13 +41,18 @@ export default function MemberManageModalComponent({
 }: Readonly<MemberManageProps>) {
   const [isOpen, setIsOpen] = useState(false);
   const [newMember, setNewMember] = useState({ email: "" });
-  const [memberToRemove, setMemberToRemove] = useState<MemberSignal | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<MemberSignal | null>(
+    null
+  );
 
   const handleAddMember = async (e: FormEvent) => {
     e.preventDefault();
     if (!newMember.email) return;
 
     try {
+      const authenticatedFindUserByEmail = (
+        await import("@/lib/actions/member/action")
+      ).authenticatedFindUserByEmail;
       const user = await authenticatedFindUserByEmail(newMember.email);
       if (!user) {
         throw new Error("User not found");
@@ -66,6 +66,10 @@ export default function MemberManageModalComponent({
         email: newMember.email,
         role: Role.member,
       };
+
+      const authenticatedAddMemberToBoard = (
+        await import("@/lib/actions/member/action")
+      ).authenticatedAddMemberToBoard;
 
       await authenticatedAddMemberToBoard({
         id: memberId,
@@ -100,6 +104,10 @@ export default function MemberManageModalComponent({
     if (memberToRemove) {
       try {
         removeMember(memberToRemove.id);
+
+        const authenticatedRemoveMemberFromBoard = (
+          await import("@/lib/actions/member/action")
+        ).authenticatedRemoveMemberFromBoard;
         await authenticatedRemoveMemberFromBoard(memberToRemove.id, boardId);
         setMemberToRemove(null);
       } catch (error) {

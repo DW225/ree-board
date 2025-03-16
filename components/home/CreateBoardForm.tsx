@@ -1,7 +1,7 @@
 "use client";
 
 import { BoardState } from "@/db/schema";
-import { authenticatedCreateBoard } from "@/lib/actions/authenticatedActions";
+import { createBoardAction } from "@/lib/actions/board/action";
 import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import type { NewBoard } from "@/lib/types/board";
@@ -42,7 +42,7 @@ export default function CreateBoardForm({
     form.reset();
 
     try {
-      await authenticatedCreateBoard(newBoard, userID);
+      await createBoardAction(newBoard, userID);
     } catch (error) {
       console.error("Failed to create board:", error);
       toast.error("Failed to create board. Please try again later.");

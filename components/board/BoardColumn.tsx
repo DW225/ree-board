@@ -2,10 +2,6 @@
 
 import type { PostType } from "@/db/schema";
 import {
-  authenticatedDeletePost,
-  authenticatedUpdatePostContent,
-} from "@/lib/actions/authenticatedActions";
-import {
   postSignal,
   removePost,
   updatePostContent,
@@ -59,7 +55,11 @@ export default function BoardColumn({
   const handlePostDelete = useCallback(
     async (id: string) => {
       try {
+        const authenticatedDeletePost = (
+          await import("@/lib/actions/post/action")
+        ).authenticatedDeletePost;
         await authenticatedDeletePost(id, boardID, userId);
+
         removePost(id);
       } catch (error) {
         toast.error("Failed to delete post");
@@ -73,6 +73,9 @@ export default function BoardColumn({
     async (id: string, newContent: string) => {
       try {
         // Update the post content on the server
+        const authenticatedUpdatePostContent = (
+          await import("@/lib/actions/post/action")
+        ).authenticatedUpdatePostContent;
         await authenticatedUpdatePostContent(id, boardID, newContent, userId);
 
         // Update the post content in the local state
