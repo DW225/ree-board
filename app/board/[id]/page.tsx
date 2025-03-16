@@ -1,5 +1,5 @@
 import { Role } from "@/db/schema";
-import { fetchActions } from "@/lib/db/action";
+import { fetchTasks } from "@/lib/db/task";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
 import { findUserIdByKindeID } from "@/lib/db/user";
@@ -48,7 +48,7 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
     findUserIdByKindeID(user.id),
     fetchPostsByBoardID(boardID),
     fetchMembersByBoardID(boardID),
-    fetchActions(boardID),
+    fetchTasks(boardID),
   ]);
 
   if (!userID) {

@@ -146,14 +146,14 @@ export const voteTable = sqliteTable(
   ]
 );
 
-export enum ActionState {
+export enum TaskState {
   pending,
   inProgress,
   completed,
   cancelled,
 }
 
-export const actionsTable = sqliteTable(
+export const taskTable = sqliteTable(
   "action",
   {
     id: text("id").primaryKey(),
@@ -171,9 +171,9 @@ export const actionsTable = sqliteTable(
       })
       .notNull(),
     state: integer("state")
-      .$type<ActionState>()
+      .$type<TaskState>()
       .notNull()
-      .default(ActionState.pending),
+      .default(TaskState.pending),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
