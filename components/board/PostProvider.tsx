@@ -3,7 +3,6 @@
 
 import { PostType } from "@/db/schema";
 import { useSetState } from "@/hooks/useSetState";
-import { authenticatedUpdatePostType } from "@/lib/actions/authenticatedActions";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
 import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
 import type { Task } from "@/lib/types/task";
@@ -161,6 +160,10 @@ const PostProvider: FC<PostProviderProps> = ({
           ] as keyof typeof PostType;
 
           updatePostType(postId, PostType[postTypeKey]);
+
+          const authenticatedUpdatePostType = (
+            await import("@/lib/actions/post/action")
+          ).authenticatedUpdatePostType;
           await authenticatedUpdatePostType(
             postId,
             boardId,

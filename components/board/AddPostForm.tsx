@@ -4,10 +4,6 @@ import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PostType } from "@/db/schema";
-import {
-  authedCreateAction,
-  authenticatedCreatePost,
-} from "@/lib/actions/authenticatedActions";
 import { addPost, addPostAction, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import type { NewTask } from "@/lib/types/task";
@@ -56,6 +52,9 @@ export default function AddPostForm({
       setTempContent(content);
       setContent("");
 
+      const authenticatedCreatePost = (
+        await import("@/lib/actions/post/action")
+      ).authenticatedCreatePost;
       await authenticatedCreatePost(newPost);
       if (postType === PostType.action_item) {
         const NewTask: NewTask = {
@@ -64,8 +63,10 @@ export default function AddPostForm({
           boardId: boardID,
         };
         try {
-          await authedCreateAction(newAction);
-          addPostAction(newAction);
+          const authedCreateAction = (await import("@/lib/actions/task/action"))
+            .authedCreateAction;
+          await authedCreateAction(NewTask);
+          addPostAction(NewTask);
         } catch (error) {
           removePost(postId);
           throw error; // Re-throw to trigger the outer catch block
