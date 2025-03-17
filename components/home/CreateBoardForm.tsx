@@ -1,7 +1,7 @@
 "use client";
 
-import { BoardState } from "@/db/schema";
 import { createBoardAction } from "@/lib/actions/board/action";
+import { BoardState } from "@/lib/constants/board";
 import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import type { NewBoard } from "@/lib/types/board";

@@ -1,6 +1,6 @@
-import { TaskState } from "@/db/schema";
-import type { Task, NewTask } from "@/lib/types/task";
+import { TaskState } from "@/lib/constants/task";
 import type { Post } from "@/lib/types/post";
+import type { NewTask, Task } from "@/lib/types/task";
 import type { Signal } from "@preact/signals-react";
 import { signal } from "@preact/signals-react";
 

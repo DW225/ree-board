@@ -3,11 +3,11 @@
 import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { PostType } from "@/db/schema";
+import { PostType } from "@/lib/constants/post";
 import { addPost, addPostAction, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
-import type { NewTask } from "@/lib/types/task";
 import type { Post } from "@/lib/types/post";
+import type { NewTask } from "@/lib/types/task";
 import { Plus, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { FormEvent } from "react";
