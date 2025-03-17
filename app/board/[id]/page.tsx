@@ -1,6 +1,7 @@
 import { Role } from "@/lib/constants/role";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
+import { fetchTasks } from "@/lib/db/task";
 import { findUserIdByKindeID } from "@/lib/db/user";
 import { fetchUserVotedPost } from "@/lib/db/vote";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -18,7 +19,6 @@ const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
 const MemberManageModalComponent = dynamic(
   () => import("@/components/board/MemberManageModalComponent")
 );
-const ToastSystem = dynamic(() => import("@/components/common/ToastSystem"));
 const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
   ssr: false,
 });
@@ -99,7 +99,6 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
           </PostProvider>
         </AnonymousModeProvider>
       </RTLProvider>
-      <ToastSystem />
     </>
   );
 }
