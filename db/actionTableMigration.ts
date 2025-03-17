@@ -1,10 +1,11 @@
+import "@/envConfig";
+import { PostType } from "@/lib/constants/post";
+import { TaskState } from "@/lib/constants/task";
 import { createClient } from "@libsql/client";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
-import { taskTable, TaskState, postTable, PostType } from "./schema";
 import { nanoid } from "nanoid";
-
-import "../envConfig";
+import { postTable, taskTable } from "./schema";
 
 async function main() {
   const dbUrl =

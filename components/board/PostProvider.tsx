@@ -1,13 +1,13 @@
 /* eslint-disable drizzle/enforce-delete-with-where */
 "use client";
 
-import { PostType } from "@/db/schema";
 import { useSetState } from "@/hooks/useSetState";
+import { PostType } from "@/lib/constants/post";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
 import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
-import type { Task } from "@/lib/types/task";
 import type { MemberSignal } from "@/lib/types/member";
 import type { Post } from "@/lib/types/post";
+import type { Task } from "@/lib/types/task";
 import { useEffectOnce } from "@/lib/utils/effect";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { FC, ReactNode } from "react";
