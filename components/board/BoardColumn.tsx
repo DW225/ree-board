@@ -1,6 +1,6 @@
 "use client";
 
-import type { PostType } from "@/db/schema";
+import type { PostType } from "@/lib/constants/post";
 import {
   postSignal,
   removePost,

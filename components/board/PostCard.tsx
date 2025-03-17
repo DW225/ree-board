@@ -36,7 +36,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PostType, TaskState } from "@/db/schema";
+import { PostType } from "@/lib/constants/post";
+import { TaskState } from "@/lib/constants/task";
 import {
   assignTask,
   decrementPostVoteCount,

@@ -1,5 +1,4 @@
-import { Role } from "@/db/schema";
-import { fetchTasks } from "@/lib/db/task";
+import { Role } from "@/lib/constants/role";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
 import { findUserIdByKindeID } from "@/lib/db/user";

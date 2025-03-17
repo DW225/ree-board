@@ -1,3 +1,7 @@
+import type { BoardState } from "@/lib/constants/board";
+import type { PostType } from "@/lib/constants/post";
+import type { Role } from "@/lib/constants/role";
+import { TaskState } from "@/lib/constants/task";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -22,11 +26,6 @@ export const userTable = sqliteTable(
   (table) => [index("user_name_index").on(table.name)]
 );
 
-export enum BoardState {
-  active,
-  archived,
-}
-
 export const boardTable = sqliteTable(
   "board",
   {
@@ -45,13 +44,6 @@ export const boardTable = sqliteTable(
   },
   (table) => [index("board_state_index").on(table.state)]
 );
-
-export enum PostType {
-  "went_well",
-  "to_improvement",
-  "to_discuss",
-  "action_item",
-}
 
 export const postTable = sqliteTable(
   "post",
@@ -80,12 +72,6 @@ export const postTable = sqliteTable(
     check("vote_count_check", sql`${table.voteCount} >= 0`),
   ]
 );
-
-export enum Role {
-  owner,
-  member,
-  guest,
-}
 
 export const memberTable = sqliteTable(
   "member",
@@ -145,13 +131,6 @@ export const voteTable = sqliteTable(
     unique().on(table.boardId, table.userId, table.postId),
   ]
 );
-
-export enum TaskState {
-  pending,
-  inProgress,
-  completed,
-  cancelled,
-}
 
 export const taskTable = sqliteTable(
   "action",

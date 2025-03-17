@@ -1,5 +1,5 @@
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { PostType } from "@/db/schema";
+import { PostType } from "@/lib/constants/post";
 import dynamic from "next/dynamic";
 import type { FC } from "react";
 

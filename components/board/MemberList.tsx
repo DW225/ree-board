@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Role } from "@/db/schema";
+import { Role } from "@/lib/constants/role";
 import { memberSignal } from "@/lib/signal/memberSingals";
 import type { Member, MemberSignal } from "@/lib/types/member";
 import { getEnumKeys } from "@/lib/utils";
@@ -35,7 +35,7 @@ const roles = {
   Guest: Role.guest,
   Member: Role.member,
   Owner: Role.owner,
-} as const;
+} as const satisfies Record<string, Role>;
 
 const roleToKeyMap = {
   [Role.guest]: "Guest",
