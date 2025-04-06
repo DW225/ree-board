@@ -1,10 +1,10 @@
 "use client";
 
-import type { PostType } from "@/db/schema";
 import {
-  authenticatedDeletePost,
-  authenticatedUpdatePostContent,
-} from "@/lib/actions/authenticatedActions";
+  DeletePostAction,
+  UpdatePostContentAction,
+} from "@/lib/actions/post/action";
+import type { PostType } from "@/lib/constants/post";
 import {
   postSignal,
   removePost,
@@ -59,21 +59,22 @@ export default function BoardColumn({
   const handlePostDelete = useCallback(
     async (id: string) => {
       try {
-        await authenticatedDeletePost(id, boardID, userId);
+        await DeletePostAction(id, boardID);
+
         removePost(id);
       } catch (error) {
         toast.error("Failed to delete post");
         console.error("Failed to delete post:", error);
       }
     },
-    [boardID, userId]
+    [boardID]
   );
 
   const handlePostUpdate = useCallback(
     async (id: string, newContent: string) => {
       try {
         // Update the post content on the server
-        await authenticatedUpdatePostContent(id, boardID, newContent, userId);
+        await UpdatePostContentAction(id, boardID, newContent);
 
         // Update the post content in the local state
         updatePostContent(id, newContent);
@@ -82,7 +83,7 @@ export default function BoardColumn({
         console.error("Failed to update post:", error);
       }
     },
-    [boardID, userId]
+    [boardID]
   );
 
   useEffect(() => {

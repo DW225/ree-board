@@ -11,31 +11,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Role } from "@/db/schema";
+import { Role } from "@/lib/constants/role";
 import { memberSignal } from "@/lib/signal/memberSingals";
+import type { Member, MemberSignal } from "@/lib/types/member";
 import { getEnumKeys } from "@/lib/utils";
 import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useDebounce } from "react-use";
-import type { MemberInfo } from "./MemberManageModalComponent";
 
 interface MemberListProps {
   viewOnly: boolean;
-  handleRemoveMember?: (member: MemberInfo) => void;
+  handleRemoveMember?: (member: MemberSignal) => void;
   handleRoleChange?: (
-    memberToUpdate: MemberInfo,
-    newRole: MemberInfo["role"]
+    memberToUpdate: MemberSignal,
+    newRole: Member["role"]
   ) => void;
-  onAssign?: (member: MemberInfo) => void;
+  onAssign?: (member: MemberSignal) => void;
 }
 
 const roles = {
   Guest: Role.guest,
   Member: Role.member,
   Owner: Role.owner,
-} as const;
+} as const satisfies Record<string, Role>;
 
 const roleToKeyMap = {
   [Role.guest]: "Guest",

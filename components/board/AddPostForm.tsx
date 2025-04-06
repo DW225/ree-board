@@ -3,14 +3,12 @@
 import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { PostType } from "@/db/schema";
-import {
-  authedCreateAction,
-  authenticatedCreatePost,
-} from "@/lib/actions/authenticatedActions";
-import { addPost, addPostAction, removePost } from "@/lib/signal/postSignals";
+import { CreatePostAction } from "@/lib/actions/post/action";
+import { PostType } from "@/lib/constants/post";
+import { addPost, addPostTask, removePost } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
-import type { NewAction, Post } from "@/lib/types";
+import type { Post } from "@/lib/types/post";
+import type { NewTask } from "@/lib/types/task";
 import { Plus, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { FormEvent } from "react";
@@ -55,16 +53,18 @@ export default function AddPostForm({
       setTempContent(content);
       setContent("");
 
-      await authenticatedCreatePost(newPost);
+      await CreatePostAction(newPost);
       if (postType === PostType.action_item) {
-        const newAction: NewAction = {
+        const NewTask: NewTask = {
           id: nanoid(),
           postId,
           boardId: boardID,
         };
         try {
-          await authedCreateAction(newAction);
-          addPostAction(newAction);
+          const authedCreateAction = (await import("@/lib/actions/task/action"))
+            .authedCreateAction;
+          await authedCreateAction(NewTask);
+          addPostTask(NewTask);
         } catch (error) {
           removePost(postId);
           throw error; // Re-throw to trigger the outer catch block

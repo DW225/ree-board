@@ -1,5 +1,7 @@
 import { memberTable, userTable } from "@/db/schema";
-import type { Board, NewMember, User } from "@/lib/types";
+import type { Board } from "@/lib/types/board";
+import type { NewMember } from "@/lib/types/member";
+import type { User } from "@/lib/types/user";
 import { and, eq } from "drizzle-orm";
 import { db } from "./client";
 
@@ -44,10 +46,29 @@ export const checkMemberRole = async (
   boardID: Board["id"]
 ) => {
   const member = await db
-    .select()
+    .select({
+      role: memberTable.role,
+    })
     .from(memberTable)
     .where(
       and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardID))
     );
   return member ? member[0].role : null;
+};
+
+export const checkRoleByKindeID = async (
+  kindeID: User["kinde_id"],
+  boardID: Board["id"]
+) => {
+  const member = await db
+    .select({
+      role: memberTable.role,
+      userID: userTable.id,
+    })
+    .from(memberTable)
+    .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+    .where(
+      and(eq(userTable.kinde_id, kindeID), eq(memberTable.boardId, boardID))
+    );
+  return member ? member[0] : null;
 };

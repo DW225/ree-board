@@ -2,8 +2,8 @@
 
 import {
   addPost,
-  addPostAction,
-  assignPostAction,
+  addPostTask,
+  assignTask,
   decrementPostVoteCount,
   incrementPostVoteCount,
   removePost,
@@ -11,7 +11,8 @@ import {
   updatePostState,
   updatePostType,
 } from "@/lib/signal/postSignals";
-import type { Action, Post } from "@/lib/types";
+import type { Task } from "@/lib/types/task";
+import type { Post } from "@/lib/types/post";
 import { EVENT_PREFIX, EVENT_TYPE } from "@/lib/utils/ably";
 import { useChannel } from "ably/react";
 
@@ -38,8 +39,8 @@ export default function PostChannel({
     }
 
     if (messageType.startsWith(EVENT_PREFIX.ACTION)) {
-      // Process action updates and creations
-      processPostActionUpdates(messageType, message.data);
+      // Process task updates and creations
+      processTaskUpdates(messageType, message.data);
     }
   });
 
@@ -79,30 +80,30 @@ function processPostUpdates(type: string, data: string): void {
   }
 }
 
-function processPostActionUpdates(type: string, data: string): void {
-  let postAction: Action;
+function processTaskUpdates(type: string, data: string): void {
+  let postTask: Task;
   try {
-    postAction = JSON.parse(data);
+    postTask = JSON.parse(data);
   } catch (error) {
-    console.error("Failed to parse action data:", error);
+    console.error("Failed to parse task data:", error);
     return;
   }
 
   switch (type) {
     case EVENT_TYPE.ACTION.STATE_UPDATE:
-      updatePostState(postAction.postId, postAction.state);
+      updatePostState(postTask.postId, postTask.state);
       break;
     case EVENT_TYPE.ACTION.ASSIGN:
-      assignPostAction(postAction.postId, postAction.userId);
+      assignTask(postTask.postId, postTask.userId);
       break;
     case EVENT_TYPE.ACTION.CREATE:
-      addPostAction({
-        id: postAction.id,
-        postId: postAction.postId,
-        boardId: postAction.boardId,
+      addPostTask({
+        id: postTask.id,
+        postId: postTask.postId,
+        boardId: postTask.boardId,
       });
       break;
     default:
-      console.warn("Unknown action event type:", type);
+      console.warn("Unknown task event type:", type);
   }
 }

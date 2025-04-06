@@ -1,14 +1,13 @@
-import type { MemberInfo } from "@/components/board/MemberManageModalComponent";
-import type { Member } from "@/lib/types";
+import type { Member, MemberSignal } from "@/lib/types/member";
 import { signal } from "@preact/signals-react";
 
-export const memberSignal = signal<MemberInfo[]>([]);
+export const memberSignal = signal<MemberSignal[]>([]);
 
-export const memberSignalInitial = (members: MemberInfo[]) => {
+export const memberSignalInitial = (members: MemberSignal[]) => {
   memberSignal.value = members;
 };
 
-export const addMember = (newMember: MemberInfo) => {
+export const addMember = (newMember: MemberSignal) => {
   memberSignal.value = [...memberSignal.value, newMember];
 };
 
@@ -24,7 +23,7 @@ export const removeMember = (memberId: Member["id"]) => {
   }
 };
 
-export const updateMember = (updatedMember: MemberInfo) => {
+export const updateMember = (updatedMember: MemberSignal) => {
   const index = memberSignal.value.findIndex(
     (member) => member.id === updatedMember.id
   );

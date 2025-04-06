@@ -1,5 +1,7 @@
-import { boardTable, memberTable, Role, userTable } from "@/db/schema";
-import type { Board, User } from "@/lib/types";
+import { boardTable, memberTable, userTable } from "@/db/schema";
+import { Role } from "@/lib/constants/role";
+import type { Board } from "@/lib/types/board";
+import type { User } from "@/lib/types/user";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./client";

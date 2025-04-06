@@ -1,16 +1,18 @@
 /* eslint-disable drizzle/enforce-delete-with-where */
 "use client";
 
-import { PostType } from "@/db/schema";
 import { useSetState } from "@/hooks/useSetState";
-import { authenticatedUpdatePostType } from "@/lib/actions/authenticatedActions";
+import { UpdatePostTypeAction } from "@/lib/actions/post/action";
+import { PostType } from "@/lib/constants/post";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
 import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
-import type { Action, Post } from "@/lib/types";
+import type { MemberSignal } from "@/lib/types/member";
+import type { Post } from "@/lib/types/post";
+import type { Task } from "@/lib/types/task";
 import { useEffectOnce } from "@/lib/utils/effect";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { FC, ReactNode } from "react";
-import  {
+import {
   createContext,
   useCallback,
   useContext,
@@ -19,7 +21,6 @@ import  {
   useState,
 } from "react";
 import invariant from "tiny-invariant";
-import type { MemberInfo } from "./MemberManageModalComponent";
 
 interface AddPostFormContextType {
   openFormId: string | null;
@@ -119,19 +120,17 @@ interface PostProviderProps {
   children: ReactNode;
   initials: {
     posts: Post[];
-    members: MemberInfo[];
+    members: MemberSignal[];
     votedPosts: string[];
-    actions: Action[];
+    actions: Task[];
   };
   boardId: string;
-  userId: string;
 }
 
 const PostProvider: FC<PostProviderProps> = ({
   children,
   initials,
   boardId,
-  userId,
 }) => {
   useEffectOnce(() => {
     postSignalInitial(initials.posts, initials.actions);
@@ -160,16 +159,12 @@ const PostProvider: FC<PostProviderProps> = ({
           ] as keyof typeof PostType;
 
           updatePostType(postId, PostType[postTypeKey]);
-          await authenticatedUpdatePostType(
-            postId,
-            boardId,
-            PostType[postTypeKey],
-            userId
-          );
+
+          await UpdatePostTypeAction(postId, boardId, PostType[postTypeKey]);
         }
       },
     });
-  }, [boardId, userId]);
+  }, [boardId]);
 
   return (
     <VotedPostsProvider initial={{ votedPosts: initials.votedPosts }}>

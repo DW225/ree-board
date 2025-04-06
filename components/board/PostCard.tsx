@@ -36,22 +36,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ActionState, PostType } from "@/db/schema";
 import {
-  authedPostActionStateUpdate,
-  authedPostAssign,
-  authenticatedDownVotePost,
-  authenticatedUpVotePost,
-} from "@/lib/actions/authenticatedActions";
+  DownVotePostAction,
+  UpVotePostAction,
+} from "@/lib/actions/vote/action";
+import { PostType } from "@/lib/constants/post";
+import { TaskState } from "@/lib/constants/task";
 import {
-  assignPostAction,
+  assignTask,
   decrementPostVoteCount,
   incrementPostVoteCount,
   updatePostState,
   type PostSignal,
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
-import type { Action, Post, User } from "@/lib/types";
+import type { MemberSignal } from "@/lib/types/member";
+import type { Post } from "@/lib/types/post";
+import type { Task } from "@/lib/types/task";
+import type { User } from "@/lib/types/user";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
@@ -63,7 +65,6 @@ import remarkGfm from "remark-gfm";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
-import type { MemberInfo } from "./MemberManageModalComponent";
 import { useVotedPosts } from "./PostProvider";
 
 interface PostCardHeaderProps {
@@ -91,12 +92,16 @@ const PostCardHeader = memo(function PostCardHeader({
   }, [onUpdate, post.id, message]);
 
   const handleStatusChange = useCallback(
-    async (newStatus: Action["state"]) => {
-      if (post.action?.state.value === newStatus) return;
+    async (newStatus: Task["state"]) => {
+      if (post.task?.state.value === newStatus) return;
 
-      const oldState = post.action?.state.value;
+      const oldState = post.task?.state.value;
       try {
         updatePostState(post.id, newStatus);
+
+        const authedPostActionStateUpdate = (
+          await import("@/lib/actions/task/action")
+        ).authedPostActionStateUpdate;
         await authedPostActionStateUpdate({
           postID: post.id,
           state: newStatus,
@@ -110,7 +115,7 @@ const PostCardHeader = memo(function PostCardHeader({
         }
       }
     },
-    [post.id, post.action?.state.value, post.boardId]
+    [post.id, post.task?.state.value, post.boardId]
   );
 
   function handleDialogItemSelect() {
@@ -156,17 +161,17 @@ const PostCardHeader = memo(function PostCardHeader({
                 <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   <DropdownMenuItem
-                    onClick={() => handleStatusChange(ActionState.pending)}
+                    onClick={() => handleStatusChange(TaskState.pending)}
                   >
                     To Do
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => handleStatusChange(ActionState.inProgress)}
+                    onClick={() => handleStatusChange(TaskState.inProgress)}
                   >
                     In Progress
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => handleStatusChange(ActionState.completed)}
+                    onClick={() => handleStatusChange(TaskState.completed)}
                   >
                     Done
                   </DropdownMenuItem>
@@ -227,12 +232,12 @@ const PostCardHeader = memo(function PostCardHeader({
 
 PostCardHeader.displayName = "PostCardHeader";
 
-const STATUS_TEXT: Record<Action["state"], string> = {
-  [ActionState.pending]: "To Do",
-  [ActionState.inProgress]: "In Progress",
-  [ActionState.completed]: "Done",
-  [ActionState.cancelled]: "Cancelled",
-} as const satisfies Record<Action["state"], string>;
+const STATUS_TEXT: Record<Task["state"], string> = {
+  [TaskState.pending]: "To Do",
+  [TaskState.inProgress]: "In Progress",
+  [TaskState.completed]: "Done",
+  [TaskState.cancelled]: "Cancelled",
+} as const satisfies Record<Task["state"], string>;
 
 interface PostCardFooterProps {
   post: PostSignal;
@@ -248,13 +253,15 @@ const PostCardFooter = memo(function PostCardFooter({
   const { hasVoted } = useVotedPosts();
 
   const badgeText = useComputed(() => {
-    return STATUS_TEXT[post.action?.state.value ?? ActionState.pending];
+    return STATUS_TEXT[post.task?.state.value ?? TaskState.pending];
   });
 
   const handleAssign = useCallback(
-    async (member: MemberInfo) => {
-      const oldAssigned = post.action?.assigned.value;
+    async (member: MemberSignal) => {
+      const oldAssigned = post.task?.assigned.value;
       try {
+        const authedPostAssign = (await import("@/lib/actions/task/action"))
+          .authedPostAssign;
         await authedPostAssign({
           postID: post.id,
           boardId: post.boardId,
@@ -264,11 +271,11 @@ const PostCardFooter = memo(function PostCardFooter({
         console.error("Error assigning task:", error);
         toast.error("Failed to assign task");
         if (oldAssigned) {
-          assignPostAction(post.id, oldAssigned);
+          assignTask(post.id, oldAssigned);
         }
       }
     },
-    [post.id, post.boardId, post.action?.assigned.value]
+    [post.id, post.boardId, post.task?.assigned.value]
   );
 
   return (
@@ -283,7 +290,7 @@ const PostCardFooter = memo(function PostCardFooter({
               <Dialog>
                 <DialogTrigger>
                   <AvatarIcon
-                    userID={post.action?.assigned.value ?? ""}
+                    userID={post.task?.assigned.value ?? ""}
                     triggers={(user, avatarContent) => (
                       <>
                         <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
@@ -356,9 +363,7 @@ function PostCard({
   const handleVote = useCallback(async () => {
     if (viewOnly) return;
     const isVoted = hasVoted(post.id);
-    const voteAction = isVoted
-      ? authenticatedDownVotePost
-      : authenticatedUpVotePost;
+    const voteAction = isVoted ? DownVotePostAction : UpVotePostAction;
     const voteCountAction = isVoted
       ? decrementPostVoteCount
       : incrementPostVoteCount;

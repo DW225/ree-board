@@ -1,5 +1,7 @@
 import { voteTable } from "@/db/schema";
-import type { Board, Post, User } from "@/lib/types";
+import type { Board } from "@/lib/types/board";
+import type { Post } from "@/lib/types/post";
+import type { User } from "@/lib/types/user";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./client";
