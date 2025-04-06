@@ -7,7 +7,7 @@ import type { User } from "@/lib/types/user";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { actionWithAuth } from "../actionWithAuth";
 
-export const authenticatedUpVotePost = async (
+export const UpVotePostAction = async (
   postID: Post["id"],
   userId: User["id"],
   boardId: Board["id"]
@@ -27,7 +27,7 @@ export const authenticatedUpVotePost = async (
     ])
   );
 
-export const authenticatedDownVotePost = async (
+export const DownVotePostAction = async (
   postID: Post["id"],
   userId: User["id"],
   boardId: Board["id"]

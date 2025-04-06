@@ -2,7 +2,7 @@
 
 import {
   addPost,
-  addPostAction,
+  addPostTask,
   assignTask,
   decrementPostVoteCount,
   incrementPostVoteCount,
@@ -97,7 +97,7 @@ function processTaskUpdates(type: string, data: string): void {
       assignTask(postTask.postId, postTask.userId);
       break;
     case EVENT_TYPE.ACTION.CREATE:
-      addPostAction({
+      addPostTask({
         id: postTask.id,
         postId: postTask.postId,
         boardId: postTask.boardId,
