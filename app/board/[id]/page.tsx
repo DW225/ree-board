@@ -78,7 +78,6 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
           <PostProvider
             initials={initialData}
             boardId={boardID}
-            userId={userID}
           >
             <PostChannel boardId={boardID} userId={userID} />
             <div className="container mx-auto w-full max-w-full px-4">

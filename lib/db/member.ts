@@ -46,10 +46,29 @@ export const checkMemberRole = async (
   boardID: Board["id"]
 ) => {
   const member = await db
-    .select()
+    .select({
+      role: memberTable.role,
+    })
     .from(memberTable)
     .where(
       and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardID))
     );
   return member ? member[0].role : null;
+};
+
+export const checkRoleByKindeID = async (
+  kindeID: User["kinde_id"],
+  boardID: Board["id"]
+) => {
+  const member = await db
+    .select({
+      role: memberTable.role,
+      userID: userTable.id,
+    })
+    .from(memberTable)
+    .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+    .where(
+      and(eq(userTable.kinde_id, kindeID), eq(memberTable.boardId, boardID))
+    );
+  return member ? member[0] : null;
 };

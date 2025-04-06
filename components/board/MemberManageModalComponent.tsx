@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authenticatedAddMemberToBoard, authenticatedFindUserByEmail, authenticatedRemoveMemberFromBoard } from "@/lib/actions/member/action";
 import { Role } from "@/lib/constants/role";
 import {
   addMember,
@@ -50,9 +51,6 @@ export default function MemberManageModalComponent({
     if (!newMember.email) return;
 
     try {
-      const authenticatedFindUserByEmail = (
-        await import("@/lib/actions/member/action")
-      ).authenticatedFindUserByEmail;
       const user = await authenticatedFindUserByEmail(newMember.email);
       if (!user) {
         throw new Error("User not found");
@@ -66,10 +64,6 @@ export default function MemberManageModalComponent({
         email: newMember.email,
         role: Role.member,
       };
-
-      const authenticatedAddMemberToBoard = (
-        await import("@/lib/actions/member/action")
-      ).authenticatedAddMemberToBoard;
 
       await authenticatedAddMemberToBoard({
         id: memberId,
@@ -105,9 +99,6 @@ export default function MemberManageModalComponent({
       try {
         removeMember(memberToRemove.id);
 
-        const authenticatedRemoveMemberFromBoard = (
-          await import("@/lib/actions/member/action")
-        ).authenticatedRemoveMemberFromBoard;
         await authenticatedRemoveMemberFromBoard(memberToRemove.id, boardId);
         setMemberToRemove(null);
       } catch (error) {

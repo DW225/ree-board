@@ -2,6 +2,7 @@
 "use client";
 
 import { useSetState } from "@/hooks/useSetState";
+import { UpdatePostTypeAction } from "@/lib/actions/post/action";
 import { PostType } from "@/lib/constants/post";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
 import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
@@ -124,14 +125,12 @@ interface PostProviderProps {
     actions: Task[];
   };
   boardId: string;
-  userId: string;
 }
 
 const PostProvider: FC<PostProviderProps> = ({
   children,
   initials,
   boardId,
-  userId,
 }) => {
   useEffectOnce(() => {
     postSignalInitial(initials.posts, initials.actions);
@@ -161,19 +160,11 @@ const PostProvider: FC<PostProviderProps> = ({
 
           updatePostType(postId, PostType[postTypeKey]);
 
-          const authenticatedUpdatePostType = (
-            await import("@/lib/actions/post/action")
-          ).authenticatedUpdatePostType;
-          await authenticatedUpdatePostType(
-            postId,
-            boardId,
-            PostType[postTypeKey],
-            userId
-          );
+          await UpdatePostTypeAction(postId, boardId, PostType[postTypeKey]);
         }
       },
     });
-  }, [boardId, userId]);
+  }, [boardId]);
 
   return (
     <VotedPostsProvider initial={{ votedPosts: initials.votedPosts }}>

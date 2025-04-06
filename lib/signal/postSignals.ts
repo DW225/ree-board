@@ -93,19 +93,19 @@ export const decrementPostVoteCount = (postID: Post["id"]) => {
   }
 };
 
-export const addPostAction = (action: NewTask) => {
+export const addPostTask = (task: NewTask) => {
   const postIndex = postSignal.value.findIndex(
-    (post) => post.id === action.postId
+    (post) => post.id === task.postId
   );
   if (postIndex !== -1) {
     if (postSignal.value[postIndex].task) {
-      postSignal.value[postIndex].task.assigned.value = action.userId ?? null;
+      postSignal.value[postIndex].task.assigned.value = task.userId ?? null;
       postSignal.value[postIndex].task.state.value =
-        action.state ?? TaskState.pending;
+        task.state ?? TaskState.pending;
     } else {
       postSignal.value[postIndex].task = {
-        assigned: signal(action.userId ?? null),
-        state: signal(action.state ?? TaskState.pending),
+        assigned: signal(task.userId ?? null),
+        state: signal(task.state ?? TaskState.pending),
       };
     }
   }

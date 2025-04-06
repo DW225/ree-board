@@ -36,6 +36,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DownVotePostAction,
+  UpVotePostAction,
+} from "@/lib/actions/vote/action";
 import { PostType } from "@/lib/constants/post";
 import { TaskState } from "@/lib/constants/task";
 import {
@@ -359,9 +363,7 @@ function PostCard({
   const handleVote = useCallback(async () => {
     if (viewOnly) return;
     const isVoted = hasVoted(post.id);
-    const voteAction = isVoted
-      ? (await import("@/lib/actions/vote/action")).authenticatedDownVotePost
-      : (await import("@/lib/actions/vote/action")).authenticatedUpVotePost;
+    const voteAction = isVoted ? DownVotePostAction : UpVotePostAction;
     const voteCountAction = isVoted
       ? decrementPostVoteCount
       : incrementPostVoteCount;
