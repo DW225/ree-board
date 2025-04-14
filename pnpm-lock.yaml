@@ -69,8 +69,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       dotenv:
-        specifier: ^16.4.7
-        version: 16.4.7
+        specifier: ^16.5.0
+        version: 16.5.0
       drizzle-orm:
         specifier: ^0.41.0
         version: 0.41.0(@libsql/client@0.15.2)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(gel@2.0.0)
@@ -2676,6 +2676,9 @@ packages:
   '@types/node@22.14.0':
     resolution: {integrity: sha512-Kmpl+z84ILoG+3T/zQFyAJsU6EPTmOCj8/2+83fSN6djd6I4o7uOuGIH6vq3PrjY5BGitSbFuMN18j3iknubbA==}
 
+  '@types/node@22.14.1':
+    resolution: {integrity: sha512-u0HuPQwe/dHrItgHHpmw3N2fYCR6x4ivMNbPHRkBVP4CvN+kiRrKHWk3i8tXiO/joPwXLMYvF9TTF0eqgHIuOw==}
+
   '@types/pg-pool@2.0.6':
     resolution: {integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ==}
 
@@ -3504,8 +3507,8 @@ packages:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
     engines: {node: '>=6.0.0'}
 
-  dotenv@16.4.7:
-    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
+  dotenv@16.5.0:
+    resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
     engines: {node: '>=12'}
 
   drizzle-kit@0.30.5:
@@ -7791,7 +7794,7 @@ snapshots:
     dependencies:
       '@kinde/jwt-decoder': 0.2.0
       aws-jwt-verify: 4.0.1
-      dotenv: 16.4.7
+      dotenv: 16.5.0
 
   '@libsql/client@0.15.2':
     dependencies:
@@ -8702,7 +8705,7 @@ snapshots:
       '@babel/core': 7.26.10
       '@sentry/babel-plugin-component-annotate': 3.2.4
       '@sentry/cli': 2.42.2
-      dotenv: 16.4.7
+      dotenv: 16.5.0
       find-up: 5.0.0
       glob: 9.3.5
       magic-string: 0.30.8
@@ -9081,6 +9084,10 @@ snapshots:
       undici-types: 6.20.0
 
   '@types/node@22.14.0':
+    dependencies:
+      undici-types: 6.21.0
+
+  '@types/node@22.14.1':
     dependencies:
       undici-types: 6.21.0
 
@@ -10041,7 +10048,7 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dotenv@16.4.7: {}
+  dotenv@16.5.0: {}
 
   drizzle-kit@0.30.5:
     dependencies:
@@ -11463,7 +11470,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.14.0
+      '@types/node': 22.14.1
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
