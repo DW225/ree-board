@@ -19,7 +19,7 @@
     "@kinde-oss/kinde-auth-nextjs": "^2.6.1",
     "@kinde/management-api-js": "^0.13.0",
     "@libsql/client": "^0.15.2",
-    "@next/env": "^15.2.4",
+    "@next/env": "^15.3.2",
     "@preact/signals-react": "^3.0.1",
     "@radix-ui/react-avatar": "^1.1.8",
     "@radix-ui/react-dialog": "^1.1.7",
