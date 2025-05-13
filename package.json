@@ -41,7 +41,7 @@
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "lodash": "^4.17.21",
-    "lucide-react": "^0.482.0",
+    "lucide-react": "^0.510.0",
     "nanoid": "^5.1.5",
     "next": "14.2.26",
     "react": "^18.3.1",
