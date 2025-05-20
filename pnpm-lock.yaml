@@ -12,8 +12,8 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       '@kinde-oss/kinde-auth-nextjs':
-        specifier: ^2.6.1
-        version: 2.6.1(next@14.2.26(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.6.2
+        version: 2.6.2(next@14.2.26(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@kinde/management-api-js':
         specifier: ^0.13.0
         version: 0.13.0
@@ -904,8 +904,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@kinde-oss/kinde-auth-nextjs@2.6.1':
-    resolution: {integrity: sha512-AZONDlNe8bcc5SaXzpylM2ar3FsvPBai7wMPSWC+Np9r2dlBLRw58F9nqZiDhTKam/KmRldZ44FtyWiwFfdAzg==}
+  '@kinde-oss/kinde-auth-nextjs@2.6.2':
+    resolution: {integrity: sha512-hfDcVEsBH3XKFPiK1oHWfW6pRPKj9E/dNQPtNy86gFU46fZwWS0y7rYepdXsiE10dDgWgZL6wA3P98IliyeDvw==}
     peerDependencies:
       next: ^12.3.5 || ^13.5.9 || ^14.2.25 || ^15.2.3
       react: ^18 || ^19
@@ -6988,7 +6988,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@kinde-oss/kinde-auth-nextjs@2.6.1(next@14.2.26(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@kinde-oss/kinde-auth-nextjs@2.6.2(next@14.2.26(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@kinde-oss/kinde-typescript-sdk': 2.10.1
       '@kinde/jwt-decoder': 0.2.0
