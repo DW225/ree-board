@@ -19,8 +19,12 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 
-const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"));
-const PostCard = dynamic(() => import("@/components/board/PostCard"));
+const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"), {
+  ssr: false,
+});
+const PostCard = dynamic(() => import("@/components/board/PostCard"), {
+  ssr: false,
+});
 
 interface BoardColumnProps {
   boardID: string;
@@ -117,13 +121,7 @@ export default function BoardColumn({
         return (
           <div
             key={post.id}
-            className={`
-            ${
-              animatedPost.isRemoving
-                ? "animate-out fade-out slide-out-to-bottom-5 duration-300"
-                : "animate-in fade-in slide-in-from-bottom-5 duration-300"
-            }
-          `}
+            className={"animate-in fade-in slide-in-from-bottom-5 duration-300"}
           >
             <PostCard
               post={post}

@@ -1,12 +1,6 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { PostType } from "@/lib/constants/post";
-import dynamic from "next/dynamic";
 import type { FC } from "react";
-
-const BoardColumn = dynamic(() => import("@/components/board/BoardColumn"), {
-  loading: () => <LoadingSpinner />,
-  ssr: false,
-});
+import BoardColumn from "./BoardColumn";
 
 interface BoardGridProps {
   boardID: string;
