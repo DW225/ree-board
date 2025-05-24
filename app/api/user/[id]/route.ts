@@ -5,10 +5,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export const revalidate = 3600;
 
-export async function GET(
-  _: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { isAuthenticated } = getKindeServerSession();
   if (!(await isAuthenticated())) {
     redirect("/");

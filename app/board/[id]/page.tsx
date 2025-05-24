@@ -19,22 +19,19 @@ const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
 const MemberManageModalComponent = dynamic(
   () => import("@/components/board/MemberManageModalComponent")
 );
-const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"), {
-  ssr: false,
-});
+const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"));
 const PostChannel = dynamic(
-  () => import("@/components/board/PostChannelComponent"),
-  {
-    ssr: false,
-  }
+  () => import("@/components/board/PostChannelComponent")
 );
 
-interface BoardPageProps {
-  params: { id: string };
-}
+type BoardPageParams = Promise<{ id: string }>;
 
-export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
-  const boardID = params.id;
+export default async function BoardPage({
+  params,
+}: {
+  params: BoardPageParams;
+}) {
+  const { id } = await params;
 
   const { getUser } = getKindeServerSession();
   const user = await getUser();
@@ -45,9 +42,9 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
 
   const [userID, posts, members, actions] = await Promise.all([
     findUserIdByKindeID(user.id),
-    fetchPostsByBoardID(boardID),
-    fetchMembersByBoardID(boardID),
-    fetchTasks(boardID),
+    fetchPostsByBoardID(id),
+    fetchMembersByBoardID(id),
+    fetchTasks(id),
   ]);
 
   if (!userID) {
@@ -73,27 +70,20 @@ export default async function BoardPage({ params }: Readonly<BoardPageProps>) {
 
   return (
     <>
-      <RTLProvider boardId={boardID}>
+      <RTLProvider boardId={id}>
         <AnonymousModeProvider>
-          <PostProvider
-            initials={initialData}
-            boardId={boardID}
-          >
-            <PostChannel boardId={boardID} userId={userID} />
+          <PostProvider initials={initialData} boardId={id}>
+            <PostChannel boardId={id} userId={userID} />
             <div className="container mx-auto w-full max-w-full px-4">
               <div className="flex justify-end py-2">
                 <MemberManageModalComponent
-                  boardId={boardID}
+                  boardId={id}
                   viewOnly={!hasManagePermission}
                 >
                   <AvatarStack />
                 </MemberManageModalComponent>
               </div>
-              <BoardGrid
-                boardID={boardID}
-                viewOnly={viewOnly}
-                userId={userID}
-              />
+              <BoardGrid boardID={id} viewOnly={viewOnly} userId={userID} />
             </div>
           </PostProvider>
         </AnonymousModeProvider>
