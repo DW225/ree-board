@@ -76,7 +76,7 @@
     "drizzle-kit": "^0.31.0",
     "esbuild": "^0.25.4",
     "esbuild-register": "^3.6.0",
-    "eslint": "^8.57.1",
+    "eslint": "^9.27.0",
     "eslint-config-next": "15.3.2",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-drizzle": "^0.2.3",
