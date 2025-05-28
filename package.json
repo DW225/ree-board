@@ -75,7 +75,7 @@
     "@vercel/toolbar": "^0.1.37",
     "autoprefixer": "^10.4.21",
     "drizzle-kit": "^0.31.1",
-    "esbuild": "^0.25.4",
+    "esbuild": "^0.25.5",
     "esbuild-register": "^3.6.0",
     "eslint": "^9.27.0",
     "eslint-config-next": "15.3.2",
