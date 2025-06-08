@@ -84,7 +84,7 @@ export default function MemberList({
         {filteredMembers.value.map((member) => (
           <div key={member.id} className="flex items-center space-x-4 mb-4">
             <AvatarIcon userID={member.userId} />
-            <div className="flex-grow">
+            <div className="grow">
               <p className="text-sm font-medium">{member.username}</p>
               <p className="text-sm text-gray-500">{member.email}</p>
             </div>

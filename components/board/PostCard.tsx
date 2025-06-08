@@ -432,7 +432,7 @@ function PostCard({
       <CardContent className="px-3 py-1">
         <div
           className={`${
-            isAnonymous ? "blur-sm select-none" : "select-text"
+            isAnonymous ? "blur-xs select-none" : "select-text"
           } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
         >
           {parsedContent}

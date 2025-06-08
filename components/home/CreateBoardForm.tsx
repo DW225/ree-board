@@ -59,7 +59,7 @@ export default function CreateBoardForm({
         type="text"
         name="title"
         placeholder="Create new board"
-        className="mt-2 w-full text-center bg-transparent border-none focus:outline-none text-gray-600"
+        className="mt-2 w-full text-center bg-transparent border-none focus:outline-hidden text-gray-600"
       />
       <button type="submit" className=""></button>
     </form>

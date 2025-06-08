@@ -23,7 +23,7 @@ const Toast = ({ toast }: { toast: Toast }) => {
       <span>{toast.message}</span>
       <button
         onClick={() => removeToast(toast.id)}
-        className="ml-4 focus:outline-none"
+        className="ml-4 focus:outline-hidden"
       >
         <X className="size-4" />
       </button>
