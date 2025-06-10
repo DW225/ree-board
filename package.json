@@ -15,7 +15,7 @@
     "push:dev": "NODE_ENV=development drizzle-kit push"
   },
   "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^1.6.1",
+    "@atlaskit/pragmatic-drag-and-drop": "^1.7.2",
     "@kinde-oss/kinde-auth-nextjs": "^2.6.2",
     "@kinde/management-api-js": "^0.14.0",
     "@libsql/client": "^0.15.8",
