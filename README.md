@@ -1,56 +1,105 @@
 # Ree-Board
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDW225%2Free-board.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FDW225%2Free-board?ref=badge_shield)
 
+Ree-Board is a collaborative retro board application for teams, built with Next.js, TypeScript, and modern full-stack tooling. It supports real-time collaboration, user authentication, and role-based access control.
 
-Retro Board build using [Next.js](https://nextjs.org/), [TailwindCSS](https://tailwindcss.com/), [Turso](https://turso.tech/) and [Kinde](https://kinde.com/)
+## Features
 
-## Prerequisite
+- **Real-time Collaboration:** Updates are instantly reflected for all users via Ably.
+- **Authentication:** Secure login with Kinde.
+- **Role-based Access:** Owner, member, and guest roles for boards.
+- **Board & Post Management:** Create, update, and delete boards and posts.
+- **Voting & Tasks:** Upvote posts, assign action items, and track task status.
+- **Responsive UI:** Built with Tailwind CSS and Shadcn/ui components.
+- **Error Monitoring:** Integrated with Sentry.
 
-- [pnpm](https://pnpm.io/)
-- [nodejs](https://nodejs.org/) LTS version equal or greater than v20
-- [turso CLI](https://docs.turso.tech/cli/installation)
+## Tech Stack
+
+- **Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS, Shadcn/ui
+- **Backend:** Next.js API routes, Drizzle ORM, Turso (SQLite)
+- **Auth:** Kinde
+- **Realtime:** Ably
+- **Testing:** Jest, ts-jest
+- **Other:** Preact Signals, Lucide Icons
 
 ## Getting Started
 
-1. Install dependencies
+### Prerequisites
 
-  ```bash
-  pnpm i
-  ```
+- Node.js (v18+ recommended)
+- pnpm (or npm/yarn)
+- Turso account (for SQLite DB)
+- Kinde account (for authentication)
+- Ably account (for realtime)
 
-2. Start local turso DB
+### Setup
 
-  ```bash
-  pnpm dev:sql
-  ```
+1. **Clone the repo:**
 
-3. Run the development server:
+   ```bash
+   git clone https://github.com/DW225/ree-board.git
+   cd ree-board
+   ```
 
-  ```bash
-  pnpm dev
-  ```
+2. **Install dependencies:**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   ```bash
+   pnpm install
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Configure environment variables:**
+   - Copy `.env.example` to `.env.local` and fill in your credentials for Turso, Kinde, Ably, and Sentry.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+4. **Run database migrations:**
+   - **For local development:**
 
-## Learn More
+     ```bash
+     # Start the local Turso DB first
+     pnpm dev:sql
+     # Then run local migrations
+     pnpm push:dev
+     ```
 
-To learn more about Next.js, take a look at the following resources:
+   - **For production:**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+     ```bash
+     pnpm push
+     ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+5. **Start the development server:**
 
-## Deploy on Vercel
+   ```bash
+   pnpm dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+6. **Run tests:**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+   ```bash
+   pnpm test
+   ```
 
+## Project Structure
+
+- `app/` - Next.js app directory (pages, layouts, API routes)
+- `components/` - UI and feature components
+- `lib/` - Utilities, database logic, types, and constants
+- `db/` - Drizzle ORM schema and migration scripts
+- `public/` - Static assets
+- `hooks/` - React hooks
+- `drizzle/` - Drizzle migration metadata
+
+## Scripts
+
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm test` - Run tests
+
+## Environment Variables
+
+See `.env.example` for all required variables.
 
 ## License
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDW225%2Free-board.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FDW225%2Free-board?ref=badge_large)
