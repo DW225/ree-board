@@ -2,7 +2,7 @@ import { boardTable, memberTable, userTable } from "@/db/schema";
 import { Role } from "@/lib/constants/role";
 import type { Board } from "@/lib/types/board";
 import type { User } from "@/lib/types/user";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./client";
 import { addMember, checkMemberRole } from "./member";
@@ -79,4 +79,31 @@ export async function deleteBoard(boardId: Board["id"], userId: User["id"]) {
       .execute();
   }
   return new Error("Insufficient permissions to delete board");
+}
+
+export async function fetchBoardsWhereUserIsAdmin(
+  kindeId: User["kinde_id"]
+): Promise<Board[]> {
+  if (!kindeId) {
+    throw new Error("Kinde ID is required");
+  }
+
+  return await db
+    .select({
+      id: boardTable.id,
+      title: boardTable.title,
+      state: boardTable.state,
+      creator: boardTable.creator,
+      updatedAt: boardTable.updatedAt,
+      createdAt: boardTable.createdAt,
+    })
+    .from(boardTable)
+    .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
+    .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+    .where(
+      and(
+        eq(userTable.kinde_id, kindeId),
+        eq(memberTable.role, Role.owner) // Only boards where user is owner/admin
+      )
+    );
 }

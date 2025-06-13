@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authenticatedAddMemberToBoard, authenticatedFindUserByEmail, authenticatedRemoveMemberFromBoard } from "@/lib/actions/member/action";
+import {
+  authenticatedAddMemberToBoard,
+  authenticatedFindUserByEmail,
+  authenticatedRemoveMemberFromBoard,
+} from "@/lib/actions/member/action";
 import { Role } from "@/lib/constants/role";
 import {
   addMember,
@@ -34,6 +38,9 @@ interface MemberManageProps {
 }
 
 const MemberList = dynamic(() => import("@/components/board/MemberList"));
+const ImportMembersComponent = dynamic(
+  () => import("@/components/board/ImportMembersComponent")
+);
 
 export default function MemberManageModalComponent({
   boardId,
@@ -117,29 +124,46 @@ export default function MemberManageModalComponent({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Board Members</DialogTitle>
-          </DialogHeader>
+          </DialogHeader>{" "}
           <div className="grid gap-4">
             {!viewOnly && (
-              <form onSubmit={handleAddMember} className="grid gap-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newMember.email}
-                    onChange={(e) =>
-                      setNewMember({ ...newMember, email: e.target.value })
-                    }
-                    className="col-span-3"
+              <>
+                <form onSubmit={handleAddMember} className="grid gap-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="email" className="text-right">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newMember.email}
+                      onChange={(e) =>
+                        setNewMember({ ...newMember, email: e.target.value })
+                      }
+                      className="col-span-3"
+                    />
+                  </div>
+                  <Button type="submit" className="ml-auto">
+                    <PlusCircle className="mr-2 size-4" />
+                    Add Member
+                  </Button>
+                </form>
+
+                <div className="flex items-center gap-2">
+                  <hr className="flex-1" />
+                  <span className="text-xs text-muted-foreground">OR</span>
+                  <hr className="flex-1" />
+                </div>
+
+                <div className="flex justify-center">
+                  <ImportMembersComponent
+                    currentBoardId={boardId}
+                    onImportComplete={() => {
+                      // Optionally refresh the member list or show success message
+                    }}
                   />
                 </div>
-                <Button type="submit" className="ml-auto">
-                  <PlusCircle className="mr-2 size-4" />
-                  Add Member
-                </Button>
-              </form>
+              </>
             )}
             <div className="mt-6">
               <h4 className="mb-4 text-sm font-medium">Current Members</h4>

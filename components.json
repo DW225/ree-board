@@ -10,6 +10,7 @@
     "cssVariables": true,
     "prefix": ""
   },
+  "iconLibrary": "lucide-react",
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",
