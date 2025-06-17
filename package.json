@@ -29,7 +29,7 @@
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.7",
-    "@sentry/nextjs": "^9.27.0",
+    "@sentry/nextjs": "^9.29.0",
     "@vercel/speed-insights": "^1.2.0",
     "ably": "^2.9.0",
     "class-variance-authority": "^0.7.1",
