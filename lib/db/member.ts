@@ -1,8 +1,9 @@
-import { memberTable, userTable } from "@/db/schema";
+import { boardTable, memberTable, userTable } from "@/db/schema";
 import type { Board } from "@/lib/types/board";
+import type { Transaction } from "@/lib/types/db";
 import type { NewMember } from "@/lib/types/member";
 import type { User } from "@/lib/types/user";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "./client";
 
 export const addMember = async (newMember: NewMember) => {
@@ -22,11 +23,27 @@ export const removeMember = async (
     .delete(memberTable)
     .where(
       and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardID))
-    )
-    .execute();
+    );
 };
 
-export const fetchMembersByBoardID = async (boardID: Board["id"]) => {
+export const fetchMembersByBoardID = async (
+  boardID: Board["id"],
+  trx?: Transaction
+) => {
+  if (trx) {
+    return await trx
+      .select({
+        id: memberTable.id,
+        userId: memberTable.userId,
+        role: memberTable.role,
+        username: userTable.name,
+        email: userTable.email,
+        updateAt: memberTable.updatedAt,
+      })
+      .from(memberTable)
+      .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+      .where(eq(memberTable.boardId, boardID));
+  }
   return await db
     .select({
       id: memberTable.id,
@@ -71,4 +88,60 @@ export const checkRoleByKindeID = async (
       and(eq(userTable.kinde_id, kindeID), eq(memberTable.boardId, boardID))
     );
   return member ? member[0] : null;
+};
+
+export const fetchMembersFromMultipleBoards = async (
+  boardIds: Board["id"][],
+  excludeBoardId?: Board["id"]
+) => {
+  if (boardIds.length === 0) return [];
+  const whereConditions = excludeBoardId
+    ? and(
+        inArray(memberTable.boardId, boardIds),
+        ne(memberTable.boardId, excludeBoardId)
+      )
+    : inArray(memberTable.boardId, boardIds);
+
+  return await db
+    .select({
+      id: memberTable.id,
+      userId: memberTable.userId,
+      role: memberTable.role,
+      username: userTable.name,
+      email: userTable.email,
+      boardId: memberTable.boardId,
+      boardTitle: boardTable.title,
+    })
+    .from(memberTable)
+    .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+    .innerJoin(boardTable, eq(memberTable.boardId, boardTable.id))
+    .where(whereConditions);
+};
+
+export const bulkAddMembers = async (
+  members: NewMember[],
+  trx?: Transaction
+) => {
+  if (members.length === 0) return;
+
+  if (trx) {
+    await trx.insert(memberTable).values(members).onConflictDoNothing();
+  } else {
+    await db.insert(memberTable).values(members).onConflictDoNothing();
+  }
+};
+
+export const checkIfMemberExists = async (
+  userId: User["id"],
+  boardId: Board["id"]
+): Promise<boolean> => {
+  const existing = await db
+    .select({ id: memberTable.id })
+    .from(memberTable)
+    .where(
+      and(eq(memberTable.userId, userId), eq(memberTable.boardId, boardId))
+    )
+    .limit(1);
+
+  return existing.length > 0;
 };
