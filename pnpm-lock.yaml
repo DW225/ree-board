@@ -21,8 +21,8 @@ importers:
         specifier: ^0.15.9
         version: 0.15.9
       '@next/env':
-        specifier: 15.3.3
-        version: 15.3.3
+        specifier: 15.3.4
+        version: 15.3.4
       '@preact/signals-react':
         specifier: ^3.2.0
         version: 3.2.0(react@19.1.0)
@@ -1179,6 +1179,9 @@ packages:
 
   '@next/env@15.3.3':
     resolution: {integrity: sha512-OdiMrzCl2Xi0VTjiQQUK0Xh7bJHnOuET2s+3V+Y40WJBAXrJeGA3f+I8MZJ/YQ3mVGi5XGR1L66oFlgqXhQ4Vw==}
+
+  '@next/env@15.3.4':
+    resolution: {integrity: sha512-ZkdYzBseS6UjYzz6ylVKPOK+//zLWvD6Ta+vpoye8cW11AjiQjGYVibF0xuvT4L0iJfAPfZLFidaEzAOywyOAQ==}
 
   '@next/eslint-plugin-next@15.3.2':
     resolution: {integrity: sha512-ijVRTXBgnHT33aWnDtmlG+LJD+5vhc9AKTJPquGG5NKXjpKNjc62woIhFtrAcWdBobt8kqjCoaJ0q6sDQoX7aQ==}
@@ -5616,8 +5619,8 @@ packages:
       uglify-js:
         optional: true
 
-  terser@5.43.0:
-    resolution: {integrity: sha512-CqNNxKSGKSZCunSvwKLTs8u8sGGlp27sxNZ4quGh0QeNuyHM0JSEM/clM9Mf4zUp6J+tO2gUXhgXT2YMMkwfKQ==}
+  terser@5.43.1:
+    resolution: {integrity: sha512-+6erLbBm0+LROX2sPXlUYx/ux5PyE9K/a92Wrt6oA+WDAoFTdpHE5tCYCI5PNzq2y8df4rA+QgHLJuR4jNymsg==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -5881,6 +5884,10 @@ packages:
 
   webpack-sources@3.3.2:
     resolution: {integrity: sha512-ykKKus8lqlgXX/1WjudpIEjqsafjOTcOJqxnAbMLAu/KCsDCJ6GBtvscewvTkrn24HsnvFwrSCbenFrhtcCsAA==}
+    engines: {node: '>=10.13.0'}
+
+  webpack-sources@3.3.3:
+    resolution: {integrity: sha512-yd1RBzSGanHkitROoPFd6qsrxt+oFhg/129YzheDGqeustzX0vTZJZsSsQjVQC4yzBQ56K55XU8gaNCtIzOnTg==}
     engines: {node: '>=10.13.0'}
 
   webpack-virtual-modules@0.5.0:
@@ -7076,6 +7083,8 @@ snapshots:
   '@next/env@15.1.6': {}
 
   '@next/env@15.3.3': {}
+
+  '@next/env@15.3.4': {}
 
   '@next/eslint-plugin-next@15.3.2':
     dependencies:
@@ -12370,12 +12379,12 @@ snapshots:
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      terser: 5.43.0
+      terser: 5.43.1
       webpack: 5.94.0(esbuild@0.25.5)
     optionalDependencies:
       esbuild: 0.25.5
 
-  terser@5.43.0:
+  terser@5.43.1:
     dependencies:
       '@jridgewell/source-map': 0.3.6
       acorn: 8.15.0
@@ -12689,6 +12698,8 @@ snapshots:
 
   webpack-sources@3.3.2: {}
 
+  webpack-sources@3.3.3: {}
+
   webpack-virtual-modules@0.5.0: {}
 
   webpack@5.94.0(esbuild@0.25.5):
@@ -12715,7 +12726,7 @@ snapshots:
       tapable: 2.2.2
       terser-webpack-plugin: 5.3.14(esbuild@0.25.5)(webpack@5.94.0(esbuild@0.25.5))
       watchpack: 2.4.4
-      webpack-sources: 3.3.2
+      webpack-sources: 3.3.3
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
