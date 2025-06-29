@@ -12,8 +12,8 @@ importers:
         specifier: ^1.7.4
         version: 1.7.4
       '@kinde-oss/kinde-auth-nextjs':
-        specifier: ^2.7.0
-        version: 2.7.0(eslint@9.29.0(jiti@1.21.6))(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
+        specifier: ^2.8.1
+        version: 2.8.1(eslint@9.29.0(jiti@1.21.6))(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)
       '@kinde/management-api-js':
         specifier: ^0.14.0
         version: 0.14.0
@@ -1077,18 +1077,26 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@kinde-oss/kinde-auth-nextjs@2.7.0':
-    resolution: {integrity: sha512-degSeatyj0QH05bHSEy1EXB6zzpQPLgBAx5qzDJXKaO6mKQKHzFx2HfSKrAJ0He7LppYbnCFYN6DBlpDvlu6vg==}
+  '@kinde-oss/kinde-auth-nextjs@2.8.1':
+    resolution: {integrity: sha512-YEaHIOIAeISOuO0g6sKo+LGfpG2i2ge+KiuJVloHgXJxk2pccJVqrIbLGntm33GwP92AYZmatk8pQBSHRvYT0Q==}
     peerDependencies:
       next: ^12.3.5 || ^13.5.9 || ^14.2.25 || ^15.2.3
       react: ^18 || ^19
       react-dom: ^18 || ^19
 
-  '@kinde-oss/kinde-typescript-sdk@2.11.0':
-    resolution: {integrity: sha512-3pSRUAdpM7YecUMpzVano+u1LKnBNwsibBJIpKImW2Fo25Qux5sO+9u/xLy1PEv+L4rt8fXOBF/muRgaxzH1ww==}
+  '@kinde-oss/kinde-typescript-sdk@2.11.1':
+    resolution: {integrity: sha512-jes7NKI4qyYI4XOnq7u4Dfm1gO8f3o7MM+Zy4geg/0A6qz1QV6MvXtM19K0sBbWxPvWIfX+jGRCwnauQKrbe8g==}
 
   '@kinde/js-utils@0.18.3':
     resolution: {integrity: sha512-U4j4DvwKYlzOUxkl8yBUfa8WeQh6m6koKuYZyURUBPd0V+vkFsRId2SEJkbwuXL7U/ftX7jo63wXZHNvVYpuWw==}
+    peerDependencies:
+      expo-secure-store: '>=11.0.0'
+    peerDependenciesMeta:
+      expo-secure-store:
+        optional: true
+
+  '@kinde/js-utils@0.19.0':
+    resolution: {integrity: sha512-PvbyHxYMkR7Cgc8UG49qXJGGonIsu1MaDkmZRVhhh6Iok7t9tty62k0eCY5EyuN/lWpCG/3/jz6Gb3aAgixzmw==}
     peerDependencies:
       expo-secure-store: '>=11.0.0'
     peerDependenciesMeta:
@@ -2276,6 +2284,9 @@ packages:
   '@types/node@24.0.3':
     resolution: {integrity: sha512-R4I/kzCYAdRLzfiCabn9hxWfbuHS573x+r0dJMkkzThEa7pbrcDWK+9zu3e7aBOouf+rQAciqPFMnxwr0aWgKg==}
 
+  '@types/node@24.0.7':
+    resolution: {integrity: sha512-YIEUUr4yf8q8oQoXPpSlnvKNVKDQlPMWrmOcgzoduo7kvA2UF0/BwJ/eMKFTiTtkNL17I0M6Xe2tvwFU7be6iw==}
+
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
 
@@ -2883,6 +2894,11 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
+  browserslist@4.25.1:
+    resolution: {integrity: sha512-KGj0KoOMXLpSNkkEI6Z6mShmQy0bc1I+T7K9N81k4WWMrfz+6fQ6es80B/YLAeRoKvjYE1YSHHOW1qe9xIVzHw==}
+    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
+    hasBin: true
+
   bs-logger@0.2.6:
     resolution: {integrity: sha512-pd8DCoxmbgc7hyPKOvxtqNcjYoOsABPQdcCUjGp3d42VR2CX1ORhk2A87oqqu5R1kk+76nsxZupkmyd+MVtCog==}
     engines: {node: '>= 6'}
@@ -2944,6 +2960,9 @@ packages:
 
   caniuse-lite@1.0.30001723:
     resolution: {integrity: sha512-1R/elMjtehrFejxwmexeXAtae5UO9iSyFn6G/I806CYC/BLyyBk1EPhrKBkWhy6wM6Xnm47dSJQec+tLJ39WHw==}
+
+  caniuse-lite@1.0.30001726:
+    resolution: {integrity: sha512-VQAUIUzBiZ/UnlM28fSp2CRF3ivUn1BWEvxMcVTNwpw91Py1pGbPIyIKtd+tzct9C3ouceCVdGAXxZOpZAsgdw==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -3354,6 +3373,9 @@ packages:
   electron-to-chromium@1.5.168:
     resolution: {integrity: sha512-RUNQmFLNIWVW6+z32EJQ5+qx8ci6RGvdtDC0Ls+F89wz6I2AthpXF0w0DIrn2jpLX0/PU9ZCo+Qp7bg/EckJmA==}
 
+  electron-to-chromium@1.5.177:
+    resolution: {integrity: sha512-7EH2G59nLsEMj97fpDuvVcYi6lwTcM1xuWw3PssD8xzboAW7zj7iB3COEEEATUfjLHrs5uKBLQT03V/8URx06g==}
+
   electron-to-chromium@1.5.33:
     resolution: {integrity: sha512-+cYTcFB1QqD4j4LegwLfpCNxifb6dDFUAwk6RsLusCwIaZI6or2f+q8rs5tTB2YC53HhOlIbEaqHMAAC8IOIwA==}
 
@@ -3370,8 +3392,8 @@ packages:
   end-of-stream@1.4.4:
     resolution: {integrity: sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==}
 
-  enhanced-resolve@5.18.1:
-    resolution: {integrity: sha512-ZSW3ma5GkcQBIpwZTSRAI8N71Uuwgs93IezB7mf7R60tC8ZbJideoDNKjHn2O9KIlx6rkGTTEk1xUCK2E1Y2Yg==}
+  enhanced-resolve@5.18.2:
+    resolution: {integrity: sha512-6Jw4sE1maoRJo3q8MsSIn2onJFbLTOjY9hlx4DZXmOKvLRd1Ok2kXmAGXaafL2+ijsJZ1ClYbl/pmqr9+k4iUQ==}
     engines: {node: '>=10.13.0'}
 
   env-paths@3.0.0:
@@ -6952,9 +6974,9 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@kinde-oss/kinde-auth-nextjs@2.7.0(eslint@9.29.0(jiti@1.21.6))(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)':
+  '@kinde-oss/kinde-auth-nextjs@2.8.1(eslint@9.29.0(jiti@1.21.6))(next@15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.8.3)':
     dependencies:
-      '@kinde-oss/kinde-typescript-sdk': 2.11.0(eslint@9.29.0(jiti@1.21.6))(typescript@5.8.3)
+      '@kinde-oss/kinde-typescript-sdk': 2.11.1(eslint@9.29.0(jiti@1.21.6))(typescript@5.8.3)
       '@kinde/js-utils': 0.18.3
       '@kinde/jwt-decoder': 0.2.0
       '@kinde/jwt-validator': 0.4.0
@@ -6970,9 +6992,9 @@ snapshots:
       - supports-color
       - typescript
 
-  '@kinde-oss/kinde-typescript-sdk@2.11.0(eslint@9.29.0(jiti@1.21.6))(typescript@5.8.3)':
+  '@kinde-oss/kinde-typescript-sdk@2.11.1(eslint@9.29.0(jiti@1.21.6))(typescript@5.8.3)':
     dependencies:
-      '@kinde/js-utils': 0.18.3
+      '@kinde/js-utils': 0.19.0
       '@typescript-eslint/parser': 8.34.0(eslint@9.29.0(jiti@1.21.6))(typescript@5.8.3)
       jose: 6.0.11
       uncrypto: 0.1.3
@@ -6983,6 +7005,10 @@ snapshots:
       - typescript
 
   '@kinde/js-utils@0.18.3':
+    dependencies:
+      '@kinde/jwt-decoder': 0.2.0
+
+  '@kinde/js-utils@0.19.0':
     dependencies:
       '@kinde/jwt-decoder': 0.2.0
 
@@ -8274,6 +8300,10 @@ snapshots:
     dependencies:
       undici-types: 7.8.0
 
+  '@types/node@24.0.7':
+    dependencies:
+      undici-types: 7.8.0
+
   '@types/parse-json@4.0.2':
     optional: true
 
@@ -9027,6 +9057,13 @@ snapshots:
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.0)
 
+  browserslist@4.25.1:
+    dependencies:
+      caniuse-lite: 1.0.30001726
+      electron-to-chromium: 1.5.177
+      node-releases: 2.0.19
+      update-browserslist-db: 1.1.3(browserslist@4.25.1)
+
   bs-logger@0.2.6:
     dependencies:
       fast-json-stable-stringify: 2.1.0
@@ -9085,6 +9122,8 @@ snapshots:
   caniuse-lite@1.0.30001721: {}
 
   caniuse-lite@1.0.30001723: {}
+
+  caniuse-lite@1.0.30001726: {}
 
   ccount@2.0.1: {}
 
@@ -9377,6 +9416,8 @@ snapshots:
 
   electron-to-chromium@1.5.168: {}
 
+  electron-to-chromium@1.5.177: {}
+
   electron-to-chromium@1.5.33: {}
 
   emittery@0.13.1: {}
@@ -9389,7 +9430,7 @@ snapshots:
     dependencies:
       once: 1.4.0
 
-  enhanced-resolve@5.18.1:
+  enhanced-resolve@5.18.2:
     dependencies:
       graceful-fs: 4.2.11
       tapable: 2.2.2
@@ -10737,7 +10778,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 24.0.3
+      '@types/node': 24.0.7
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -12616,6 +12657,12 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
+  update-browserslist-db@1.1.3(browserslist@4.25.1):
+    dependencies:
+      browserslist: 4.25.1
+      escalade: 3.2.0
+      picocolors: 1.1.1
+
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
@@ -12705,9 +12752,9 @@ snapshots:
       '@webassemblyjs/wasm-parser': 1.14.1
       acorn: 8.15.0
       acorn-import-attributes: 1.9.5(acorn@8.15.0)
-      browserslist: 4.25.0
+      browserslist: 4.25.1
       chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.18.1
+      enhanced-resolve: 5.18.2
       es-module-lexer: 1.7.0
       eslint-scope: 5.1.1
       events: 3.3.0
