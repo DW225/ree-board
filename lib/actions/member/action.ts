@@ -8,7 +8,7 @@ import {
   bulkAddMembers,
   checkRoleByKindeID,
   fetchMembersByBoardID,
-  fetchMembersFromMultipleBoards,
+  fetchMembersWithExclude,
   removeMember,
 } from "@/lib/db/member";
 import { findUserByEmail } from "@/lib/db/user";
@@ -73,14 +73,14 @@ export const getBoardsWhereUserIsAdminAction = async () =>
     return await fetchBoardsWhereUserIsAdmin(kindeUser.id);
   });
 
-export const getMembersFromBoardAction = async (
+export const getMembersFromBoardWithExclusionAction = async (
   boardId: Board["id"],
-  excludeBoardId?: Board["id"]
+  excludeBoardId: Board["id"]
 ) =>
   rbacWithAuth(
     boardId,
     Role.guest,
-    async () => await fetchMembersFromMultipleBoards([boardId], excludeBoardId)
+    async () => await fetchMembersWithExclude([boardId], excludeBoardId)
   );
 
 export const bulkImportMembersAction = async (
