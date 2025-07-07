@@ -1,6 +1,8 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -18,13 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   bulkImportMembersAction,
   getBoardsWhereUserIsAdminAction,
-  getMembersFromBoardAction,
+  getMembersFromBoardWithExclusionAction,
 } from "@/lib/actions/member/action";
 import { Role } from "@/lib/constants/role";
 import { addMember } from "@/lib/signal/memberSingals";
@@ -92,7 +92,7 @@ export default function ImportMembersComponent({
 
     try {
       setIsLoading(true);
-      const members = await getMembersFromBoardAction(
+      const members = await getMembersFromBoardWithExclusionAction(
         selectedBoardId,
         currentBoardId
       );

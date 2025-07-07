@@ -3,7 +3,7 @@ import type { Board } from "@/lib/types/board";
 import type { Transaction } from "@/lib/types/db";
 import type { NewMember } from "@/lib/types/member";
 import type { User } from "@/lib/types/user";
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray, ne, notExists } from "drizzle-orm";
 import { db } from "./client";
 
 export const addMember = async (newMember: NewMember) => {
@@ -90,17 +90,28 @@ export const checkRoleByKindeID = async (
   return member ? member[0] : null;
 };
 
-export const fetchMembersFromMultipleBoards = async (
+export const fetchMembersWithExclude = async (
   boardIds: Board["id"][],
-  excludeBoardId?: Board["id"]
+  excludeBoardId: Board["id"]
 ) => {
   if (boardIds.length === 0) return [];
-  const whereConditions = excludeBoardId
-    ? and(
-        inArray(memberTable.boardId, boardIds),
-        ne(memberTable.boardId, excludeBoardId)
-      )
-    : inArray(memberTable.boardId, boardIds);
+
+  const excludedMembers = db
+    .select({ userId: memberTable.userId })
+    .from(memberTable)
+    .where(eq(memberTable.boardId, excludeBoardId))
+    .as("excludedMembers");
+
+  const whereConditions = and(
+    inArray(memberTable.boardId, boardIds),
+    ne(memberTable.boardId, excludeBoardId),
+    notExists(
+      db
+        .select()
+        .from(excludedMembers)
+        .where(eq(excludedMembers.userId, memberTable.userId))
+    )
+  );
 
   return await db
     .select({
