@@ -72,8 +72,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       dotenv:
-        specifier: ^16.5.0
-        version: 16.5.0
+        specifier: ^17.0.1
+        version: 17.0.1
       drizzle-orm:
         specifier: ^0.44.2
         version: 0.44.2(@libsql/client@0.15.9)(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(gel@2.0.0)
@@ -3255,8 +3255,12 @@ packages:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
 
-  dotenv@16.5.0:
-    resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
+  dotenv@16.6.1:
+    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
+  dotenv@17.0.1:
+    resolution: {integrity: sha512-GLjkduuAL7IMJg/ZnOPm9AnWKJ82mSE2tzXLaJ/6hD6DhwGfZaXG77oB8qbReyiczNxnbxQKyh0OE5mXq0bAHA==}
     engines: {node: '>=12'}
 
   drizzle-kit@0.31.4:
@@ -3385,8 +3389,8 @@ packages:
   electron-to-chromium@1.5.168:
     resolution: {integrity: sha512-RUNQmFLNIWVW6+z32EJQ5+qx8ci6RGvdtDC0Ls+F89wz6I2AthpXF0w0DIrn2jpLX0/PU9ZCo+Qp7bg/EckJmA==}
 
-  electron-to-chromium@1.5.179:
-    resolution: {integrity: sha512-UWKi/EbBopgfFsc5k61wFpV7WrnnSlSzW/e2XcBmS6qKYTivZlLtoll5/rdqRTxGglGHkmkW0j0pFNJG10EUIQ==}
+  electron-to-chromium@1.5.180:
+    resolution: {integrity: sha512-ED+GEyEh3kYMwt2faNmgMB0b8O5qtATGgR4RmRsIp4T6p7B8vdMbIedYndnvZfsaXvSzegtpfqRMDNCjjiSduA==}
 
   electron-to-chromium@1.5.33:
     resolution: {integrity: sha512-+cYTcFB1QqD4j4LegwLfpCNxifb6dDFUAwk6RsLusCwIaZI6or2f+q8rs5tTB2YC53HhOlIbEaqHMAAC8IOIwA==}
@@ -7045,7 +7049,7 @@ snapshots:
     dependencies:
       '@kinde/jwt-decoder': 0.2.0
       aws-jwt-verify: 5.1.0
-      dotenv: 16.5.0
+      dotenv: 16.6.1
 
   '@libsql/client@0.15.9':
     dependencies:
@@ -7942,7 +7946,7 @@ snapshots:
       '@babel/core': 7.27.4
       '@sentry/babel-plugin-component-annotate': 3.5.0
       '@sentry/cli': 2.42.2
-      dotenv: 16.5.0
+      dotenv: 16.6.1
       find-up: 5.0.0
       glob: 9.3.5
       magic-string: 0.30.8
@@ -9084,7 +9088,7 @@ snapshots:
   browserslist@4.25.1:
     dependencies:
       caniuse-lite: 1.0.30001727
-      electron-to-chromium: 1.5.179
+      electron-to-chromium: 1.5.180
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
@@ -9395,7 +9399,9 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dotenv@16.5.0: {}
+  dotenv@16.6.1: {}
+
+  dotenv@17.0.1: {}
 
   drizzle-kit@0.31.4:
     dependencies:
@@ -9440,7 +9446,7 @@ snapshots:
 
   electron-to-chromium@1.5.168: {}
 
-  electron-to-chromium@1.5.179: {}
+  electron-to-chromium@1.5.180: {}
 
   electron-to-chromium@1.5.33: {}
 
