@@ -36,7 +36,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.0.1",
     "drizzle-orm": "^0.44.2",
     "drizzle-zod": "^0.8.2",
     "jsonwebtoken": "^9.0.2",
