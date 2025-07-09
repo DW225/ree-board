@@ -15,8 +15,7 @@ import { Role } from "@/lib/constants/role";
 import { memberSignal } from "@/lib/signal/memberSingals";
 import type { Member, MemberSignal } from "@/lib/types/member";
 import { getEnumKeys } from "@/lib/utils";
-import { useComputed } from "@preact/signals-react";
-import { useSignals } from "@preact/signals-react/runtime";
+import { useSignal, useSignals } from "@preact/signals-react/runtime";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useDebounce } from "react-use";
@@ -50,24 +49,25 @@ export default function MemberList({
   onAssign,
 }: Readonly<MemberListProps>) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [val, setVal] = useState("");
+  const filteredMembers = useSignal<MemberSignal[]>([]);
 
   useSignals();
 
   useDebounce(
     () => {
-      setSearchTerm(val);
+      const currentMembers = memberSignal.value;
+      if (searchTerm) {
+        filteredMembers.value = currentMembers.filter(
+          (member) =>
+            member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            member.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      } else {
+        filteredMembers.value = currentMembers;
+      }
     },
-    500,
-    [val]
-  );
-
-  const filteredMembers = useComputed(() =>
-    memberSignal.value.filter(
-      (member) =>
-        member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    200,
+    [searchTerm, memberSignal.value]
   );
 
   return (
@@ -75,9 +75,9 @@ export default function MemberList({
       <Input
         type="text"
         placeholder="Search members..."
-        value={val}
+        value={searchTerm}
         onChange={(e) => {
-          setVal(e.target.value);
+          setSearchTerm(e.target.value);
         }}
       />
       <ScrollArea className="h-[50vh]">
