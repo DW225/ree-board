@@ -1,5 +1,6 @@
 import { TaskState } from "@/lib/constants/task";
 import type { Post } from "@/lib/types/post";
+import type { SortCriterion, SortDirection } from "@/lib/types/sort";
 import type { NewTask, Task } from "@/lib/types/task";
 import type { Signal } from "@preact/signals-react";
 import { signal } from "@preact/signals-react";
@@ -140,4 +141,26 @@ export const updatePostState = (postID: Post["id"], state: Task["state"]) => {
       state: signal(TaskState.pending),
     };
   }
+};
+
+export const sortPosts = (criterion: SortCriterion, direction?: SortDirection) => {
+  const sortedPosts = [...postSignal.value].sort((a, b) => {
+    let comparison = 0;
+
+    switch (criterion) {
+      case "creation-time":
+        comparison =
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        break;
+      case "vote-count":
+        comparison = a.voteCount.value - b.voteCount.value;
+        break;
+      default:
+        break;
+    }
+
+    return direction === "asc" ? comparison : -comparison;
+  });
+
+  postSignal.value = sortedPosts;
 };
