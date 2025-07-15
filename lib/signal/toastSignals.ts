@@ -1,25 +1,32 @@
-import { signal } from "@preact/signals-react";
+import { toast as sonnerToast } from "sonner";
 
-// Toast type definition
+// Legacy Toast type definition for backward compatibility
 export type Toast = {
   id: number;
   message: string;
   type: "success" | "error" | "info" | "warning";
 };
 
-export const toasts = signal<Toast[]>([]);
-
-const idGenerator = (function* () {
-  let id = 0;
-  while (true) {
-    yield id++;
-  }
-})();
-
+// Compatibility layer that maps your existing API to sonner
 const createToast = (type: Toast["type"]) => (...messages: string[]): void => {
-  const id = idGenerator.next().value;
   const message = messages.join(' ');
-  toasts.value = [...toasts.value, { id, message, type }];
+
+  switch (type) {
+    case "success":
+      sonnerToast.success(message);
+      break;
+    case "error":
+      sonnerToast.error(message);
+      break;
+    case "info":
+      sonnerToast.info(message);
+      break;
+    case "warning":
+      sonnerToast.warning(message);
+      break;
+    default:
+      sonnerToast(message);
+  }
 };
 
 export const toast = {
@@ -29,6 +36,5 @@ export const toast = {
   warning: createToast("warning"),
 };
 
-export const removeToast = (id: number) => {
-  toasts.value = toasts.value.filter((toast) => toast.id !== id);
-};
+// Legacy exports for backward compatibility (no longer used but kept for safety)
+export const toasts = { value: [] as Toast[] };
