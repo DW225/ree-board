@@ -21,8 +21,8 @@ importers:
         specifier: ^0.15.9
         version: 0.15.9
       '@next/env':
-        specifier: 15.3.5
-        version: 15.3.5
+        specifier: 15.4.1
+        version: 15.4.1
       '@preact/signals-react':
         specifier: ^3.2.1
         version: 3.2.1(react@19.1.0)
@@ -1167,8 +1167,8 @@ packages:
   '@next/env@15.3.3':
     resolution: {integrity: sha512-OdiMrzCl2Xi0VTjiQQUK0Xh7bJHnOuET2s+3V+Y40WJBAXrJeGA3f+I8MZJ/YQ3mVGi5XGR1L66oFlgqXhQ4Vw==}
 
-  '@next/env@15.3.5':
-    resolution: {integrity: sha512-7g06v8BUVtN2njAX/r8gheoVffhiKFVt4nx74Tt6G4Hqw9HCLYQVx/GkH2qHvPtAHZaUNZ0VXAa0pQP6v1wk7g==}
+  '@next/env@15.4.1':
+    resolution: {integrity: sha512-DXQwFGAE2VH+f2TJsKepRXpODPU+scf5fDbKOME8MMyeyswe4XwgRdiiIYmBfkXU+2ssliLYznajTrOQdnLR5A==}
 
   '@next/eslint-plugin-next@15.3.2':
     resolution: {integrity: sha512-ijVRTXBgnHT33aWnDtmlG+LJD+5vhc9AKTJPquGG5NKXjpKNjc62woIhFtrAcWdBobt8kqjCoaJ0q6sDQoX7aQ==}
@@ -7016,7 +7016,7 @@ snapshots:
 
   '@next/env@15.3.3': {}
 
-  '@next/env@15.3.5': {}
+  '@next/env@15.4.1': {}
 
   '@next/eslint-plugin-next@15.3.2':
     dependencies:
