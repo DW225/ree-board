@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/components/common/AuthProvider";
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
@@ -32,6 +33,7 @@ export default function RootLayout({
             <div className="flex-grow-1">{children}</div>
             {shouldInjectToolbar && <VercelToolbar />}
           </main>
+          <Toaster />
           {shouldInjectSpeedInsights && <SpeedInsights />}
         </body>
       </html>
