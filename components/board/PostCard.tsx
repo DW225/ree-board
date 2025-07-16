@@ -47,7 +47,7 @@ import {
   decrementPostVoteCount,
   incrementPostVoteCount,
   updatePostState,
-  type PostSignal,
+  type EnrichedPost,
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
 import type { MemberSignal } from "@/lib/types/member";
@@ -68,7 +68,7 @@ import MemberList from "./MemberList";
 import { useVotedPosts } from "./PostProvider";
 
 interface PostCardHeaderProps {
-  post: PostSignal;
+  post: EnrichedPost;
   onDelete: (id: Post["id"]) => void;
   onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
 }
@@ -93,9 +93,9 @@ const PostCardHeader = memo(function PostCardHeader({
 
   const handleStatusChange = useCallback(
     async (newStatus: Task["state"]) => {
-      if (post.task?.state.value === newStatus) return;
+      if (post.task?.state === newStatus) return;
 
-      const oldState = post.task?.state.value;
+      const oldState = post.task?.state;
       try {
         updatePostState(post.id, newStatus);
 
@@ -115,7 +115,7 @@ const PostCardHeader = memo(function PostCardHeader({
         }
       }
     },
-    [post.id, post.task?.state.value, post.boardId]
+    [post.id, post.task?.state, post.boardId]
   );
 
   function handleDialogItemSelect() {
@@ -155,7 +155,7 @@ const PostCardHeader = memo(function PostCardHeader({
             }
           }}
         >
-          {post.type.value === PostType.action_item && (
+          {post.type === PostType.action_item && (
             <>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
@@ -187,7 +187,7 @@ const PostCardHeader = memo(function PostCardHeader({
             }
             onSelect={() => {
               handleDialogItemSelect();
-              setMessage(post.content.value);
+              setMessage(post.content);
             }}
             onOpenChange={handleDialogItemOpenChange}
             className="~max-w-[425px] ~md:~max-w-[31.25rem]/[43.75rem]"
@@ -240,7 +240,7 @@ const STATUS_TEXT: Record<Task["state"], string> = {
 } as const satisfies Record<Task["state"], string>;
 
 interface PostCardFooterProps {
-  post: PostSignal;
+  post: EnrichedPost;
   viewOnly: boolean;
   handleVote: () => Promise<void>;
 }
@@ -253,12 +253,12 @@ const PostCardFooter = memo(function PostCardFooter({
   const { hasVoted } = useVotedPosts();
 
   const badgeText = useComputed(() => {
-    return STATUS_TEXT[post.task?.state.value ?? TaskState.pending];
+    return STATUS_TEXT[post.task?.state ?? TaskState.pending];
   });
 
   const handleAssign = useCallback(
     async (member: MemberSignal) => {
-      const oldAssigned = post.task?.assigned.value;
+      const oldAssigned = post.task?.userId;
       try {
         const authedPostAssign = (await import("@/lib/actions/task/action"))
           .authedPostAssign;
@@ -275,12 +275,12 @@ const PostCardFooter = memo(function PostCardFooter({
         }
       }
     },
-    [post.id, post.boardId, post.task?.assigned.value]
+    [post.id, post.boardId, post.task?.userId]
   );
 
   return (
     <CardFooter className="flex justify-between p-2">
-      {post.type.value === PostType.action_item && (
+      {post.type === PostType.action_item && (
         <>
           <Badge className="flex items-center justify-center">
             <p className="text-xs">{badgeText}</p>
@@ -290,7 +290,7 @@ const PostCardFooter = memo(function PostCardFooter({
               <Dialog>
                 <DialogTrigger>
                   <AvatarIcon
-                    userID={post.task?.assigned.value ?? ""}
+                    userID={post.task?.userId ?? ""}
                     triggers={(user, avatarContent) => (
                       <>
                         <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
@@ -312,7 +312,7 @@ const PostCardFooter = memo(function PostCardFooter({
           </TooltipProvider>
         </>
       )}
-      {post.type.value !== PostType.action_item && (
+      {post.type !== PostType.action_item && (
         <Button
           variant="ghost"
           size="sm"
@@ -339,7 +339,7 @@ const cardTypes: Record<Post["type"], string> = {
 } as const satisfies Record<Post["type"], string>;
 
 interface PostCardProps {
-  post: PostSignal;
+  post: EnrichedPost;
   viewOnly?: boolean;
   onDelete?: (id: Post["id"]) => void;
   onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
@@ -395,7 +395,7 @@ function PostCard({
         element: postCardEl,
         getInitialData: () => ({
           id: post.id,
-          originalType: post.type.value.valueOf(),
+          originalType: post.type.valueOf(),
           boardId: post.boardId,
         }),
         onDragStart: () => setIsDragging(true),
@@ -415,13 +415,13 @@ function PostCard({
       remarkPlugins={[remarkGfm, remarkBreaks]}
       rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
     >
-      {post.content.value}
+      {post.content}
     </Markdown>
   ));
 
   return (
     <Card
-      className={`w-full ${cardTypes[post.type.value]} ${
+      className={`w-full ${cardTypes[post.type]} ${
         isDragging ? "opacity-50" : ""
       } relative`}
       ref={ref}

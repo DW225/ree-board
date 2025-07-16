@@ -6,8 +6,8 @@ import {
 } from "@/lib/actions/post/action";
 import type { PostType } from "@/lib/constants/post";
 import {
-  postSignal,
   removePost,
+  sortedPostsSignal,
   updatePostContent,
 } from "@/lib/signal/postSignals";
 import { toast } from "@/lib/signal/toastSignals";
@@ -50,7 +50,7 @@ export default function BoardColumn({
   const columnRef = useRef<HTMLDivElement>(null);
   const [isDragginOver, setIsDraggingOver] = useState<boolean>(false);
   const filteredPosts = useComputed(() =>
-    postSignal.value.filter((post) => post.type.value === postType)
+    sortedPostsSignal.value.filter((post) => post.type === postType)
   );
 
   const animatedPosts: Signal<AnimatedPost[]> = useComputed(() =>
