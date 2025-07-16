@@ -5,7 +5,10 @@ import { useSetState } from "@/hooks/useSetState";
 import { UpdatePostTypeAction } from "@/lib/actions/post/action";
 import { PostType } from "@/lib/constants/post";
 import { memberSignalInitial } from "@/lib/signal/memberSingals";
-import { postSignalInitial, updatePostType } from "@/lib/signal/postSignals";
+import {
+  initializePostSignals,
+  updatePostType,
+} from "@/lib/signal/postSignals";
 import type { MemberSignal } from "@/lib/types/member";
 import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
@@ -133,7 +136,7 @@ const PostProvider: FC<PostProviderProps> = ({
   boardId,
 }) => {
   useEffectOnce(() => {
-    postSignalInitial(initials.posts, initials.actions);
+    initializePostSignals(initials.posts, initials.actions);
     memberSignalInitial(initials.members);
   });
 

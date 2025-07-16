@@ -2,165 +2,62 @@ import { TaskState } from "@/lib/constants/task";
 import type { Post } from "@/lib/types/post";
 import type { SortCriterion, SortDirection } from "@/lib/types/sort";
 import type { NewTask, Task } from "@/lib/types/task";
-import type { Signal } from "@preact/signals-react";
-import { signal } from "@preact/signals-react";
+import { batch, computed, signal } from "@preact/signals-react";
+import { nanoid } from "nanoid";
+import { toast } from "sonner";
 
-interface TaskSignal {
-  assigned: Signal<Task["userId"] | null>; // userId or null
-  state: Signal<Task["state"]>;
-}
+// Type for enriched posts (posts with tasks and updated vote counts)
+export type EnrichedPost = Post & {
+  voteCount: number;
+  task?: Task;
+};
 
-export interface PostSignal
-  extends Omit<Post, "content" | "type" | "voteCount"> {
-  content: Signal<Post["content"]>;
-  type: Signal<Post["type"]>;
-  voteCount: Signal<Post["voteCount"]>;
-  task?: TaskSignal;
-}
+// Core data signals - single source of truth
+export const postsSignal = signal<Post[]>([]);
+export const tasksSignal = signal<Record<string, Task>>({});
+export const votesSignal = signal<Record<string, number>>({});
 
-export const postSignal = signal<PostSignal[]>([]);
+// UI state signals
+export const sortCriteriaSignal = signal<{
+  criterion: SortCriterion;
+  direction: SortDirection;
+}>({
+  criterion: "creation-time",
+  direction: "desc",
+});
 
-export const postSignalInitial = (posts: Post[], tasks: Task[]) => {
-  postSignal.value = posts.map((post) => ({
+// Computed signals for derived state
+export const enrichedPostsSignal = computed(() => {
+  const posts = postsSignal.value;
+  const tasks = tasksSignal.value;
+  const votes = votesSignal.value;
+
+  return posts.map((post) => ({
     ...post,
-    content: signal(post.content),
-    type: signal(post.type),
-    voteCount: signal(post.voteCount),
+    voteCount: votes[post.id] ?? post.voteCount,
+    task: tasks[post.id],
   }));
+});
 
-  for (const task of tasks) {
-    const postIndex = postSignal.value.findIndex(
-      (post) => post.id === task.postId
-    );
-    if (postIndex !== -1) {
-      postSignal.value[postIndex].task = {
-        assigned: signal(task.userId),
-        state: signal(task.state),
-      };
-    }
-  }
-};
+export const sortedPostsSignal = computed(() => {
+  const posts = enrichedPostsSignal.value;
+  const { criterion, direction } = sortCriteriaSignal.value;
 
-export const addPost = (newPost: Post) => {
-  postSignal.value = [
-    ...postSignal.value,
-    {
-      ...newPost,
-      content: signal(newPost.content),
-      type: signal(newPost.type),
-      voteCount: signal(newPost.voteCount),
-    },
-  ];
-};
-
-export const removePost = (postID: Post["id"]) => {
-  const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index === -1) return;
-
-  postSignal.value = [
-    ...postSignal.value.slice(0, index),
-    ...postSignal.value.slice(index + 1),
-  ];
-};
-
-export const updatePostContent = (
-  postID: Post["id"],
-  newContent: Post["content"]
-) => {
-  const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index === -1) return;
-
-  postSignal.value[index].content.value = newContent;
-};
-
-export const updatePostType = (postID: Post["id"], newType: Post["type"]) => {
-  const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index === -1) return;
-
-  postSignal.value[index].type.value = newType;
-};
-
-export const incrementPostVoteCount = (postID: Post["id"]) => {
-  const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index === -1) return;
-
-  postSignal.value[index].voteCount.value += 1;
-};
-
-export const decrementPostVoteCount = (postID: Post["id"]) => {
-  const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index !== -1 && postSignal.value[index].voteCount.value > 0) {
-    postSignal.value[index].voteCount.value -= 1;
-  }
-};
-
-export const addPostTask = (task: NewTask) => {
-  const postIndex = postSignal.value.findIndex(
-    (post) => post.id === task.postId
-  );
-  if (postIndex !== -1) {
-    if (postSignal.value[postIndex].task) {
-      postSignal.value[postIndex].task.assigned.value = task.userId ?? null;
-      postSignal.value[postIndex].task.state.value =
-        task.state ?? TaskState.pending;
-    } else {
-      postSignal.value[postIndex].task = {
-        assigned: signal(task.userId ?? null),
-        state: signal(task.state ?? TaskState.pending),
-      };
-    }
-  }
-};
-
-export const assignTask = (
-  postID: Post["id"],
-  userId: Task["userId"] | null
-) => {
-  const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index === -1) return;
-
-  if (postSignal.value[index].task) {
-    postSignal.value[index].task.assigned.value = userId;
-  } else {
-    postSignal.value[index].task = {
-      assigned: signal(userId),
-      state: signal(TaskState.pending),
-    };
-  }
-};
-
-export const updatePostState = (postID: Post["id"], state: Task["state"]) => {
-  const index = postSignal.value.findIndex((post) => post.id === postID);
-  if (index === -1) return;
-
-  if (postSignal.value[index].task) {
-    postSignal.value[index].task.state.value = state;
-  } else {
-    postSignal.value[index].task = {
-      assigned: signal(null),
-      state: signal(TaskState.pending),
-    };
-  }
-};
-
-export const sortPosts = (
-  criterion: SortCriterion,
-  direction?: SortDirection
-) => {
-  const sortedPosts = [...postSignal.value].sort((a, b) => {
+  const sortedPosts = [...posts].sort((a, b) => {
     let comparison = 0;
 
     switch (criterion) {
-      case "creation-time":
+      case "creation-time": {
         const dateA = new Date(a.createdAt);
         const dateB = new Date(b.createdAt);
         if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-          return 0; // or handle appropriately
+          return 0;
         }
         comparison = dateA.getTime() - dateB.getTime();
         break;
+      }
       case "vote-count":
-        comparison = a.voteCount.value - b.voteCount.value;
+        comparison = a.voteCount - b.voteCount;
         break;
       default:
         break;
@@ -169,5 +66,222 @@ export const sortPosts = (
     return direction === "asc" ? comparison : -comparison;
   });
 
-  postSignal.value = sortedPosts;
+  return sortedPosts;
+});
+
+export const postsByTypeSignal = computed(() => {
+  const posts = enrichedPostsSignal.value;
+  return posts.reduce((acc, post) => {
+    if (!acc[post.type]) {
+      acc[post.type] = [];
+    }
+    acc[post.type].push(post);
+    return acc;
+  }, {} as Record<Post["type"], typeof posts>);
+});
+
+// Initialization function
+export const initializePostSignals = (posts: Post[], tasks: Task[]) => {
+  batch(() => {
+    postsSignal.value = posts;
+
+    // Convert tasks array to record for efficient lookup
+    const taskRecord: Record<string, Task> = {};
+    tasks.forEach((task) => {
+      taskRecord[task.postId] = task;
+    });
+    tasksSignal.value = taskRecord;
+
+    // Initialize votes from posts
+    const voteRecord: Record<string, number> = {};
+    posts.forEach((post) => {
+      voteRecord[post.id] = post.voteCount;
+    });
+    votesSignal.value = voteRecord;
+  });
+};
+
+// Action creators for post operations
+export const addPost = (newPost: Post) => {
+  batch(() => {
+    postsSignal.value = [...postsSignal.value, newPost];
+    votesSignal.value = {
+      ...votesSignal.value,
+      [newPost.id]: newPost.voteCount,
+    };
+  });
+};
+
+export const removePost = (postId: Post["id"]) => {
+  batch(() => {
+    postsSignal.value = postsSignal.value.filter((post) => post.id !== postId);
+
+    // Clean up related data
+    const newVotes = { ...votesSignal.value };
+    delete newVotes[postId];
+    votesSignal.value = newVotes;
+
+    const newTasks = { ...tasksSignal.value };
+    delete newTasks[postId];
+    tasksSignal.value = newTasks;
+  });
+};
+
+export const updatePostContent = (
+  postId: Post["id"],
+  newContent: Post["content"]
+) => {
+  const posts = postsSignal.value;
+  const index = posts.findIndex((post) => post.id === postId);
+  if (index === -1) return;
+
+  const updatedPosts = [...posts];
+  updatedPosts[index] = { ...updatedPosts[index], content: newContent };
+  postsSignal.value = updatedPosts;
+};
+
+export const updatePostType = (postId: Post["id"], newType: Post["type"]) => {
+  const posts = postsSignal.value;
+  const index = posts.findIndex((post) => post.id === postId);
+  if (index === -1) return;
+
+  const updatedPosts = [...posts];
+  updatedPosts[index] = { ...updatedPosts[index], type: newType };
+  postsSignal.value = updatedPosts;
+};
+
+// Vote operations with optimistic updates
+export const incrementPostVoteCount = (postId: Post["id"]) => {
+  const currentVotes = votesSignal.value;
+  const currentCount = currentVotes[postId] ?? 0;
+
+  votesSignal.value = {
+    ...currentVotes,
+    [postId]: currentCount + 1,
+  };
+};
+
+export const decrementPostVoteCount = (postId: Post["id"]) => {
+  const currentVotes = votesSignal.value;
+  const currentCount = currentVotes[postId] ?? 0;
+
+  if (currentCount > 0) {
+    votesSignal.value = {
+      ...currentVotes,
+      [postId]: currentCount - 1,
+    };
+  }
+};
+
+// Task operations
+export const addPostTask = (task: NewTask) => {
+  const newTask: Task = {
+    id: task.id,
+    postId: task.postId,
+    boardId: task.boardId,
+    userId: task.userId ?? null,
+    state: task.state ?? TaskState.pending,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  tasksSignal.value = {
+    ...tasksSignal.value,
+    [task.postId]: newTask,
+  };
+};
+
+export const assignTask = (
+  postId: Post["id"],
+  userId: Task["userId"] | null,
+  boardId?: string
+) => {
+  const currentTasks = tasksSignal.value;
+  const existingTask = currentTasks[postId];
+
+  if (existingTask) {
+    tasksSignal.value = {
+      ...currentTasks,
+      [postId]: {
+        ...existingTask,
+        userId,
+        updatedAt: new Date(),
+      },
+    };
+  } else {
+    // Find the post to get its boardId
+    const post = postsSignal.value.find((p) => p.id === postId);
+    if (!post) {
+      console.error(`No post found for ID ${postId}`);
+      toast.error("Failed to find the post to assign a task");
+      return;
+    }
+    const newTask: Task = {
+      id: nanoid(),
+      postId,
+      boardId: boardId || post?.boardId || "",
+      userId,
+      state: TaskState.pending,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    tasksSignal.value = {
+      ...currentTasks,
+      [postId]: newTask,
+    };
+  }
+};
+
+export const updatePostState = (
+  postId: Post["id"],
+  state: Task["state"],
+  boardId?: string
+) => {
+  const currentTasks = tasksSignal.value;
+  const existingTask = currentTasks[postId];
+
+  if (existingTask) {
+    tasksSignal.value = {
+      ...currentTasks,
+      [postId]: {
+        ...existingTask,
+        state,
+        updatedAt: new Date(),
+      },
+    };
+  } else {
+    // Find the post to get its boardId
+    const post = postsSignal.value.find((p) => p.id === postId);
+    if (!post) {
+      console.error(`No post found for ID ${postId}`);
+      toast.error("Failed to update post state");
+      return;
+    }
+    const newTask: Task = {
+      id: nanoid(),
+      postId,
+      boardId: boardId || post?.boardId || "",
+      userId: null,
+      state,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    tasksSignal.value = {
+      ...currentTasks,
+      [postId]: newTask,
+    };
+  }
+};
+
+// Sorting operations
+export const sortPosts = (
+  criterion: SortCriterion,
+  direction?: SortDirection
+) => {
+  sortCriteriaSignal.value = {
+    criterion,
+    direction: direction ?? "desc",
+  };
 };
