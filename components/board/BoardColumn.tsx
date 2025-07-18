@@ -10,13 +10,13 @@ import {
   sortedPostsSignal,
   updatePostContent,
 } from "@/lib/signal/postSignals";
-import { toast } from "@/lib/signal/toastSignals";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { Signal } from "@preact/signals-react";
 import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import invariant from "tiny-invariant";
 
 const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"), {

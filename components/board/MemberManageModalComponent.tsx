@@ -23,13 +23,13 @@ import {
   removeMember,
   updateMember,
 } from "@/lib/signal/memberSingals";
-import { toast } from "@/lib/signal/toastSignals";
 import type { Member, MemberSignal } from "@/lib/types/member";
 import { PlusCircle } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
 import type { FormEvent, ReactNode } from "react";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 interface MemberManageProps {
   boardId: string;
