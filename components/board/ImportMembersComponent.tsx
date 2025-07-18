@@ -28,11 +28,11 @@ import {
 } from "@/lib/actions/member/action";
 import { Role } from "@/lib/constants/role";
 import { addMember } from "@/lib/signal/memberSingals";
-import { toast } from "@/lib/signal/toastSignals";
 import type { Board } from "@/lib/types/board";
 import { Upload, Users } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ImportMembersProps {
   currentBoardId: string;

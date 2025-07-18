@@ -49,7 +49,6 @@ import {
   updatePostState,
   type EnrichedPost,
 } from "@/lib/signal/postSignals";
-import { toast } from "@/lib/signal/toastSignals";
 import type { MemberSignal } from "@/lib/types/member";
 import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
@@ -66,6 +65,7 @@ import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import { useVotedPosts } from "./PostProvider";
+import { toast } from "sonner";
 
 interface PostCardHeaderProps {
   post: EnrichedPost;

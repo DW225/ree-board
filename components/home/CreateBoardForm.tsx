@@ -3,10 +3,10 @@
 import { createBoardAction } from "@/lib/actions/board/action";
 import { BoardState } from "@/lib/constants/board";
 import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
-import { toast } from "@/lib/signal/toastSignals";
 import type { NewBoard } from "@/lib/types/board";
 import { nanoid } from "nanoid";
 import type { FormEvent } from "react";
+import { toast } from "sonner";
 
 interface CreateBoardFormProps {
   userID: string;
