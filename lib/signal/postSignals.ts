@@ -131,23 +131,15 @@ export const updatePostContent = (
   postId: Post["id"],
   newContent: Post["content"]
 ) => {
-  const posts = postsSignal.value;
-  const index = posts.findIndex((post) => post.id === postId);
-  if (index === -1) return;
-
-  const updatedPosts = [...posts];
-  updatedPosts[index] = { ...updatedPosts[index], content: newContent };
-  postsSignal.value = updatedPosts;
+  postsSignal.value = postsSignal.value.map((post) =>
+    post.id === postId ? { ...post, content: newContent } : post
+  );
 };
 
 export const updatePostType = (postId: Post["id"], newType: Post["type"]) => {
-  const posts = postsSignal.value;
-  const index = posts.findIndex((post) => post.id === postId);
-  if (index === -1) return;
-
-  const updatedPosts = [...posts];
-  updatedPosts[index] = { ...updatedPosts[index], type: newType };
-  postsSignal.value = updatedPosts;
+  postsSignal.value = postsSignal.value.map((post) =>
+    post.id === postId ? { ...post, type: newType } : post
+  );
 };
 
 // Vote operations with optimistic updates
