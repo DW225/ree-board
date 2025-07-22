@@ -12,15 +12,6 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -36,36 +27,44 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { authedPostActionStateUpdate } from "@/lib/actions/task/action";
 import {
   DownVotePostAction,
   UpVotePostAction,
 } from "@/lib/actions/vote/action";
 import { PostType } from "@/lib/constants/post";
 import { TaskState } from "@/lib/constants/task";
+import type { EnrichedPost } from "@/lib/signal/postSignals";
 import {
   assignTask,
   decrementPostVoteCount,
   incrementPostVoteCount,
   updatePostState,
-  type EnrichedPost,
 } from "@/lib/signal/postSignals";
 import type { MemberSignal } from "@/lib/types/member";
 import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
 import type { User } from "@/lib/types/user";
-import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useComputed } from "@preact/signals-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@radix-ui/react-dialog";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
 import invariant from "tiny-invariant";
+import { DialogFooter, DialogHeader } from "../ui/dialog";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import { useVotedPosts } from "./PostProvider";
-import { toast } from "sonner";
 
 interface PostCardHeaderProps {
   post: EnrichedPost;
@@ -99,9 +98,6 @@ const PostCardHeader = memo(function PostCardHeader({
       try {
         updatePostState(post.id, newStatus);
 
-        const authedPostActionStateUpdate = (
-          await import("@/lib/actions/task/action")
-        ).authedPostActionStateUpdate;
         await authedPostActionStateUpdate({
           postID: post.id,
           state: newStatus,
@@ -391,17 +387,52 @@ function PostCard({
     if (!viewOnly) {
       const postCardEl = ref.current;
       invariant(postCardEl, "postCardEl is null");
-      const cleanup = draggable({
-        element: postCardEl,
-        getInitialData: () => ({
-          id: post.id,
-          originalType: post.type.valueOf(),
-          boardId: post.boardId,
-        }),
-        onDragStart: () => setIsDragging(true),
-        onDrop: () => setIsDragging(false),
-      });
-      return () => cleanup();
+
+      let cleanupDrag: (() => void) | undefined;
+      let isInitializing = false;
+      let isInitialized = false;
+
+      const initializeDragAndDrop = async () => {
+        if (isInitializing || isInitialized) return;
+        isInitializing = true;
+        try {
+          const { draggable } = await import(
+            "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+          );
+          cleanupDrag = draggable({
+            element: postCardEl,
+            getInitialData: () => ({
+              id: post.id,
+              originalType: post.type.valueOf(),
+              boardId: post.boardId,
+            }),
+            onDragStart: () => setIsDragging(true),
+            onDrop: () => setIsDragging(false),
+          });
+          isInitialized = true;
+        } catch (error) {
+          console.error("Failed to initialize drag:", error);
+        } finally {
+          isInitializing = false;
+        }
+      };
+
+      const handleInteraction = () => {
+        if (!isInitialized && !isInitializing) {
+          initializeDragAndDrop();
+          postCardEl.removeEventListener("mouseenter", handleInteraction);
+          postCardEl.removeEventListener("touchstart", handleInteraction);
+        }
+      };
+
+      postCardEl.addEventListener("mouseenter", handleInteraction, { passive: true });
+      postCardEl.addEventListener("touchstart", handleInteraction, { passive: true });
+
+      return () => {
+        postCardEl.removeEventListener("mouseenter", handleInteraction);
+        postCardEl.removeEventListener("touchstart", handleInteraction);
+        cleanupDrag?.();
+      };
     }
   }, [post, viewOnly]);
 

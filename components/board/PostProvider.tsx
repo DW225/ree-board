@@ -13,7 +13,6 @@ import type { MemberSignal } from "@/lib/types/member";
 import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
 import { useEffectOnce } from "@/lib/utils/effect";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { FC, ReactNode } from "react";
 import {
   createContext,
@@ -21,6 +20,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import invariant from "tiny-invariant";
@@ -135,39 +135,75 @@ const PostProvider: FC<PostProviderProps> = ({
   initials,
   boardId,
 }) => {
+  const dragMonitorRef = useRef<(() => void) | null>(null);
+  const isDragInitialized = useRef(false);
+
   useEffectOnce(() => {
     initializePostSignals(initials.posts, initials.actions);
     memberSignalInitial(initials.members);
   });
 
-  useEffect(() => {
-    return monitorForElements({
-      async onDrop(args) {
-        const { location, source } = args;
-        if (!location.current.dropTargets.length) {
-          return;
-        }
-        const postId = source.data.id;
-        invariant(typeof postId === "string");
-        const originalType = source.data.originalType;
-        invariant(typeof originalType === "number");
+  // Lazy load drag-and-drop functionality
+  const initializeDragAndDrop = useCallback(async () => {
+    if (isDragInitialized.current) return;
 
-        if (location.current.dropTargets.length === 1) {
-          const [destinationColumnRecord] = location.current.dropTargets;
-          const destinationPostType = destinationColumnRecord.data.postType;
-          invariant(typeof destinationPostType === "number");
+    try {
+      const { monitorForElements } = await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
 
-          const postTypeKey = Object.keys(PostType)[
-            Object.values(PostType).indexOf(destinationPostType)
-          ] as keyof typeof PostType;
+      const cleanup = monitorForElements({
+        async onDrop(args) {
+          const { location, source } = args;
+          if (!location.current.dropTargets.length) {
+            return;
+          }
+          const postId = source.data.id;
+          invariant(typeof postId === "string");
+          const originalType = source.data.originalType;
+          invariant(typeof originalType === "number");
 
-          updatePostType(postId, PostType[postTypeKey]);
+          if (location.current.dropTargets.length === 1) {
+            const [destinationColumnRecord] = location.current.dropTargets;
+            const destinationPostType = destinationColumnRecord.data.postType;
+            invariant(typeof destinationPostType === "number");
 
-          await UpdatePostTypeAction(postId, boardId, PostType[postTypeKey]);
-        }
-      },
-    });
+            const postTypeKey = Object.keys(PostType)[
+              Object.values(PostType).indexOf(destinationPostType)
+            ] as keyof typeof PostType;
+
+            updatePostType(postId, PostType[postTypeKey]);
+
+            await UpdatePostTypeAction(postId, boardId, PostType[postTypeKey]);
+          }
+        },
+      });
+
+      dragMonitorRef.current = cleanup;
+      isDragInitialized.current = true;
+    } catch (error) {
+      console.error("Failed to initialize drag and drop:", error);
+    }
   }, [boardId]);
+
+  // Initialize drag-and-drop on first user interaction
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      initializeDragAndDrop();
+      // Remove listeners after first interaction
+      document.removeEventListener('mousedown', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
+
+    document.addEventListener('mousedown', handleFirstInteraction, { passive: true });
+    document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
+
+    return () => {
+      document.removeEventListener('mousedown', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+      if (dragMonitorRef.current) {
+        dragMonitorRef.current();
+      }
+    };
+  }, [initializeDragAndDrop]);
 
   return (
     <VotedPostsProvider initial={{ votedPosts: initials.votedPosts }}>

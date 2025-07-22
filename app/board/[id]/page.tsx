@@ -1,4 +1,3 @@
-import SortButton from "@/components/board/SortButton";
 import { Role } from "@/lib/constants/role";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
@@ -9,21 +8,49 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
-const AvatarStack = dynamic(() =>
-  import("@/components/board/AvatarStack").then((mod) => mod.AvatarStack)
-);
+// Critical path components - load immediately
 const BoardGrid = dynamic(() => import("@/components/board/BoardGrid"));
 const AnonymousModeProvider = dynamic(
   () => import("@/components/board/AnonymousModeProvider")
 );
 const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
-const MemberManageModalComponent = dynamic(
-  () => import("@/components/board/MemberManageModalComponent")
-);
 const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"));
 const PostChannel = dynamic(
   () => import("@/components/board/PostChannelComponent")
 );
+
+// Secondary features - lazy load with loading states
+const AvatarStack = dynamic(() =>
+  import("@/components/board/AvatarStack").then((mod) => mod.AvatarStack),
+  {
+    loading: () => (
+      <div className="flex -space-x-2">
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+      </div>
+    ),
+  }
+);
+
+const MemberManageModalComponent = dynamic(
+  () => import("@/components/board/MemberManageModalComponent"),
+  {
+    loading: () => (
+      <div className="flex -space-x-2">
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+      </div>
+    ),
+  }
+);
+
+const SortButton = dynamic(() => import("@/components/board/SortButton"), {
+  loading: () => (
+    <div className="w-10 h-10 rounded-md bg-gray-200 animate-pulse" />
+  ),
+});
 
 type BoardPageParams = Promise<{ id: string }>;
 

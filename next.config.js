@@ -1,6 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Bundle optimization settings
+  experimental: {
+    // Enable CSS chunking for better caching
+    cssChunking: true,
+    // Optimize package imports for packages not in the default list
+    optimizePackageImports: [
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tooltip',
+      '@radix-ui/react-scroll-area',
+      '@atlaskit/pragmatic-drag-and-drop',
+    ],
+  },
   images: {
     remotePatterns: [
       {
@@ -61,6 +76,7 @@ module.exports = withSentryConfig(module.exports, {
 
   org: "tekdw225",
   project: "ree-board",
+  authToken: process.env.SENTRY_TOKEN,
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,

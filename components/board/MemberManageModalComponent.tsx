@@ -37,9 +37,23 @@ interface MemberManageProps {
   children: ReactNode;
 }
 
-const MemberList = dynamic(() => import("@/components/board/MemberList"));
+const MemberList = dynamic(() => import("@/components/board/MemberList"), {
+  loading: () => (
+    <div className="space-y-2">
+      <div className="h-12 bg-gray-200 rounded animate-pulse" />
+      <div className="h-12 bg-gray-200 rounded animate-pulse" />
+      <div className="h-12 bg-gray-200 rounded animate-pulse" />
+    </div>
+  ),
+});
+
 const ImportMembersComponent = dynamic(
-  () => import("@/components/board/ImportMembersComponent")
+  () => import("@/components/board/ImportMembersComponent"),
+  {
+    loading: () => (
+      <div className="w-32 h-10 bg-gray-200 rounded animate-pulse" />
+    ),
+  }
 );
 
 export default function MemberManageModalComponent({
