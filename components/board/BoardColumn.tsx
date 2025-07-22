@@ -10,7 +10,6 @@ import {
   sortedPostsSignal,
   updatePostContent,
 } from "@/lib/signal/postSignals";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { Signal } from "@preact/signals-react";
 import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
@@ -95,20 +94,58 @@ export default function BoardColumn({
       const columnEl = columnRef.current;
       invariant(columnEl, "columnEl is null");
 
-      return dropTargetForElements({
-        element: columnEl,
-        getData: () => ({ postType }),
-        canDrop: ({ source }) => {
-          return (
-            source.data.postType !== postType.valueOf() &&
-            source.data.boardId === boardID
-          );
-        },
-        getIsSticky: () => true,
-        onDragLeave: () => setIsDraggingOver(false),
-        onDragEnter: () => setIsDraggingOver(true),
-        onDrop: () => setIsDraggingOver(false),
-      });
+      let cleanup: (() => void) | undefined;
+      let isInitializing = false;
+      let isInitialized = false;
+
+      // Lazy load drop target functionality
+      const initializeDropTarget = async () => {
+        if (isInitializing || isInitialized) return;
+        isInitializing = true;
+        try {
+          const { dropTargetForElements } = await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
+
+          cleanup = dropTargetForElements({
+            element: columnEl,
+            getData: () => ({ postType }),
+            canDrop: ({ source }) => {
+              return (
+                source.data.postType !== postType.valueOf() &&
+                source.data.boardId === boardID
+              );
+            },
+            getIsSticky: () => true,
+            onDragLeave: () => setIsDraggingOver(false),
+            onDragEnter: () => setIsDraggingOver(true),
+            onDrop: () => setIsDraggingOver(false),
+          });
+          isInitialized = true;
+        } catch (error) {
+          console.error("Failed to initialize drop target:", error);
+        } finally {
+          isInitializing = false;
+        }
+      };
+
+      // Initialize on hover or first interaction with the column
+      const handleInteraction = () => {
+        if (!isInitialized && !isInitializing) {
+          initializeDropTarget();
+          columnEl.removeEventListener('mouseenter', handleInteraction);
+          columnEl.removeEventListener('touchstart', handleInteraction);
+        }
+      };
+
+      columnEl.addEventListener('mouseenter', handleInteraction, { passive: true });
+      columnEl.addEventListener('touchstart', handleInteraction, { passive: true });
+
+      return () => {
+        columnEl.removeEventListener('mouseenter', handleInteraction);
+        columnEl.removeEventListener('touchstart', handleInteraction);
+        if (cleanup) {
+          cleanup();
+        }
+      };
     }
   }, [boardID, postType, viewOnly]);
 

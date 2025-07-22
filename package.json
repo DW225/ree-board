@@ -6,13 +6,16 @@
     "dev": "next dev",
     "dev:sql": "turso dev --db-file test.db",
     "build": "next build",
+    "build:analyze": "ANALYZE=true pnpm run build",
     "start": "next start",
     "test": "jest",
     "lint": "next lint",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "push": "drizzle-kit push",
-    "push:dev": "NODE_ENV=development drizzle-kit push"
+    "push:dev": "NODE_ENV=development drizzle-kit push",
+    "bundle-stats": "node scripts/bundle-analysis.js",
+    "build:stats": "pnpm run build && pnpm run bundle-stats"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.4",
