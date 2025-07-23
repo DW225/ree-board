@@ -1,479 +1,321 @@
 "use client";
 
-import { AvatarIcon } from "@/components/common/AvatarIcon";
-import { DialogItem } from "@/components/common/DialogItem";
-import CustomLink from "@/components/common/Link";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { toast } from "sonner";
+import { MoreHorizontal, Edit, Trash2, ArrowLeft, ArrowRight } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+
+import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { authedPostActionStateUpdate } from "@/lib/actions/task/action";
-import {
-  DownVotePostAction,
-  UpVotePostAction,
-} from "@/lib/actions/vote/action";
-import { PostType } from "@/lib/constants/post";
-import { TaskState } from "@/lib/constants/task";
-import type { EnrichedPost } from "@/lib/signal/postSignals";
-import {
-  assignTask,
-  decrementPostVoteCount,
-  incrementPostVoteCount,
-  updatePostState,
-} from "@/lib/signal/postSignals";
-import type { MemberSignal } from "@/lib/types/member";
-import type { Post } from "@/lib/types/post";
-import type { Task } from "@/lib/types/task";
-import type { User } from "@/lib/types/user";
-import { useComputed } from "@preact/signals-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+
+import type { RouterOutputs } from "@/trpc/react";
+import { useAuth } from "@clerk/nextjs";
+
+// Fixed Dialog imports - using project's custom UI components
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@radix-ui/react-dialog";
-import { MoreHorizontal, ThumbsUp } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import Markdown from "react-markdown";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import remarkBreaks from "remark-breaks";
-import remarkGfm from "remark-gfm";
-import { toast } from "sonner";
-import invariant from "tiny-invariant";
-import { DialogFooter, DialogHeader } from "../ui/dialog";
-import { useAnonymousMode } from "./AnonymousModeProvider";
-import MemberList from "./MemberList";
-import { useVotedPosts } from "./PostProvider";
+} from "@/components/ui/dialog";
 
-interface PostCardHeaderProps {
-  post: EnrichedPost;
-  onDelete: (id: Post["id"]) => void;
-  onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
-}
-
-const PostCardHeader = memo(function PostCardHeader({
-  post,
-  onDelete,
-  onUpdate,
-}: PostCardHeaderProps) {
-  const [message, setMessage] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownTriggerRef = useRef(null);
-  const focusRef = useRef(null);
-
-  const handleEdit = useCallback(() => {
-    if (onUpdate) {
-      onUpdate(post.id, message);
-    }
-    setIsEditing(false);
-  }, [onUpdate, post.id, message]);
-
-  const handleStatusChange = useCallback(
-    async (newStatus: Task["state"]) => {
-      if (post.task?.state === newStatus) return;
-
-      const oldState = post.task?.state;
-      try {
-        updatePostState(post.id, newStatus);
-
-        await authedPostActionStateUpdate({
-          postID: post.id,
-          state: newStatus,
-          boardId: post.boardId,
-        });
-      } catch (error) {
-        console.error("Error updating status:", error);
-        toast.error("Failed to update status");
-        if (oldState) {
-          updatePostState(post.id, oldState);
-        }
-      }
-    },
-    [post.id, post.task?.state, post.boardId]
-  );
-
-  function handleDialogItemSelect() {
-    focusRef.current = dropdownTriggerRef.current;
-  }
-
-  function handleDialogItemOpenChange(open: boolean) {
-    setIsEditing(open);
-    if (open === false) {
-      setIsDropdownOpen(false);
-    }
-  }
-
-  return (
-    <CardHeader className="flex flex-row items-center justify-end space-y-0 p-2">
-      <DropdownMenu
-        open={isDropdownOpen}
-        onOpenChange={setIsDropdownOpen}
-        modal={false}
-      >
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          sideOffset={5}
-          hidden={isEditing}
-          onCloseAutoFocus={(event) => {
-            if (focusRef.current) {
-              // Type assertion to tell TypeScript that focusRef.current has a focus method
-              (focusRef.current as HTMLElement).focus();
-              focusRef.current = null;
-              event.preventDefault();
-            }
-          }}
-        >
-          {post.type === PostType.action_item && (
-            <>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange(TaskState.pending)}
-                  >
-                    To Do
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange(TaskState.inProgress)}
-                  >
-                    In Progress
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange(TaskState.completed)}
-                  >
-                    Done
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </>
-          )}
-          <DialogItem
-            triggerChildren={
-              <span className="text-blue-500 focus:text-blue-500 focus:bg-blue-50">
-                Edit
-              </span>
-            }
-            onSelect={() => {
-              handleDialogItemSelect();
-              setMessage(post.content);
-            }}
-            onOpenChange={handleDialogItemOpenChange}
-            className="~max-w-[425px] ~md:~max-w-[31.25rem]/[43.75rem]"
-          >
-            <DialogHeader>
-              <DialogTitle>Edit Post</DialogTitle>
-              <DialogDescription>
-                Edit your post below and click save when you&apos;re done.
-              </DialogDescription>
-            </DialogHeader>
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="min-h-[200px] w-full ~md:~min-w-[21.875rem]/[34.375rem]"
-              aria-label="Edit post content"
-              autoComplete="on"
-              spellCheck="true"
-            />
-            <DialogFooter className="mt-4">
-              <Button
-                onClick={() => {
-                  handleEdit();
-                  handleDialogItemOpenChange(false);
-                }}
-                type="submit"
-              >
-                Save
-              </Button>
-            </DialogFooter>
-          </DialogItem>
-          <DropdownMenuItem
-            onClick={() => onDelete(post.id)}
-            className="text-red-500 focus:text-red-500 focus:bg-red-50"
-          >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </CardHeader>
-  );
-});
-
-PostCardHeader.displayName = "PostCardHeader";
-
-const STATUS_TEXT: Record<Task["state"], string> = {
-  [TaskState.pending]: "To Do",
-  [TaskState.inProgress]: "In Progress",
-  [TaskState.completed]: "Done",
-  [TaskState.cancelled]: "Cancelled",
-} as const satisfies Record<Task["state"], string>;
-
-interface PostCardFooterProps {
-  post: EnrichedPost;
-  viewOnly: boolean;
-  handleVote: () => Promise<void>;
-}
-
-const PostCardFooter = memo(function PostCardFooter({
-  post,
-  viewOnly,
-  handleVote,
-}: PostCardFooterProps) {
-  const { hasVoted } = useVotedPosts();
-
-  const badgeText = useComputed(() => {
-    return STATUS_TEXT[post.task?.state ?? TaskState.pending];
-  });
-
-  const handleAssign = useCallback(
-    async (member: MemberSignal) => {
-      const oldAssigned = post.task?.userId;
-      try {
-        const authedPostAssign = (await import("@/lib/actions/task/action"))
-          .authedPostAssign;
-        await authedPostAssign({
-          postID: post.id,
-          boardId: post.boardId,
-          userId: member.userId,
-        });
-      } catch (error) {
-        console.error("Error assigning task:", error);
-        toast.error("Failed to assign task");
-        if (oldAssigned) {
-          assignTask(post.id, oldAssigned);
-        }
-      }
-    },
-    [post.id, post.boardId, post.task?.userId]
-  );
-
-  return (
-    <CardFooter className="flex justify-between p-2">
-      {post.type === PostType.action_item && (
-        <>
-          <Badge className="flex items-center justify-center">
-            <p className="text-xs">{badgeText}</p>
-          </Badge>
-          <TooltipProvider>
-            <Tooltip>
-              <Dialog>
-                <DialogTrigger>
-                  <AvatarIcon
-                    userID={post.task?.userId ?? ""}
-                    triggers={(user, avatarContent) => (
-                      <>
-                        <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
-                        <TooltipContent>
-                          <p>{user?.name ?? "Unknown"}</p>
-                        </TooltipContent>
-                      </>
-                    )}
-                  />
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Assign Task</DialogTitle>
-                  </DialogHeader>
-                  <MemberList viewOnly onAssign={handleAssign} />
-                </DialogContent>
-              </Dialog>
-            </Tooltip>
-          </TooltipProvider>
-        </>
-      )}
-      {post.type !== PostType.action_item && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`flex items-center ${
-            hasVoted(post.id) ? "text-blue-600" : "text-gray-500"
-          } ${viewOnly ? "cursor-default" : ""} px-2`}
-          onClick={handleVote}
-        >
-          <ThumbsUp className="h-4 w-4 mr-2" />
-          <span>{post.voteCount}</span>
-        </Button>
-      )}
-    </CardFooter>
-  );
-});
-
-PostCardFooter.displayName = "PostCardFooter";
-
-const cardTypes: Record<Post["type"], string> = {
-  [PostType.went_well]: "bg-green-100",
-  [PostType.to_improvement]: "bg-red-100",
-  [PostType.to_discuss]: "bg-yellow-100",
-  [PostType.action_item]: "bg-purple-100",
-} as const satisfies Record<Post["type"], string>;
+type Post = RouterOutputs["post"]["getAll"][number];
 
 interface PostCardProps {
-  post: EnrichedPost;
-  viewOnly?: boolean;
-  onDelete?: (id: Post["id"]) => void;
-  onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
-  userId: User["id"];
+  post: Post;
+  onMovePost: (postId: string, newColumnId: string) => void;
+  columns: Array<{ id: string; name: string; color: string }>;
+  canEdit?: boolean;
 }
 
-function PostCard({
-  post,
-  viewOnly = false,
-  onDelete,
-  onUpdate,
-  userId,
-}: Readonly<PostCardProps>) {
-  const [isDragging, setIsDragging] = useState<boolean>(false);
+export function PostCard({ post, onMovePost, columns, canEdit = true }: PostCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(post.title);
+  const [editedContent, setEditedContent] = useState(post.content);
+  const [editedColumnId, setEditedColumnId] = useState(post.columnId);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { isAnonymous } = useAnonymousMode();
-  const { addVotedPost, removeVotedPost, hasVoted } = useVotedPosts();
+  const { userId } = useAuth();
+  const utils = api.useUtils();
 
-  const ref = useRef<HTMLDivElement>(null);
+  const updatePost = api.post.update.useMutation({
+    onSuccess: () => {
+      setIsEditing(false);
+      toast.success("Post updated successfully");
+      void utils.post.getAll.invalidate();
+    },
+    onError: (error) => {
+      toast.error("Failed to update post: " + error.message);
+    },
+  });
 
-  const handleVote = useCallback(async () => {
-    if (viewOnly) return;
-    const isVoted = hasVoted(post.id);
-    const voteAction = isVoted ? DownVotePostAction : UpVotePostAction;
-    const voteCountAction = isVoted
-      ? decrementPostVoteCount
-      : incrementPostVoteCount;
-    const votedPostAction = isVoted ? removeVotedPost : addVotedPost;
+  const deletePost = api.post.delete.useMutation({
+    onSuccess: () => {
+      setIsDeleting(false);
+      toast.success("Post deleted successfully");
+      void utils.post.getAll.invalidate();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete post: " + error.message);
+    },
+  });
 
-    try {
-      await voteAction(post.id, userId, post.boardId);
-      voteCountAction(post.id);
-      votedPostAction(post.id);
-    } catch (error) {
-      console.error("Error while voting:", error);
-      toast.error("Failed to vote.");
+  const handleSave = () => {
+    if (!editedTitle.trim()) {
+      toast.error("Title is required");
+      return;
     }
-  }, [
-    viewOnly,
-    hasVoted,
-    post.id,
-    userId,
-    post.boardId,
-    addVotedPost,
-    removeVotedPost,
-  ]);
 
-  useEffect(() => {
-    if (!viewOnly) {
-      const postCardEl = ref.current;
-      invariant(postCardEl, "postCardEl is null");
+    updatePost.mutate({
+      id: post.id,
+      title: editedTitle,
+      content: editedContent,
+      columnId: editedColumnId,
+    });
+  };
 
-      let cleanupDrag: (() => void) | undefined;
-      let isInitializing = false;
-      let isInitialized = false;
+  const handleDelete = () => {
+    deletePost.mutate({ id: post.id });
+  };
 
-      const initializeDragAndDrop = async () => {
-        if (isInitializing || isInitialized) return;
-        isInitializing = true;
-        try {
-          const { draggable } = await import(
-            "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-          );
-          cleanupDrag = draggable({
-            element: postCardEl,
-            getInitialData: () => ({
-              id: post.id,
-              originalType: post.type.valueOf(),
-              boardId: post.boardId,
-            }),
-            onDragStart: () => setIsDragging(true),
-            onDrop: () => setIsDragging(false),
-          });
-          isInitialized = true;
-        } catch (error) {
-          console.error("Failed to initialize drag:", error);
-        } finally {
-          isInitializing = false;
-        }
-      };
-
-      const handleInteraction = () => {
-        if (!isInitialized && !isInitializing) {
-          initializeDragAndDrop();
-          postCardEl.removeEventListener("mouseenter", handleInteraction);
-          postCardEl.removeEventListener("touchstart", handleInteraction);
-        }
-      };
-
-      postCardEl.addEventListener("mouseenter", handleInteraction, { passive: true });
-      postCardEl.addEventListener("touchstart", handleInteraction, { passive: true });
-
-      return () => {
-        postCardEl.removeEventListener("mouseenter", handleInteraction);
-        postCardEl.removeEventListener("touchstart", handleInteraction);
-        cleanupDrag?.();
-      };
+  const handleMoveLeft = () => {
+    const currentIndex = columns.findIndex((col) => col.id === post.columnId);
+    if (currentIndex > 0) {
+      const newColumnId = columns[currentIndex - 1]?.id;
+      if (newColumnId) {
+        onMovePost(post.id, newColumnId);
+      }
     }
-  }, [post, viewOnly]);
+  };
 
-  const parsedContent = useComputed(() => (
-    <Markdown
-      components={{
-        a: ({ href, children }) => (
-          <CustomLink href={href || ""}>{children}</CustomLink>
-        ),
-      }}
-      remarkPlugins={[remarkGfm, remarkBreaks]}
-      rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
-    >
-      {post.content}
-    </Markdown>
-  ));
+  const handleMoveRight = () => {
+    const currentIndex = columns.findIndex((col) => col.id === post.columnId);
+    if (currentIndex < columns.length - 1) {
+      const newColumnId = columns[currentIndex + 1]?.id;
+      if (newColumnId) {
+        onMovePost(post.id, newColumnId);
+      }
+    }
+  };
+
+  const currentColumn = columns.find((col) => col.id === post.columnId);
+  const currentColumnIndex = columns.findIndex((col) => col.id === post.columnId);
+  const canMoveLeft = currentColumnIndex > 0;
+  const canMoveRight = currentColumnIndex < columns.length - 1;
+
+  const isOwner = userId === post.createdBy;
 
   return (
-    <Card
-      className={`w-full ${cardTypes[post.type]} ${
-        isDragging ? "opacity-50" : ""
-      } relative`}
-      ref={ref}
-    >
-      {!viewOnly && onDelete && (
-        <PostCardHeader post={post} onDelete={onDelete} onUpdate={onUpdate} />
-      )}
-      <CardContent className="px-3 py-1">
-        <div
-          className={`${
-            isAnonymous ? "blur-sm select-none" : "select-text"
-          } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
-        >
-          {parsedContent}
+    <Card className="w-full transition-all duration-200 hover:shadow-md">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+              {post.title}
+            </h3>
+            {currentColumn && (
+              <Badge
+                variant="secondary"
+                className="mt-2 text-xs"
+                style={{ backgroundColor: currentColumn.color + "20", color: currentColumn.color }}
+              >
+                {currentColumn.name}
+              </Badge>
+            )}
+          </div>
+          {(canEdit && isOwner) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsDeleting(true)}
+                  className="text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
-      </CardContent>
-      <PostCardFooter post={post} viewOnly={viewOnly} handleVote={handleVote} />
+      </CardHeader>
+      
+      {post.content && (
+        <CardContent className="pt-0 pb-3">
+          <p className="text-sm text-muted-foreground line-clamp-3">
+            {post.content}
+          </p>
+        </CardContent>
+      )}
+
+      <CardFooter className="pt-0 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Avatar className="h-6 w-6">
+            <AvatarImage src={post.createdByUser?.imageUrl ?? ""} />
+            <AvatarFallback className="text-xs">
+              {post.createdByUser?.firstName?.[0] ?? "U"}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-xs text-muted-foreground">
+            {formatDistanceToNow(post.createdAt, { addSuffix: true })}
+          </span>
+        </div>
+
+        {canEdit && isOwner && (
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMoveLeft}
+              disabled={!canMoveLeft}
+              className="h-6 w-6 p-0"
+            >
+              <ArrowLeft className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMoveRight}
+              disabled={!canMoveRight}
+              className="h-6 w-6 p-0"
+            >
+              <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+      </CardFooter>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Post</DialogTitle>
+            <DialogDescription>
+              Make changes to your post here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                placeholder="Enter post title"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                placeholder="Enter post content"
+                rows={3}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="column">Column</Label>
+              <Select value={editedColumnId} onValueChange={setEditedColumnId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a column" />
+                </SelectTrigger>
+                <SelectContent>
+                  {columns.map((column) => (
+                    <SelectItem key={column.id} value={column.id}>
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: column.color }}
+                        />
+                        <span>{column.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditing(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={updatePost.isPending}>
+              {updatePost.isPending ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Post</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="bg-muted p-4 rounded-md">
+            <h4 className="font-semibold text-sm">{post.title}</h4>
+            {post.content && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                {post.content}
+              </p>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleting(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deletePost.isPending}
+            >
+              {deletePost.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
-
-PostCard.displayName = "PostCard";
-
-export default PostCard;
