@@ -297,6 +297,9 @@ const PostCardFooter = memo(function PostCardFooter({
                     )}
                   />
                 </DialogTrigger>
+  <DialogContent>
+    <AssignTaskDialog onAssign={handleAssign} />
+  </DialogContent>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
                     <DialogTitle>Assign Task</DialogTitle>

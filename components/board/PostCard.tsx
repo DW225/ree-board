@@ -286,14 +286,21 @@ const PostCardFooter = memo(function PostCardFooter({
               <Dialog>
                 <DialogTrigger>
                   <AvatarIcon
-                    userID={post.task?.userId ?? ""}
-                    triggers={(user, avatarContent) => (
-                      <>
-                        <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
-                        <TooltipContent>
-                          <p>{user?.name ?? "Unknown"}</p>
-                        </TooltipContent>
-                      </>
+      userID={post.task?.userId ?? ""}
+      triggers={(user, avatarContent) => (
+        <>
+          <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
+          <TooltipContent>
+            <p>{user?.firstName ?? "Unassigned"}</p>
+          </TooltipContent>
+        </>
+      )}
+    />
+  </DialogTrigger>
+  <DialogContent>
+    <AssignTaskDialog onAssign={handleAssign} />
+  </DialogContent>
+</Dialog>
                     )}
                   />
                 </DialogTrigger>
