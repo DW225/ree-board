@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Role } from "@/lib/constants/role";
-import { memberSignal } from "@/lib/signal/memberSingals";
+import { memberSignal } from "@/lib/signal/memberSignals";
 import type { Member, MemberSignal } from "@/lib/types/member";
 import { getEnumKeys } from "@/lib/utils";
 import { useSignal, useSignals } from "@preact/signals-react/runtime";

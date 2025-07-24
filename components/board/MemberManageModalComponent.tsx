@@ -22,7 +22,7 @@ import {
   addMember,
   removeMember,
   updateMember,
-} from "@/lib/signal/memberSingals";
+} from "@/lib/signal/memberSignals";
 import type { Member, MemberSignal } from "@/lib/types/member";
 import { PlusCircle } from "lucide-react";
 import { nanoid } from "nanoid";

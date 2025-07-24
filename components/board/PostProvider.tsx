@@ -4,7 +4,7 @@
 import { useSetState } from "@/hooks/useSetState";
 import { UpdatePostTypeAction } from "@/lib/actions/post/action";
 import { PostType } from "@/lib/constants/post";
-import { memberSignalInitial } from "@/lib/signal/memberSingals";
+import { memberSignalInitial } from "@/lib/signal/memberSignals";
 import {
   initializePostSignals,
   updatePostType,
@@ -148,7 +148,9 @@ const PostProvider: FC<PostProviderProps> = ({
     if (isDragInitialized.current) return;
 
     try {
-      const { monitorForElements } = await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
+      const { monitorForElements } = await import(
+        "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+      );
 
       const cleanup = monitorForElements({
         async onDrop(args) {
@@ -189,16 +191,20 @@ const PostProvider: FC<PostProviderProps> = ({
     const handleFirstInteraction = () => {
       initializeDragAndDrop();
       // Remove listeners after first interaction
-      document.removeEventListener('mousedown', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener("mousedown", handleFirstInteraction);
+      document.removeEventListener("touchstart", handleFirstInteraction);
     };
 
-    document.addEventListener('mousedown', handleFirstInteraction, { passive: true });
-    document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
+    document.addEventListener("mousedown", handleFirstInteraction, {
+      passive: true,
+    });
+    document.addEventListener("touchstart", handleFirstInteraction, {
+      passive: true,
+    });
 
     return () => {
-      document.removeEventListener('mousedown', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
+      document.removeEventListener("mousedown", handleFirstInteraction);
+      document.removeEventListener("touchstart", handleFirstInteraction);
       if (dragMonitorRef.current) {
         dragMonitorRef.current();
       }
