@@ -27,7 +27,7 @@ import {
   getMembersFromBoardWithExclusionAction,
 } from "@/lib/actions/member/action";
 import { Role } from "@/lib/constants/role";
-import { addMember } from "@/lib/signal/memberSingals";
+import { addMember } from "@/lib/signal/memberSignals";
 import type { Board } from "@/lib/types/board";
 import { Upload, Users } from "lucide-react";
 import { nanoid } from "nanoid";

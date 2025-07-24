@@ -2,7 +2,7 @@
 
 import { AvatarIcon } from "@/components/common/AvatarIcon";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { memberSignal } from "@/lib/signal/memberSingals";
+import { memberSignal } from "@/lib/signal/memberSignals";
 import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 
