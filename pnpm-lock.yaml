@@ -21,8 +21,8 @@ importers:
         specifier: ^0.15.9
         version: 0.15.9
       '@next/env':
-        specifier: 15.4.1
-        version: 15.4.1
+        specifier: 15.4.3
+        version: 15.4.3
       '@preact/signals-react':
         specifier: ^3.2.1
         version: 3.2.1(react@19.1.0)
@@ -1162,9 +1162,6 @@ packages:
 
   '@next/env@15.1.6':
     resolution: {integrity: sha512-d9AFQVPEYNr+aqokIiPLNK/MTyt3DWa/dpKveiAaVccUadFbhFEvY6FXYX2LJO2Hv7PHnLBu2oWwB4uBuHjr/w==}
-
-  '@next/env@15.4.1':
-    resolution: {integrity: sha512-DXQwFGAE2VH+f2TJsKepRXpODPU+scf5fDbKOME8MMyeyswe4XwgRdiiIYmBfkXU+2ssliLYznajTrOQdnLR5A==}
 
   '@next/env@15.4.3':
     resolution: {integrity: sha512-lKJ9KJAvaWzqurIsz6NWdQOLj96mdhuDMusLSYHw9HBe2On7BjUwU1WeRvq19x7NrEK3iOgMeSBV5qEhVH1cMw==}
@@ -6937,8 +6934,6 @@ snapshots:
       - utf-8-validate
 
   '@next/env@15.1.6': {}
-
-  '@next/env@15.4.1': {}
 
   '@next/env@15.4.3': {}
 
