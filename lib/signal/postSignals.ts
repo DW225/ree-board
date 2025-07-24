@@ -185,7 +185,7 @@ export const addPostTask = (task: NewTask) => {
 
 export const assignTask = (
   postId: Post["id"],
-  userId: Task["userId"] | null,
+  userId: Task["userId"],
   boardId?: string
 ) => {
   const currentTasks = tasksSignal.value;

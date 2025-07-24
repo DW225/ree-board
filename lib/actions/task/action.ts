@@ -49,13 +49,13 @@ export const authedCreateAction = async (action: NewTask) =>
   );
 
 export const authedPostAssign = async (action: {
-  postID: Post["id"];
+  postId: Post["id"];
   userId: User["id"] | null;
   boardId: Board["id"];
 }) =>
   rbacWithAuth(action.boardId, () =>
     Promise.all([
-      assignTask(action.postID, action.userId),
+      assignTask(action.postId, action.userId),
       // Publish the action to Ably for real-time updates on the client-side.
       ablyClient(action.boardId).publish({
         name: EVENT_TYPE.ACTION.ASSIGN,
@@ -70,14 +70,14 @@ export const authedPostAssign = async (action: {
   );
 
 export const authedPostActionStateUpdate = async (action: {
-  postID: Post["id"];
+  postId: Post["id"];
   state: Task["state"];
   boardId: Board["id"];
 }) =>
   rbacWithAuth(action.boardId, () =>
     Promise.all([
       // Update the action state in the database.
-      updateTaskState(action.postID, action.state),
+      updateTaskState(action.postId, action.state),
       // Publish the action state update to Ably for real-time updates on the client-side.
       ablyClient(action.boardId).publish({
         name: EVENT_TYPE.ACTION.STATE_UPDATE,

@@ -3,16 +3,12 @@ import type { FC } from "react";
 import BoardColumn from "./BoardColumn";
 
 interface BoardGridProps {
-  boardID: string;
+  boardId: string;
   viewOnly?: boolean;
   userId: string;
 }
 
-const BoardGrid: FC<BoardGridProps> = async ({
-  boardID,
-  viewOnly,
-  userId,
-}) => {
+const BoardGrid: FC<BoardGridProps> = async ({ boardId, viewOnly, userId }) => {
   const columns = [
     { title: "Went Well", postType: PostType.went_well },
     { title: "To Improve", postType: PostType.to_improvement },
@@ -30,7 +26,7 @@ const BoardGrid: FC<BoardGridProps> = async ({
           <BoardColumn
             title={column.title}
             postType={column.postType}
-            boardID={boardID}
+            boardId={boardId}
             viewOnly={viewOnly}
             userId={userId}
           />

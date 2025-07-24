@@ -28,8 +28,8 @@ export const fetchPostsByBoardID = async (boardId: Board["id"]) => {
     .where(eq(postTable.boardId, boardId));
 };
 
-export const deletePost = async (postID: Post["id"]) => {
-  await db.delete(postTable).where(eq(postTable.id, postID)).execute();
+export const deletePost = async (postId: Post["id"]) => {
+  await db.delete(postTable).where(eq(postTable.id, postId)).execute();
 };
 
 export const updatePostType = async (id: Post["id"], newType: Post["type"]) => {

@@ -26,7 +26,7 @@ const PostCard = dynamic(() => import("@/components/board/PostCard"), {
 });
 
 interface BoardColumnProps {
-  boardID: string;
+  boardId: string;
   title: string;
   postType: PostType;
   viewOnly?: boolean;
@@ -39,7 +39,7 @@ interface AnimatedPost {
 }
 
 export default function BoardColumn({
-  boardID,
+  boardId,
   title,
   postType,
   viewOnly = false,
@@ -62,7 +62,7 @@ export default function BoardColumn({
   const handlePostDelete = useCallback(
     async (id: string) => {
       try {
-        await DeletePostAction(id, boardID);
+        await DeletePostAction(id, boardId);
 
         removePost(id);
       } catch (error) {
@@ -70,14 +70,14 @@ export default function BoardColumn({
         console.error("Failed to delete post:", error);
       }
     },
-    [boardID]
+    [boardId]
   );
 
   const handlePostUpdate = useCallback(
     async (id: string, newContent: string) => {
       try {
         // Update the post content on the server
-        await UpdatePostContentAction(id, boardID, newContent);
+        await UpdatePostContentAction(id, boardId, newContent);
 
         // Update the post content in the local state
         updatePostContent(id, newContent);
@@ -86,7 +86,7 @@ export default function BoardColumn({
         console.error("Failed to update post:", error);
       }
     },
-    [boardID]
+    [boardId]
   );
 
   useEffect(() => {
@@ -103,7 +103,9 @@ export default function BoardColumn({
         if (isInitializing || isInitialized) return;
         isInitializing = true;
         try {
-          const { dropTargetForElements } = await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
+          const { dropTargetForElements } = await import(
+            "@atlaskit/pragmatic-drag-and-drop/element/adapter"
+          );
 
           cleanup = dropTargetForElements({
             element: columnEl,
@@ -111,7 +113,7 @@ export default function BoardColumn({
             canDrop: ({ source }) => {
               return (
                 source.data.postType !== postType.valueOf() &&
-                source.data.boardId === boardID
+                source.data.boardId === boardId
               );
             },
             getIsSticky: () => true,
@@ -131,23 +133,27 @@ export default function BoardColumn({
       const handleInteraction = () => {
         if (!isInitialized && !isInitializing) {
           initializeDropTarget();
-          columnEl.removeEventListener('mouseenter', handleInteraction);
-          columnEl.removeEventListener('touchstart', handleInteraction);
+          columnEl.removeEventListener("mouseenter", handleInteraction);
+          columnEl.removeEventListener("touchstart", handleInteraction);
         }
       };
 
-      columnEl.addEventListener('mouseenter', handleInteraction, { passive: true });
-      columnEl.addEventListener('touchstart', handleInteraction, { passive: true });
+      columnEl.addEventListener("mouseenter", handleInteraction, {
+        passive: true,
+      });
+      columnEl.addEventListener("touchstart", handleInteraction, {
+        passive: true,
+      });
 
       return () => {
-        columnEl.removeEventListener('mouseenter', handleInteraction);
-        columnEl.removeEventListener('touchstart', handleInteraction);
+        columnEl.removeEventListener("mouseenter", handleInteraction);
+        columnEl.removeEventListener("touchstart", handleInteraction);
         if (cleanup) {
           cleanup();
         }
       };
     }
-  }, [boardID, postType, viewOnly]);
+  }, [boardId, postType, viewOnly]);
 
   const renderPosts = useMemo(
     () =>
@@ -189,7 +195,7 @@ export default function BoardColumn({
       <div className="rounded-t-lg p-2">
         <h3 className="font-bold text-xl text-center mb-4">{title}</h3>
         {!viewOnly && (
-          <AddPostForm postType={postType} boardID={boardID} userId={userId} />
+          <AddPostForm postType={postType} boardId={boardId} userId={userId} />
         )}
       </div>
       <div ref={columnRef} className="flex-grow overflow-y-auto p-3 space-y-3">

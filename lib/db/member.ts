@@ -17,17 +17,17 @@ export const addMember = async (newMember: NewMember) => {
 
 export const removeMember = async (
   userID: User["id"],
-  boardID: Board["id"]
+  boardId: Board["id"]
 ) => {
   await db
     .delete(memberTable)
     .where(
-      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardID))
+      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardId))
     );
 };
 
 export const fetchMembersByBoardID = async (
-  boardID: Board["id"],
+  boardId: Board["id"],
   trx?: Transaction
 ) => {
   if (trx) {
@@ -42,7 +42,7 @@ export const fetchMembersByBoardID = async (
       })
       .from(memberTable)
       .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-      .where(eq(memberTable.boardId, boardID));
+      .where(eq(memberTable.boardId, boardId));
   }
   return await db
     .select({
@@ -55,12 +55,12 @@ export const fetchMembersByBoardID = async (
     })
     .from(memberTable)
     .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-    .where(eq(memberTable.boardId, boardID));
+    .where(eq(memberTable.boardId, boardId));
 };
 
 export const checkMemberRole = async (
   userID: User["id"],
-  boardID: Board["id"]
+  boardId: Board["id"]
 ) => {
   const member = await db
     .select({
@@ -68,14 +68,14 @@ export const checkMemberRole = async (
     })
     .from(memberTable)
     .where(
-      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardID))
+      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardId))
     );
   return member ? member[0].role : null;
 };
 
 export const checkRoleByKindeID = async (
   kindeID: User["kinde_id"],
-  boardID: Board["id"]
+  boardId: Board["id"]
 ) => {
   const member = await db
     .select({
@@ -85,7 +85,7 @@ export const checkRoleByKindeID = async (
     .from(memberTable)
     .innerJoin(userTable, eq(memberTable.userId, userTable.id))
     .where(
-      and(eq(userTable.kinde_id, kindeID), eq(memberTable.boardId, boardID))
+      and(eq(userTable.kinde_id, kindeID), eq(memberTable.boardId, boardId))
     );
   return member ? member[0] : null;
 };

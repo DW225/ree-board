@@ -22,14 +22,14 @@ export default function CreateBoardForm({
     const title = titleInput.value.trim();
     if (title === "") return;
 
-    const newBoardID = nanoid();
+    const newBoardId = nanoid();
     const newBoard: NewBoard & {
       id: string;
       createdAt: Date;
       updatedAt: Date;
       creator: string | null;
     } = {
-      id: newBoardID,
+      id: newBoardId,
       title,
       state: BoardState.active,
       createdAt: new Date(),
@@ -46,7 +46,7 @@ export default function CreateBoardForm({
     } catch (error) {
       console.error("Failed to create board:", error);
       toast.error("Failed to create board. Please try again later.");
-      removeBoard(newBoardID); // Remove the temporary board from the UI if failed to create it
+      removeBoard(newBoardId); // Remove the temporary board from the UI if failed to create it
     }
   };
 

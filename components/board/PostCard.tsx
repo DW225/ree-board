@@ -36,7 +36,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { authedPostActionStateUpdate } from "@/lib/actions/task/action";
+import {
+  authedPostActionStateUpdate,
+  authedPostAssign,
+} from "@/lib/actions/task/action";
 import {
   DownVotePostAction,
   UpVotePostAction,
@@ -100,7 +103,7 @@ const PostCardHeader = memo(function PostCardHeader({
         updatePostState(post.id, newStatus);
 
         await authedPostActionStateUpdate({
-          postID: post.id,
+          postId: post.id,
           state: newStatus,
           boardId: post.boardId,
         });
@@ -256,19 +259,19 @@ const PostCardFooter = memo(function PostCardFooter({
   const handleAssign = useCallback(
     async (member: MemberSignal) => {
       const oldAssigned = post.task?.userId;
+      const postId = post.id;
+      const boardId = post.boardId;
       try {
-        const authedPostAssign = (await import("@/lib/actions/task/action"))
-          .authedPostAssign;
         await authedPostAssign({
-          postID: post.id,
-          boardId: post.boardId,
+          postId,
+          boardId,
           userId: member.userId,
         });
       } catch (error) {
         console.error("Error assigning task:", error);
         toast.error("Failed to assign task");
         if (oldAssigned) {
-          assignTask(post.id, oldAssigned);
+          assignTask(postId, oldAssigned, boardId);
         }
       }
     },

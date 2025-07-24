@@ -20,8 +20,8 @@ const PostChannel = dynamic(
 );
 
 // Secondary features - lazy load with loading states
-const AvatarStack = dynamic(() =>
-  import("@/components/board/AvatarStack").then((mod) => mod.AvatarStack),
+const AvatarStack = dynamic(
+  () => import("@/components/board/AvatarStack").then((mod) => mod.AvatarStack),
   {
     loading: () => (
       <div className="flex -space-x-2">
@@ -112,7 +112,7 @@ export default async function BoardPage({
                 </MemberManageModalComponent>
                 <SortButton className="shrink-0 ml-1" />
               </div>
-              <BoardGrid boardID={id} viewOnly={viewOnly} userId={userID} />
+              <BoardGrid boardId={id} viewOnly={viewOnly} userId={userID} />
             </div>
           </PostProvider>
         </AnonymousModeProvider>
