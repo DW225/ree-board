@@ -12,6 +12,15 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -46,13 +55,6 @@ import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
 import type { User } from "@/lib/types/user";
 import { useComputed } from "@preact/signals-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "@radix-ui/react-dialog";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
@@ -61,7 +63,6 @@ import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import invariant from "tiny-invariant";
-import { DialogFooter, DialogHeader } from "../ui/dialog";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import { useVotedPosts } from "./PostProvider";
@@ -425,8 +426,12 @@ function PostCard({
         }
       };
 
-      postCardEl.addEventListener("mouseenter", handleInteraction, { passive: true });
-      postCardEl.addEventListener("touchstart", handleInteraction, { passive: true });
+      postCardEl.addEventListener("mouseenter", handleInteraction, {
+        passive: true,
+      });
+      postCardEl.addEventListener("touchstart", handleInteraction, {
+        passive: true,
+      });
 
       return () => {
         postCardEl.removeEventListener("mouseenter", handleInteraction);
