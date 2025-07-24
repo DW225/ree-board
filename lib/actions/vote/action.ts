@@ -8,13 +8,13 @@ import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { actionWithAuth } from "../actionWithAuth";
 
 export const UpVotePostAction = async (
-  postID: Post["id"],
+  postId: Post["id"],
   userId: User["id"],
   boardId: Board["id"]
 ) =>
   actionWithAuth(() =>
     Promise.all([
-      upVote(postID, userId, boardId),
+      upVote(postId, userId, boardId),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPVOTE,
         extras: {
@@ -22,19 +22,19 @@ export const UpVotePostAction = async (
             user: userId,
           },
         },
-        data: JSON.stringify({ id: postID }),
+        data: JSON.stringify({ id: postId }),
       }),
     ])
   );
 
 export const DownVotePostAction = async (
-  postID: Post["id"],
+  postId: Post["id"],
   userId: User["id"],
   boardId: Board["id"]
 ) =>
   actionWithAuth(() =>
     Promise.all([
-      downVote(postID, userId, boardId),
+      downVote(postId, userId, boardId),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.DOWNVOTE,
         extras: {
@@ -42,7 +42,7 @@ export const DownVotePostAction = async (
             user: userId,
           },
         },
-        data: JSON.stringify({ id: postID }),
+        data: JSON.stringify({ id: postId }),
       }),
     ])
   );

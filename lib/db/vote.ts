@@ -7,20 +7,20 @@ import { nanoid } from "nanoid";
 import { db } from "./client";
 
 export async function upVote(
-  postID: Post["id"],
+  postId: Post["id"],
   userId: User["id"],
   boardId: Board["id"]
 ) {
   await db.insert(voteTable).values({
     id: nanoid(),
     userId,
-    postId: postID,
+    postId,
     boardId,
   });
 }
 
 export async function downVote(
-  postID: Post["id"],
+  postId: Post["id"],
   userId: User["id"],
   boardId: Board["id"]
 ) {
@@ -28,7 +28,7 @@ export async function downVote(
     .delete(voteTable)
     .where(
       and(
-        eq(voteTable.postId, postID),
+        eq(voteTable.postId, postId),
         eq(voteTable.userId, userId),
         eq(voteTable.boardId, boardId)
       )

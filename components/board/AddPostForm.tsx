@@ -4,6 +4,7 @@ import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CreatePostAction } from "@/lib/actions/post/action";
+import { authedCreateAction } from "@/lib/actions/task/action";
 import { PostType } from "@/lib/constants/post";
 import { addPost, addPostTask, removePost } from "@/lib/signal/postSignals";
 import type { Post } from "@/lib/types/post";
@@ -17,19 +18,19 @@ import { toast } from "sonner";
 interface AddPostFormProps {
   userId: string;
   postType: PostType;
-  boardID: string;
+  boardId: string;
 }
 
 export default function AddPostForm({
   userId,
   postType,
-  boardID,
+  boardId,
 }: Readonly<AddPostFormProps>) {
   const { openFormId, setOpenFormId } = useAddPostForm();
   const [content, setContent] = useState("");
   const [tempContent, setTempContent] = useState("");
 
-  const formId = `${boardID}-${postType}`;
+  const formId = `${boardId}-${postType}`;
   const isAdding = openFormId === formId;
 
   const handleSubmit = async (e: FormEvent) => {
@@ -43,7 +44,7 @@ export default function AddPostForm({
         content,
         type: postType,
         author: userId,
-        boardId: boardID,
+        boardId: boardId,
         createdAt: new Date(),
         updatedAt: new Date(),
         voteCount: 0,
@@ -55,16 +56,14 @@ export default function AddPostForm({
 
       await CreatePostAction(newPost);
       if (postType === PostType.action_item) {
-        const NewTask: NewTask = {
+        const newTask: NewTask = {
           id: nanoid(),
           postId,
-          boardId: boardID,
+          boardId,
         };
         try {
-          const authedCreateAction = (await import("@/lib/actions/task/action"))
-            .authedCreateAction;
-          await authedCreateAction(NewTask);
-          addPostTask(NewTask);
+          await authedCreateAction(newTask);
+          addPostTask(newTask);
         } catch (error) {
           removePost(postId);
           throw error; // Re-throw to trigger the outer catch block

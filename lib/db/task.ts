@@ -3,7 +3,7 @@ import type { Task, NewTask } from "@/lib/types/task";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./client";
 
 export async function createTask(action: NewTask) {
@@ -29,18 +29,18 @@ export async function fetchTasks(boardId: Board["id"]) {
 }
 
 export async function assignTask(
-  postID: Post["id"],
+  postId: Post["id"],
   userId: User["id"] | null
 ) {
-  if (!postID) throw new Error("postId is required");
+  if (!postId) throw new Error("postId is required");
   try {
     await db
       .update(taskTable)
-      .set({ userId, updatedAt: new Date() })
-      .where(eq(taskTable.postId, postID))
+      .set({ userId, updatedAt: sql`(strftime('%s','now'))` })
+      .where(eq(taskTable.postId, postId))
       .execute();
   } catch (error) {
-    console.error(`Failed to assign action for post ${postID}:`, error);
+    console.error(`Failed to assign action for post ${postId}:`, error);
     throw error;
   }
 }
@@ -53,12 +53,12 @@ export async function assignTask(
  * @returns A Promise that resolves when the update operation is complete.
  */
 export async function updateTaskState(
-  postID: Post["id"],
+  postId: Post["id"],
   newState: Task["state"]
 ) {
   await db
     .update(taskTable)
     .set({ state: newState, updatedAt: new Date() })
-    .where(eq(taskTable.postId, postID))
+    .where(eq(taskTable.postId, postId))
     .execute();
 }
