@@ -22,7 +22,7 @@
     "@kinde-oss/kinde-auth-nextjs": "^2.8.3",
     "@kinde/management-api-js": "^0.14.0",
     "@libsql/client": "^0.15.10",
-    "@next/env": "15.4.3",
+    "@next/env": "15.4.4",
     "@preact/signals-react": "^3.2.1",
     "@radix-ui/react-avatar": "^1.1.9",
     "@radix-ui/react-checkbox": "^1.3.2",
