@@ -21,11 +21,14 @@ export async function createTask(action: NewTask) {
   return result[0].id;
 }
 
+const prepareFetchTasks = db
+  .select()
+  .from(taskTable)
+  .where(eq(taskTable.boardId, sql.placeholder("boardId")))
+  .prepare();
+
 export async function fetchTasks(boardId: Board["id"]) {
-  return await db
-    .select()
-    .from(taskTable)
-    .where(eq(taskTable.boardId, boardId));
+  return await prepareFetchTasks.execute({ boardId });
 }
 
 export async function assignTask(
