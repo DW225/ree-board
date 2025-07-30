@@ -3,7 +3,7 @@ import type { Board } from "@/lib/types/board";
 import type { Transaction } from "@/lib/types/db";
 import type { NewMember } from "@/lib/types/member";
 import type { User } from "@/lib/types/user";
-import { and, eq, inArray, ne, notExists } from "drizzle-orm";
+import { and, eq, inArray, ne, notExists, sql } from "drizzle-orm";
 import { db } from "./client";
 
 export const addMember = async (newMember: NewMember) => {
@@ -26,6 +26,20 @@ export const removeMember = async (
     );
 };
 
+const prepareFetchMembersByBoardID = db
+  .select({
+    id: memberTable.id,
+    userId: memberTable.userId,
+    role: memberTable.role,
+    username: userTable.name,
+    email: userTable.email,
+    updatedAt: memberTable.updatedAt,
+  })
+  .from(memberTable)
+  .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+  .where(eq(memberTable.boardId, sql.placeholder("boardId")))
+  .prepare();
+
 export const fetchMembersByBoardID = async (
   boardId: Board["id"],
   trx?: Transaction
@@ -44,49 +58,56 @@ export const fetchMembersByBoardID = async (
       .innerJoin(userTable, eq(memberTable.userId, userTable.id))
       .where(eq(memberTable.boardId, boardId));
   }
-  return await db
-    .select({
-      id: memberTable.id,
-      userId: memberTable.userId,
-      role: memberTable.role,
-      username: userTable.name,
-      email: userTable.email,
-      updateAt: memberTable.updatedAt,
-    })
-    .from(memberTable)
-    .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-    .where(eq(memberTable.boardId, boardId));
+  return await prepareFetchMembersByBoardID.execute({ boardId });
 };
+
+const prepareCheckMemberRole = db
+  .select({
+    role: memberTable.role,
+  })
+  .from(memberTable)
+  .where(
+    and(
+      eq(memberTable.userId, sql.placeholder("userId")),
+      eq(memberTable.boardId, sql.placeholder("boardId"))
+    )
+  )
+  .prepare();
 
 export const checkMemberRole = async (
   userID: User["id"],
   boardId: Board["id"]
 ) => {
-  const member = await db
-    .select({
-      role: memberTable.role,
-    })
-    .from(memberTable)
-    .where(
-      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardId))
-    );
+  const member = await prepareCheckMemberRole.execute({ 
+    userId: userID, 
+    boardId 
+  });
   return member ? member[0].role : null;
 };
+
+const prepareCheckRoleByKindeID = db
+  .select({
+    role: memberTable.role,
+    userID: userTable.id,
+  })
+  .from(memberTable)
+  .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+  .where(
+    and(
+      eq(userTable.kinde_id, sql.placeholder("kindeId")),
+      eq(memberTable.boardId, sql.placeholder("boardId"))
+    )
+  )
+  .prepare();
 
 export const checkRoleByKindeID = async (
   kindeID: User["kinde_id"],
   boardId: Board["id"]
 ) => {
-  const member = await db
-    .select({
-      role: memberTable.role,
-      userID: userTable.id,
-    })
-    .from(memberTable)
-    .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-    .where(
-      and(eq(userTable.kinde_id, kindeID), eq(memberTable.boardId, boardId))
-    );
+  const member = await prepareCheckRoleByKindeID.execute({ 
+    kindeId: kindeID, 
+    boardId 
+  });
   return member ? member[0] : null;
 };
 
@@ -142,17 +163,26 @@ export const bulkAddMembers = async (
   }
 };
 
+const prepareCheckIfMemberExists = db
+  .select({ id: memberTable.id })
+  .from(memberTable)
+  .where(
+    and(
+      eq(memberTable.userId, sql.placeholder("userId")),
+      eq(memberTable.boardId, sql.placeholder("boardId"))
+    )
+  )
+  .limit(1)
+  .prepare();
+
 export const checkIfMemberExists = async (
   userId: User["id"],
   boardId: Board["id"]
 ): Promise<boolean> => {
-  const existing = await db
-    .select({ id: memberTable.id })
-    .from(memberTable)
-    .where(
-      and(eq(memberTable.userId, userId), eq(memberTable.boardId, boardId))
-    )
-    .limit(1);
+  const existing = await prepareCheckIfMemberExists.execute({ 
+    userId, 
+    boardId 
+  });
 
   return existing.length > 0;
 };
