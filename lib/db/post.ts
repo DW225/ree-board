@@ -1,7 +1,7 @@
 import { postTable } from "@/db/schema";
 import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./client";
 
 export const createPost = async (post: NewPost) => {
@@ -21,15 +21,23 @@ export const createPost = async (post: NewPost) => {
   return newPosts[0];
 };
 
+const prepareFetchPostsByBoardID = db
+  .select()
+  .from(postTable)
+  .where(eq(postTable.boardId, sql.placeholder("boardId")))
+  .prepare();
+
 export const fetchPostsByBoardID = async (boardId: Board["id"]) => {
-  return await db
-    .select()
-    .from(postTable)
-    .where(eq(postTable.boardId, boardId));
+  return await prepareFetchPostsByBoardID.execute({ boardId });
 };
 
+const prepareDeletePost = db
+  .delete(postTable)
+  .where(eq(postTable.id, sql.placeholder("postId")))
+  .prepare();
+
 export const deletePost = async (postId: Post["id"]) => {
-  await db.delete(postTable).where(eq(postTable.id, postId)).execute();
+  await prepareDeletePost.execute({ postId });
 };
 
 export const updatePostType = async (id: Post["id"], newType: Post["type"]) => {
