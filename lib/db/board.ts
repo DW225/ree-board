@@ -2,10 +2,38 @@ import { boardTable, memberTable, userTable } from "@/db/schema";
 import { Role } from "@/lib/constants/role";
 import type { Board } from "@/lib/types/board";
 import type { User } from "@/lib/types/user";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./client";
 import { addMember, checkMemberRole } from "./member";
+
+const prepareFetchBoardsByKindeId = db
+  .select({
+    id: boardTable.id,
+    title: boardTable.title,
+    state: boardTable.state,
+    creator: boardTable.creator,
+    updatedAt: boardTable.updatedAt,
+    createdAt: boardTable.createdAt,
+  })
+  .from(boardTable)
+  .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
+  .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+  .where(eq(userTable.kinde_id, sql.placeholder("kindeId")))
+  .prepare();
+
+const prepareFetchBoardsByUserId = db
+  .select({
+    id: boardTable.id,
+    title: boardTable.title,
+    state: boardTable.state,
+    creator: boardTable.creator,
+    updatedAt: boardTable.updatedAt,
+    createdAt: boardTable.createdAt,
+  })
+  .from(boardTable)
+  .where(eq(boardTable.creator, sql.placeholder("userId")))
+  .prepare();
 
 export async function fetchBoards(
   userId: User["id"] | User["kinde_id"],
@@ -15,33 +43,9 @@ export async function fetchBoards(
     throw new Error("User ID is required");
   }
   if (useKindeId) {
-    // Fetch boards by Kinde ID
-    return await db
-      .select({
-        id: boardTable.id,
-        title: boardTable.title,
-        state: boardTable.state,
-        creator: boardTable.creator,
-        updatedAt: boardTable.updatedAt,
-        createdAt: boardTable.createdAt,
-      })
-      .from(boardTable)
-      .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
-      .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-      .where(eq(userTable.kinde_id, userId));
+    return await prepareFetchBoardsByKindeId.execute({ kindeId: userId });
   } else {
-    // Fetch boards by user ID
-    return await db
-      .select({
-        id: boardTable.id,
-        title: boardTable.title,
-        state: boardTable.state,
-        creator: boardTable.creator,
-        updatedAt: boardTable.updatedAt,
-        createdAt: boardTable.createdAt,
-      })
-      .from(boardTable)
-      .where(eq(userTable.id, userId));
+    return await prepareFetchBoardsByUserId.execute({ userId });
   }
 }
 
@@ -81,6 +85,26 @@ export async function deleteBoard(boardId: Board["id"], userId: User["id"]) {
   return new Error("Insufficient permissions to delete board");
 }
 
+const prepareFetchBoardsWhereUserIsAdmin = db
+  .select({
+    id: boardTable.id,
+    title: boardTable.title,
+    state: boardTable.state,
+    creator: boardTable.creator,
+    updatedAt: boardTable.updatedAt,
+    createdAt: boardTable.createdAt,
+  })
+  .from(boardTable)
+  .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
+  .innerJoin(userTable, eq(memberTable.userId, userTable.id))
+  .where(
+    and(
+      eq(userTable.kinde_id, sql.placeholder("kindeId")),
+      eq(memberTable.role, Role.owner)
+    )
+  )
+  .prepare();
+
 export async function fetchBoardsWhereUserIsAdmin(
   kindeId: User["kinde_id"]
 ): Promise<Board[]> {
@@ -88,22 +112,5 @@ export async function fetchBoardsWhereUserIsAdmin(
     throw new Error("Kinde ID is required");
   }
 
-  return await db
-    .select({
-      id: boardTable.id,
-      title: boardTable.title,
-      state: boardTable.state,
-      creator: boardTable.creator,
-      updatedAt: boardTable.updatedAt,
-      createdAt: boardTable.createdAt,
-    })
-    .from(boardTable)
-    .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
-    .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-    .where(
-      and(
-        eq(userTable.kinde_id, kindeId),
-        eq(memberTable.role, Role.owner) // Only boards where user is owner/admin
-      )
-    );
+  return await prepareFetchBoardsWhereUserIsAdmin.execute({ kindeId });
 }
