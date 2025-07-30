@@ -2,7 +2,7 @@ import { voteTable } from "@/db/schema";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./client";
 
@@ -35,15 +35,18 @@ export async function downVote(
     );
 }
 
+const prepareFetchUserVotedPost = db
+  .select({
+    postId: voteTable.postId,
+  })
+  .from(voteTable)
+  .where(eq(voteTable.userId, sql.placeholder("userId")))
+  .prepare();
+
 export async function fetchUserVotedPost(
   userId: User["id"]
 ): Promise<string[]> {
-  const result = await db
-    .select({
-      postId: voteTable.postId,
-    })
-    .from(voteTable)
-    .where(eq(voteTable.userId, userId));
+  const result = await prepareFetchUserVotedPost.execute({ userId });
 
   return result.map((item) => item.postId);
 }
