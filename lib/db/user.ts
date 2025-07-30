@@ -1,14 +1,16 @@
 import { userTable } from "@/db/schema";
 import type { NewUser, User } from "@/lib/types/user";
-import { eq, or } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 import { db } from "./client";
 
+const prepareFindUserIdByKindeID = db
+  .select({ id: userTable.id })
+  .from(userTable)
+  .where(eq(userTable.kinde_id, sql.placeholder("kindeId")))
+  .limit(1)
+  .prepare();
 export async function findUserIdByKindeID(kindeId: string) {
-  const result = await db
-    .select({ id: userTable.id })
-    .from(userTable)
-    .where(eq(userTable.kinde_id, kindeId))
-    .limit(1);
+  const result = await prepareFindUserIdByKindeID.execute({ kindeId });
   if (result.length > 0) {
     return result[0].id;
   } else {
@@ -26,11 +28,15 @@ export async function createUser(user: NewUser) {
   });
 }
 
+const prepareGetUser = db
+  .select()
+  .from(userTable)
+  .where(eq(userTable.kinde_id, sql.placeholder("kindeId")))
+  .limit(1)
+  .prepare();
+
 export const getUserByKindeID = async (kindeId: User["kinde_id"]) => {
-  const result = await db
-    .select()
-    .from(userTable)
-    .where(eq(userTable.kinde_id, kindeId));
+  const result = await prepareGetUser.execute({ kindeId });
   return result.length > 0 ? result[0] : undefined;
 };
 
