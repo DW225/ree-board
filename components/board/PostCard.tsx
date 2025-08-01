@@ -370,12 +370,25 @@ function PostCard({
     const votedPostAction = isVoted ? removeVotedPost : addVotedPost;
 
     try {
-      await voteAction(post.id, userId, post.boardId);
+      // Optimistic update first for immediate UI feedback
       voteCountAction(post.id);
       votedPostAction(post.id);
+
+      // Perform the server action and get the actual vote count
+      await voteAction(post.id, userId, post.boardId);
+
     } catch (error) {
       console.error("Error while voting:", error);
       toast.error("Failed to vote.");
+
+      // Revert optimistic update on error
+      const revertVoteCountAction = isVoted
+        ? incrementPostVoteCount
+        : decrementPostVoteCount;
+      const revertVotedPostAction = isVoted ? addVotedPost : removeVotedPost;
+
+      revertVoteCountAction(post.id);
+      revertVotedPostAction(post.id);
     }
   }, [
     viewOnly,

@@ -3,7 +3,10 @@
     "allow": [
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gemini.google.com)",
+      "WebFetch(domain:orm.drizzle.team)"
     ],
     "deny": []
   }
