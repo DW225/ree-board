@@ -32,7 +32,7 @@ export default function PostChannel({
     if (message.extras.headers.user !== userId) {
       if (messageType.startsWith(EVENT_PREFIX.POST)) {
         // Process post updates and creations
-        processPostUpdates(messageType, message.data);
+        processPostUpdates(messageType, message.data, userId);
       } else if (messageType.startsWith(EVENT_PREFIX.MEMBER)) {
         // Process member updates and creations
       }
@@ -47,10 +47,22 @@ export default function PostChannel({
   return <></>;
 }
 
-function processPostUpdates(type: string, data: string): void {
+function processPostUpdates(
+  type: string,
+  data: string,
+  currentUserId: string
+): void {
   let post: Post;
+  let messageData: {
+    id?: string;
+    userId?: string;
+    timestamp?: number;
+    operation?: string;
+    [key: string]: unknown;
+  };
   try {
-    post = JSON.parse(data);
+    messageData = JSON.parse(data);
+    post = messageData as Post; // For backwards compatibility with non-vote events
   } catch (error) {
     console.error("Failed to parse post data:", error);
     return;
@@ -70,11 +82,29 @@ function processPostUpdates(type: string, data: string): void {
       removePost(post.id);
       break;
     case EVENT_TYPE.POST.UPVOTE:
-      incrementPostVoteCount(post.id);
+    case EVENT_TYPE.POST.DOWNVOTE: {
+      // Ignore own actions to prevent double-counting
+      if (messageData.userId === currentUserId) {
+        break;
+      }
+
+      // Check if message is recent (ignore very old messages)
+      const messageAge = Date.now() - (messageData.timestamp || 0);
+      if (messageAge > 30000) {
+        // 30 seconds
+        break;
+      }
+
+      // Apply operation-based updates (more resilient to out-of-order messages)
+      if (messageData.id) {
+        if (type === EVENT_TYPE.POST.UPVOTE) {
+          incrementPostVoteCount(messageData.id);
+        } else {
+          decrementPostVoteCount(messageData.id);
+        }
+      }
       break;
-    case EVENT_TYPE.POST.DOWNVOTE:
-      decrementPostVoteCount(post.id);
-      break;
+    }
     default:
       console.warn("Unknown post event type:", type);
   }

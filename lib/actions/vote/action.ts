@@ -12,37 +12,53 @@ export const UpVotePostAction = async (
   userId: User["id"],
   boardId: Board["id"]
 ) =>
-  actionWithAuth(() =>
-    Promise.all([
-      upVote(postId, userId, boardId),
-      ablyClient(boardId).publish({
-        name: EVENT_TYPE.POST.UPVOTE,
-        extras: {
-          headers: {
-            user: userId,
-          },
+  actionWithAuth(async () => {
+    // Perform the upvote and get the updated count
+    const voteCount = await upVote(postId, userId, boardId);
+
+    // Publish real-time event with operation info (not absolute count)
+    await ablyClient(boardId).publish({
+      name: EVENT_TYPE.POST.UPVOTE,
+      extras: {
+        headers: {
+          user: userId,
         },
-        data: JSON.stringify({ id: postId }),
+      },
+      data: JSON.stringify({ 
+        id: postId, 
+        operation: 'upvote',
+        userId: userId,
+        timestamp: Date.now()
       }),
-    ])
-  );
+    });
+
+    return { voteCount };
+  });
 
 export const DownVotePostAction = async (
   postId: Post["id"],
   userId: User["id"],
   boardId: Board["id"]
 ) =>
-  actionWithAuth(() =>
-    Promise.all([
-      downVote(postId, userId, boardId),
-      ablyClient(boardId).publish({
-        name: EVENT_TYPE.POST.DOWNVOTE,
-        extras: {
-          headers: {
-            user: userId,
-          },
+  actionWithAuth(async () => {
+    // Perform the downvote and get the updated count
+    const voteCount = await downVote(postId, userId, boardId);
+
+    // Publish real-time event with operation info (not absolute count)
+    await ablyClient(boardId).publish({
+      name: EVENT_TYPE.POST.DOWNVOTE,
+      extras: {
+        headers: {
+          user: userId,
         },
-        data: JSON.stringify({ id: postId }),
+      },
+      data: JSON.stringify({ 
+        id: postId, 
+        operation: 'downvote',
+        userId: userId,
+        timestamp: Date.now()
       }),
-    ])
-  );
+    });
+
+    return { voteCount };
+  });
