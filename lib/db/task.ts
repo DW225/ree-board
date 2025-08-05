@@ -43,7 +43,7 @@ export async function assignTask(
       .where(eq(taskTable.postId, postId))
       .execute();
   } catch (error) {
-    console.error(`Failed to assign action for post ${postId}:`, error);
+    console.error("Failed to assign action for post %s:", postId, error);
     throw error;
   }
 }
