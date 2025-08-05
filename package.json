@@ -46,7 +46,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.532.0",
     "nanoid": "^5.1.5",
-    "next": "15.4.4",
+    "next": "15.4.5",
     "next-themes": "^0.4.6",
     "react": "19.1.1",
     "react-dom": "19.1.1",
