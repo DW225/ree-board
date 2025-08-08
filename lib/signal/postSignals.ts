@@ -267,6 +267,114 @@ export const updatePostState = (
   }
 };
 
+// Interface for rollback data
+interface MergeRollbackData {
+  originalPosts: Post[];
+  originalTasks: Record<string, Task>;
+  originalVotes: Record<string, number>;
+}
+
+// Merge operations
+export const mergePosts = (
+  targetPostId: Post["id"],
+  sourcePostIds: Post["id"][],
+  mergedContent: Post["content"]
+): MergeRollbackData => {
+  const currentPosts = postsSignal.value;
+  const currentTasks = tasksSignal.value;
+  const currentVotes = votesSignal.value;
+
+  // Capture original state for rollback
+  const allPostIds = [targetPostId, ...sourcePostIds];
+  const rollbackData: MergeRollbackData = {
+    originalPosts: currentPosts.filter(p => allPostIds.includes(p.id)),
+    originalTasks: { ...currentTasks },
+    originalVotes: { ...currentVotes },
+  };
+
+  batch(() => {
+    // Find target post and source posts
+    const targetPost = currentPosts.find(p => p.id === targetPostId);
+    const sourcePosts = currentPosts.filter(p => sourcePostIds.includes(p.id));
+
+    if (!targetPost) {
+      console.error(`Target post ${targetPostId} not found`);
+      return;
+    }
+
+    // Calculate optimistic unique vote count
+    // This is a simplified calculation - the server will provide the accurate count
+    const targetVoteCount = currentVotes[targetPostId] ?? targetPost.voteCount;
+    const sourceVoteCounts = sourcePosts.map(p => currentVotes[p.id] ?? p.voteCount);
+    const estimatedUniqueVotes = Math.max(targetVoteCount, ...sourceVoteCounts);
+
+    // Update target post with merged content and estimated vote count
+    postsSignal.value = currentPosts.map(post => 
+      post.id === targetPostId 
+        ? {
+            ...post,
+            content: mergedContent,
+            voteCount: estimatedUniqueVotes,
+            updatedAt: new Date(),
+          }
+        : post
+    ).filter(post => !sourcePostIds.includes(post.id));
+
+    // Update vote counts
+    const updatedVotes = { ...currentVotes };
+    updatedVotes[targetPostId] = estimatedUniqueVotes;
+    // Remove vote counts for deleted posts
+    sourcePostIds.forEach(id => {
+      delete updatedVotes[id];
+    });
+    votesSignal.value = updatedVotes;
+
+    // Clean up tasks for deleted posts, keep target post's task if it exists
+    const cleanedTasks = { ...currentTasks };
+    sourcePostIds.forEach(postId => {
+      delete cleanedTasks[postId];
+    });
+    tasksSignal.value = cleanedTasks;
+  });
+
+  return rollbackData;
+};
+
+export const rollbackMerge = (rollbackData: MergeRollbackData) => {
+  batch(() => {
+    const currentPosts = postsSignal.value;
+    
+    // Remove merged post and restore original posts
+    const postIdsToRestore = rollbackData.originalPosts.map(p => p.id);
+    const filteredPosts = currentPosts.filter(p => !postIdsToRestore.includes(p.id));
+    const restoredPosts = [...filteredPosts, ...rollbackData.originalPosts];
+    
+    // Restore state
+    postsSignal.value = restoredPosts;
+    tasksSignal.value = rollbackData.originalTasks;
+    votesSignal.value = rollbackData.originalVotes;
+  });
+};
+
+export const updatePost = (postId: Post["id"], updatedPost: Post) => {
+  postsSignal.value = postsSignal.value.map(post =>
+    post.id === postId ? updatedPost : post
+  );
+  
+  // Update vote count in votes signal
+  votesSignal.value = {
+    ...votesSignal.value,
+    [postId]: updatedPost.voteCount,
+  };
+};
+
+export const updatePostVoteCount = (postId: Post["id"], newVoteCount: number) => {
+  votesSignal.value = {
+    ...votesSignal.value,
+    [postId]: newVoteCount,
+  };
+};
+
 // Sorting operations
 export const sortPosts = (
   criterion: SortCriterion,

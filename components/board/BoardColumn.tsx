@@ -47,7 +47,7 @@ export default function BoardColumn({
 }: Readonly<BoardColumnProps>) {
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
-  const [isDragginOver, setIsDraggingOver] = useState<boolean>(false);
+  const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
   const filteredPosts = useComputed(() =>
     sortedPostsSignal.value.filter((post) => post.type === postType)
   );
@@ -88,6 +88,7 @@ export default function BoardColumn({
     },
     [boardId]
   );
+
 
   useEffect(() => {
     if (!viewOnly) {
@@ -189,7 +190,7 @@ export default function BoardColumn({
   return (
     <div
       className={`w-full flex flex-col ${
-        isDragginOver ? "bg-sky-200" : "bg-slate-100"
+        isDraggingOver ? "bg-sky-200" : "bg-slate-100"
       } rounded-xl mx-2`}
     >
       <div className="rounded-t-lg p-2">
