@@ -7,7 +7,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:gemini.google.com)",
       "WebFetch(domain:orm.drizzle.team)",
-      "WebFetch(domain:www.bing.com)"
+      "WebFetch(domain:www.bing.com)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }
