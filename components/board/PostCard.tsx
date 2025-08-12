@@ -156,28 +156,26 @@ const PostCardHeader = memo(function PostCardHeader({
           }}
         >
           {post.type === PostType.action_item && (
-            <>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange(TaskState.pending)}
-                  >
-                    To Do
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange(TaskState.inProgress)}
-                  >
-                    In Progress
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange(TaskState.completed)}
-                  >
-                    Done
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange(TaskState.pending)}
+                >
+                  To Do
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange(TaskState.inProgress)}
+                >
+                  In Progress
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange(TaskState.completed)}
+                >
+                  Done
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           )}
           <DialogItem
             triggerChildren={
@@ -376,7 +374,6 @@ function PostCard({
 
       // Perform the server action and get the actual vote count
       await voteAction(post.id, userId, post.boardId);
-
     } catch (error) {
       console.error("Error while voting:", error);
       toast.error("Failed to vote.");
@@ -456,21 +453,6 @@ function PostCard({
       };
     }
   }, [post, viewOnly]);
-
-  const parsedContent = useComputed(() => (
-    <Markdown
-      components={{
-        a: ({ href, children }) => (
-          <CustomLink href={href || ""}>{children}</CustomLink>
-        ),
-      }}
-      remarkPlugins={[remarkGfm, remarkBreaks]}
-      rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
-    >
-      {post.content}
-    </Markdown>
-  ));
-
   return (
     <Card
       className={`w-full ${cardTypes[post.type]} ${
@@ -487,7 +469,17 @@ function PostCard({
             isAnonymous ? "blur-sm select-none" : "select-text"
           } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
         >
-          {parsedContent}
+          <Markdown
+            components={{
+              a: ({ href, children }) => (
+                <CustomLink href={href || ""}>{children}</CustomLink>
+              ),
+            }}
+            remarkPlugins={[remarkGfm, remarkBreaks]}
+            rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
+          >
+            {post.content}
+          </Markdown>
         </div>
       </CardContent>
       <PostCardFooter post={post} viewOnly={viewOnly} handleVote={handleVote} />
