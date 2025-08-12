@@ -59,7 +59,7 @@ import type { Task } from "@/lib/types/task";
 import type { User } from "@/lib/types/user";
 import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import remarkBreaks from "remark-breaks";
@@ -73,7 +73,11 @@ import { useVotedPosts } from "./PostProvider";
 interface PostCardHeaderProps {
   post: EnrichedPost;
   onDelete: (id: Post["id"]) => void;
-  onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
+  onUpdate: (
+    id: Post["id"],
+    originalContent: Post["content"],
+    newContent: Post["content"]
+  ) => void;
 }
 
 const PostCardHeader = memo(function PostCardHeader({
@@ -89,10 +93,10 @@ const PostCardHeader = memo(function PostCardHeader({
 
   const handleEdit = useCallback(() => {
     if (onUpdate) {
-      onUpdate(post.id, message);
+      onUpdate(post.id, post.content, message);
     }
     setIsEditing(false);
-  }, [onUpdate, post.id, message]);
+  }, [onUpdate, post.id, post.content, message]);
 
   const handleStatusChange = useCallback(
     async (newStatus: Task["state"]) => {
@@ -340,7 +344,11 @@ interface PostCardProps {
   post: EnrichedPost;
   viewOnly?: boolean;
   onDelete?: (id: Post["id"]) => void;
-  onUpdate: (id: Post["id"], newContent: Post["content"]) => void;
+  onUpdate: (
+    id: Post["id"],
+    originalContent: Post["content"],
+    newContent: Post["content"]
+  ) => void;
   userId: User["id"];
 }
 
@@ -453,6 +461,27 @@ function PostCard({
       };
     }
   }, [post, viewOnly]);
+
+  const markdownRender = useMemo(
+    () => (
+      <Markdown
+        components={{
+          a: ({ href, children }) =>
+            href ? (
+              <CustomLink href={href}>{children}</CustomLink>
+            ) : (
+              <span>{children}</span>
+            ),
+        }}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
+        rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
+      >
+        {post.content}
+      </Markdown>
+    ),
+    [post.content]
+  );
+
   return (
     <Card
       className={`w-full ${cardTypes[post.type]} ${
@@ -469,17 +498,7 @@ function PostCard({
             isAnonymous ? "blur-sm select-none" : "select-text"
           } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
         >
-          <Markdown
-            components={{
-              a: ({ href, children }) => (
-                <CustomLink href={href || ""}>{children}</CustomLink>
-              ),
-            }}
-            remarkPlugins={[remarkGfm, remarkBreaks]}
-            rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
-          >
-            {post.content}
-          </Markdown>
+          {markdownRender}
         </div>
       </CardContent>
       <PostCardFooter post={post} viewOnly={viewOnly} handleVote={handleVote} />

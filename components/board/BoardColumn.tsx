@@ -10,6 +10,7 @@ import {
   sortedPostsSignal,
   updatePostContent,
 } from "@/lib/signal/postSignals";
+import type { Post } from "@/lib/types/post";
 import type { Signal } from "@preact/signals-react";
 import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
@@ -74,16 +75,23 @@ export default function BoardColumn({
   );
 
   const handlePostUpdate = useCallback(
-    async (id: string, newContent: string) => {
+    async (
+      id: Post["id"],
+      originalContent: Post["content"],
+      newContent: Post["content"]
+    ) => {
       try {
+        // Update the post content in the local state optimistically
+        updatePostContent(id, newContent);
+
         // Update the post content on the server
         await UpdatePostContentAction(id, boardId, newContent);
-
-        // Update the post content in the local state
-        updatePostContent(id, newContent);
       } catch (error) {
         toast.error("Failed to update post");
         console.error("Failed to update post:", error);
+
+        // Revert optimistic update on error
+        updatePostContent(id, originalContent);
       }
     },
     [boardId]
