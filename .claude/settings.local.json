@@ -6,7 +6,8 @@
       "mcp__sequential-thinking__sequentialthinking",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:gemini.google.com)",
-      "WebFetch(domain:orm.drizzle.team)"
+      "WebFetch(domain:orm.drizzle.team)",
+      "WebFetch(domain:www.bing.com)"
     ],
     "deny": []
   }
