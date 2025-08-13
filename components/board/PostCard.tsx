@@ -76,6 +76,25 @@ const MergePostDialog = dynamic(() => import("./MergePostDialog"), {
   ssr: false,
 });
 
+const MarkdownAnchor = ({
+  href,
+  children,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+  return href ? (
+    <CustomLink href={href} {...props}>
+      {children}
+    </CustomLink>
+  ) : (
+    <span>{children}</span>
+  );
+};
+
+// Create stable components object outside of component to prevent recreation on every render
+const markdownComponents = {
+  a: MarkdownAnchor,
+};
+
 interface PostCardHeaderProps {
   post: EnrichedPost;
   onDelete: (id: Post["id"]) => void;
@@ -516,14 +535,7 @@ function PostCard({
   const markdownRender = useMemo(
     () => (
       <Markdown
-        components={{
-          a: ({ href, children }) =>
-            href ? (
-              <CustomLink href={href}>{children}</CustomLink>
-            ) : (
-              <span>{children}</span>
-            ),
-        }}
+        components={markdownComponents}
         remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
       >
