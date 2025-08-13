@@ -5,6 +5,7 @@ import {
   decrementPostVoteCount,
   incrementPostVoteCount,
   removePost,
+  updatePost,
   updatePostContent,
   updatePostState,
   updatePostType,
@@ -442,7 +443,7 @@ export function processPostMessage(
 
         // Update the target post with merged data
         if (isValidPost(mergeData.mergedPost)) {
-          addPost(mergeData.mergedPost);
+          updatePost(mergeData.targetPostId, mergeData.mergedPost);
           // Remove source posts from state
           mergeData.deletedPostIds.forEach((postId) => {
             removePost(postId);
