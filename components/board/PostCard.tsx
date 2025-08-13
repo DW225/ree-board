@@ -57,8 +57,10 @@ import type { MemberSignal } from "@/lib/types/member";
 import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
 import type { User } from "@/lib/types/user";
+import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
+import dynamic from "next/dynamic";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Markdown from "react-markdown";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
@@ -69,6 +71,10 @@ import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
 import MemberList from "./MemberList";
 import { useVotedPosts } from "./PostProvider";
+
+const MergePostDialog = dynamic(() => import("./MergePostDialog"), {
+  ssr: false,
+});
 
 interface PostCardHeaderProps {
   post: EnrichedPost;
@@ -220,6 +226,7 @@ const PostCardHeader = memo(function PostCardHeader({
               </Button>
             </DialogFooter>
           </DialogItem>
+
           <DropdownMenuItem
             onClick={() => onDelete(post.id)}
             className="text-red-500 focus:text-red-500 focus:bg-red-50"
@@ -361,6 +368,12 @@ function PostCard({
 }: Readonly<PostCardProps>) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
+  // Merge dialog state
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [sourcePostForMerge, setSourcePostForMerge] =
+    useState<EnrichedPost | null>(null);
+  const [isDropTarget, setIsDropTarget] = useState(false);
+
   const { isAnonymous } = useAnonymousMode();
   const { addVotedPost, removeVotedPost, hasVoted } = useVotedPosts();
 
@@ -411,6 +424,7 @@ function PostCard({
       invariant(postCardEl, "postCardEl is null");
 
       let cleanupDrag: (() => void) | undefined;
+      let cleanupDrop: (() => void) | undefined;
       let isInitializing = false;
       let isInitialized = false;
 
@@ -418,22 +432,53 @@ function PostCard({
         if (isInitializing || isInitialized) return;
         isInitializing = true;
         try {
-          const { draggable } = await import(
+          const { draggable, dropTargetForElements } = await import(
             "@atlaskit/pragmatic-drag-and-drop/element/adapter"
           );
+
+          // Make the post draggable
           cleanupDrag = draggable({
             element: postCardEl,
             getInitialData: () => ({
+              type: "post",
               id: post.id,
               originalType: post.type.valueOf(),
               boardId: post.boardId,
+              post: post, // Include the full post for merge functionality
             }),
             onDragStart: () => setIsDragging(true),
             onDrop: () => setIsDragging(false),
           });
+
+          // Make the post a drop target for merging (only if not in view-only mode)
+          if (!viewOnly) {
+            cleanupDrop = dropTargetForElements({
+              element: postCardEl,
+              canDrop: ({ source }) => {
+                // Can only drop posts, and not the same post on itselfＦ
+                return (
+                  source.data.type === "post" &&
+                  source.data.id !== post.id &&
+                  source.data.boardId === post.boardId
+                );
+              },
+              getData: () => ({ type: "post-merge-target", targetPost: post }),
+              onDragEnter: () => setIsDropTarget(true),
+              onDragLeave: () => setIsDropTarget(false),
+              onDrop: ({ source }) => {
+                setIsDropTarget(false);
+                const sourcePost = source.data.post as EnrichedPost;
+                if (sourcePost) {
+                  setSourcePostForMerge(sourcePost);
+                  setShowMergeDialog(true);
+                }
+              },
+            });
+          }
+
           isInitialized = true;
         } catch (error) {
-          console.error("Failed to initialize drag:", error);
+          console.error("Failed to initialize drag and drop:", error);
         } finally {
           isInitializing = false;
         }
@@ -458,9 +503,15 @@ function PostCard({
         postCardEl.removeEventListener("mouseenter", handleInteraction);
         postCardEl.removeEventListener("touchstart", handleInteraction);
         cleanupDrag?.();
+        cleanupDrop?.();
       };
     }
   }, [post, viewOnly]);
+
+  const handleMergeDialogClose = useCallback(() => {
+    setShowMergeDialog(false);
+    setSourcePostForMerge(null);
+  }, []);
 
   const markdownRender = useMemo(
     () => (
@@ -483,26 +534,45 @@ function PostCard({
   );
 
   return (
-    <Card
-      className={`w-full ${cardTypes[post.type]} ${
-        isDragging ? "opacity-50" : ""
-      } relative`}
-      ref={ref}
-    >
-      {!viewOnly && onDelete && (
-        <PostCardHeader post={post} onDelete={onDelete} onUpdate={onUpdate} />
+    <div className="relative">
+      {/* Drop indicator for merge functionality */}
+      {!viewOnly && isDropTarget && <DropIndicator edge="top" gap="8px" />}
+      <Card
+        className={`w-full ${cardTypes[post.type]} ${
+          isDragging ? "opacity-50" : ""
+        } relative`}
+        ref={ref}
+      >
+        {!viewOnly && onDelete && (
+          <PostCardHeader post={post} onDelete={onDelete} onUpdate={onUpdate} />
+        )}
+        <CardContent className="px-3 py-1">
+          <div
+            className={`${
+              isAnonymous ? "blur-sm select-none" : "select-text"
+            } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
+          >
+            {markdownRender}
+          </div>
+        </CardContent>
+        <PostCardFooter
+          post={post}
+          viewOnly={viewOnly}
+          handleVote={handleVote}
+        />
+      </Card>
+
+      {/* Merge Dialog */}
+      {!viewOnly && showMergeDialog && sourcePostForMerge && (
+        <MergePostDialog
+          isOpen={showMergeDialog}
+          onClose={handleMergeDialogClose}
+          targetPost={post}
+          sourcePost={sourcePostForMerge}
+          boardId={post.boardId}
+        />
       )}
-      <CardContent className="px-3 py-1">
-        <div
-          className={`${
-            isAnonymous ? "blur-sm select-none" : "select-text"
-          } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
-        >
-          {markdownRender}
-        </div>
-      </CardContent>
-      <PostCardFooter post={post} viewOnly={viewOnly} handleVote={handleVote} />
-    </Card>
+    </div>
   );
 }
 
