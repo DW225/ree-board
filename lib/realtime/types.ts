@@ -44,6 +44,18 @@ export interface VoteMessageData {
 }
 
 /**
+ * Merge-specific message data
+ */
+export interface PostMergeMessageData {
+  targetPostId: string;
+  sourcePostIds: string[];
+  mergedPost: Post;
+  uniqueVoteCount: number;
+  deletedPostIds: string[];
+  timestamp: number;
+}
+
+/**
  * Task-related message data types
  */
 export type TaskMessageData = Task | (Partial<Task> & { postId: string });

@@ -9,7 +9,6 @@ const dbUrl =
 if (dbUrl == undefined) {
   throw new Error("Missing TURSO_DATABASE_URL environment variable");
 }
-
 const dbAuthToken =
   process.env.NODE_ENV === "development"
     ? undefined

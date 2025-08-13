@@ -7,6 +7,8 @@ import {
   deletePost,
   updatePostContent,
   updatePostType,
+  mergePost,
+  type MergePostResult,
 } from "@/lib/db/post";
 import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
@@ -115,3 +117,83 @@ export const UpdatePostContentAction = async (
       }),
     ])
   );
+
+export const MergePostsAction = async (
+  targetPostId: Post["id"],
+  sourcePostIds: Post["id"][],
+  mergedContent: Post["content"],
+  boardId: Board["id"]
+): Promise<MergePostResult | NextResponse> =>
+  rbacWithAuth(boardId, async (userID): Promise<MergePostResult> => {
+    // Input validation
+    if (!targetPostId?.trim()) {
+      throw new Error("Target post ID is required");
+    }
+    if (!sourcePostIds?.length) {
+      throw new Error("At least one source post is required");
+    }
+    if (!mergedContent?.trim()) {
+      throw new Error("Merged content cannot be empty");
+    }
+    if (sourcePostIds.includes(targetPostId)) {
+      throw new Error("Target post cannot be included in source posts");
+    }
+
+    try {
+      // Perform the merge operation
+      const result = await mergePost(targetPostId, sourcePostIds, mergedContent, boardId);
+
+      // Attempt to publish real-time merge event
+      try {
+        await ablyClient(boardId).publish({
+          name: EVENT_TYPE.POST.MERGE,
+          extras: {
+            headers: {
+              user: userID,
+            },
+          },
+          data: JSON.stringify({
+            targetPostId,
+            sourcePostIds,
+            mergedPost: result.mergedPost,
+            uniqueVoteCount: result.uniqueVoteCount,
+            deletedPostIds: result.deletedPostIds,
+            timestamp: Date.now(),
+          }),
+        });
+      } catch (realtimeError) {
+        // Log real-time error but don't fail the merge operation
+        console.error("Failed to publish real-time merge event:", realtimeError);
+        // The merge was successful, just real-time sync failed
+        // Users will see the change on page refresh
+      }
+
+      return result;
+    } catch (error) {
+      // Enhanced error logging with context
+      console.error("Error merging posts:", {
+        error: error instanceof Error ? error.message : String(error),
+        targetPostId,
+        sourcePostIds,
+        boardId,
+        userId: userID,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Provide specific error messages based on error type
+      if (error instanceof Error) {
+        if (error.message.includes("not found")) {
+          throw new Error("One or more posts could not be found. They may have been deleted by another user.");
+        }
+        if (error.message.includes("board")) {
+          throw new Error("Posts do not belong to the specified board.");
+        }
+        if (error.message.includes("permission") || error.message.includes("access")) {
+          throw new Error("You do not have permission to merge these posts.");
+        }
+      }
+
+      // Generic error for unexpected issues
+      throw new Error("Failed to merge posts due to an unexpected error. Please try again.");
+    }
+  });

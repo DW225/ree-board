@@ -267,6 +267,148 @@ export const updatePostState = (
   }
 };
 
+/**
+ * Data structure containing the original state before a merge operation,
+ * used for rolling back optimistic updates if the server operation fails.
+ */
+interface MergeRollbackData {
+  originalPosts: Post[];
+  originalTasks: Record<string, Task>;
+  originalVotes: Record<string, number>;
+}
+
+/**
+ * Merges multiple source posts into a target post with optimistic updates.
+ * @param targetPostId - The ID of the post to merge into
+ * @param sourcePostIds - Array of IDs for posts to be merged and removed
+ * @param mergedContent - The combined content for the merged post
+ * @returns Rollback data to revert the merge if needed
+ */
+export const mergePosts = (
+  targetPostId: Post["id"],
+  sourcePostIds: Post["id"][],
+  mergedContent: Post["content"]
+): MergeRollbackData => {
+  const currentPosts = postsSignal.value;
+  const currentTasks = tasksSignal.value;
+  const currentVotes = votesSignal.value;
+
+  // Capture original state for rollback
+  const allPostIds = [targetPostId, ...sourcePostIds];
+  const rollbackData: MergeRollbackData = {
+    originalPosts: currentPosts.filter((p) => allPostIds.includes(p.id)),
+    originalTasks: { ...currentTasks },
+    originalVotes: { ...currentVotes },
+  };
+
+  batch(() => {
+    // Find target post and source posts
+    const targetPost = currentPosts.find((p) => p.id === targetPostId);
+    const sourcePosts = currentPosts.filter((p) =>
+      sourcePostIds.includes(p.id)
+    );
+
+    if (!targetPost) {
+      console.error(`Target post ${targetPostId} not found`);
+      return rollbackData;
+    }
+
+    // Calculate optimistic unique vote count
+    // This is a simplified calculation - the server will provide the accurate count
+    const targetVoteCount = currentVotes[targetPostId] ?? targetPost.voteCount;
+    const sourceVoteCounts = sourcePosts.map(
+      (p) => currentVotes[p.id] ?? p.voteCount
+    );
+    const estimatedUniqueVotes = Math.max(targetVoteCount, ...sourceVoteCounts);
+
+    // Update target post with merged content and estimated vote count
+    postsSignal.value = currentPosts
+      .map((post) =>
+        post.id === targetPostId
+          ? {
+              ...post,
+              content: mergedContent,
+              voteCount: estimatedUniqueVotes,
+              updatedAt: new Date(),
+            }
+          : post
+      )
+      .filter((post) => !sourcePostIds.includes(post.id));
+
+    // Update vote counts
+    const updatedVotes = { ...currentVotes };
+    updatedVotes[targetPostId] = estimatedUniqueVotes;
+    // Remove vote counts for deleted posts
+    sourcePostIds.forEach((id) => {
+      delete updatedVotes[id];
+    });
+    votesSignal.value = updatedVotes;
+
+    // Clean up tasks for deleted posts, keep target post's task if it exists
+    const cleanedTasks = { ...currentTasks };
+    sourcePostIds.forEach((postId) => {
+      delete cleanedTasks[postId];
+    });
+    tasksSignal.value = cleanedTasks;
+  });
+
+  return rollbackData;
+};
+
+/**
+ * Reverts a merge operation by restoring the original state.
+ * @param rollbackData - The captured state from before the merge
+ */
+export const rollbackMerge = (rollbackData: MergeRollbackData) => {
+  batch(() => {
+    const currentPosts = postsSignal.value;
+
+    // Remove merged post and restore original posts
+    const postIdsToRestore = rollbackData.originalPosts.map((p) => p.id);
+    const filteredPosts = currentPosts.filter(
+      (p) => !postIdsToRestore.includes(p.id)
+    );
+    const restoredPosts = [...filteredPosts, ...rollbackData.originalPosts];
+
+    // Restore state
+    postsSignal.value = restoredPosts;
+    tasksSignal.value = rollbackData.originalTasks;
+    votesSignal.value = rollbackData.originalVotes;
+  });
+};
+
+/**
+ * Updates a post and its associated vote count.
+ * @param postId - The ID of the post to update
+ * @param updatedPost - The updated post data
+ */
+export const updatePost = (postId: Post["id"], updatedPost: Post) => {
+  postsSignal.value = postsSignal.value.map((post) =>
+    post.id === postId ? updatedPost : post
+  );
+
+  // Update vote count in votes signal
+  votesSignal.value = {
+    ...votesSignal.value,
+    [postId]: updatedPost.voteCount,
+  };
+};
+
+/**
+ * Updates the vote count for a specific post.
+ * @param postId - The ID of the post
+ * @param newVoteCount - The new vote count value
+ */
+export const updatePostVoteCount = (
+  postId: Post["id"],
+  newVoteCount: number
+) => {
+  votesSignal.value = {
+    ...votesSignal.value,
+    [postId]: newVoteCount,
+  };
+};
+
 // Sorting operations
 export const sortPosts = (
   criterion: SortCriterion,

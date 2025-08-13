@@ -15,6 +15,7 @@ import { z } from "zod";
 import type {
   MessageProcessor,
   MessageProcessorConfig,
+  PostMergeMessageData,
   PostMessageData,
   ProcessingError,
   TaskMessageData,
@@ -80,6 +81,20 @@ const TaskMessageSchema = z.object({
   state: z.number().optional(),
   createdAt: z.union([z.date(), z.string()]).optional(),
   updatedAt: z.union([z.date(), z.string()]).optional(),
+});
+
+const PostMergeMessageSchema = z.object({
+  targetPostId: z.string().min(1, "Target post ID is required"),
+  sourcePostIds: z
+    .array(z.string().min(1, "Source post ID is required"))
+    .min(1, "At least one source post ID is required"),
+  mergedPost: PostMessageSchema,
+  uniqueVoteCount: z
+    .number()
+    .int()
+    .nonnegative("Unique vote count must be non-negative"),
+  deletedPostIds: z.array(z.string().min(1, "Deleted post ID is required")),
+  timestamp: z.number().positive("Timestamp must be positive"),
 });
 
 /**
@@ -219,6 +234,31 @@ function validateTaskData(rawData: unknown): ValidationResult<TaskMessageData> {
   }
 
   return { success: true, data: result.data as TaskMessageData };
+}
+
+/**
+ * Validates merge message data using Zod schema
+ */
+function validateMergeData(
+  rawData: unknown
+): ValidationResult<PostMergeMessageData> {
+  const result = PostMergeMessageSchema.safeParse(rawData);
+
+  if (!result.success) {
+    const errorMessage = result.error.errors
+      .map((err) => `${err.path.join(".")}: ${err.message}`)
+      .join(", ");
+
+    return {
+      success: false,
+      error: {
+        message: `Merge validation failed: ${errorMessage}`,
+        details: result.error.errors,
+      },
+    };
+  }
+
+  return { success: true, data: result.data as PostMergeMessageData };
 }
 
 /**
@@ -378,6 +418,41 @@ export function processPostMessage(
         } else {
           decrementPostVoteCount(voteData.id);
         }
+        break;
+      }
+
+      case EVENT_TYPE.POST.MERGE: {
+        const validation = validateMergeData(messageData);
+        if (!validation.success) {
+          const error = createProcessingError(
+            `Invalid merge data: ${validation.error.message}`,
+            eventType,
+            messageData
+          );
+          console.error(error.message, { details: validation.error.details });
+          return;
+        }
+
+        const mergeData = validation.data;
+
+        // Check if message is stale
+        if (isMessageStale(mergeData.timestamp)) {
+          return;
+        }
+
+        // Update the target post with merged data
+        if (isValidPost(mergeData.mergedPost)) {
+          addPost(mergeData.mergedPost);
+          // Remove source posts from state
+          mergeData.deletedPostIds.forEach((postId) => {
+            removePost(postId);
+          });
+        } else {
+          console.error("Merged post validation failed", {
+            mergedPost: mergeData.mergedPost,
+          });
+        }
+
         break;
       }
 
@@ -617,7 +692,12 @@ export function createTaskMessageProcessor(): MessageProcessor<
  * Export types for tests
  */
 export type {
-  MessageEnvelope, MessageProcessorConfig, PostMessageData, ProcessingError, TaskMessageData,
-  ValidationResult, VoteMessageData
+  MessageEnvelope,
+  MessageProcessorConfig,
+  PostMessageData,
+  ProcessingError,
+  TaskMessageData,
+  ValidationResult,
+  VoteMessageData
 } from "./types";
 
