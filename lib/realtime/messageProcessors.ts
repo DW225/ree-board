@@ -34,18 +34,18 @@ export const MESSAGE_STALENESS_THRESHOLD = 30_000; // 30 seconds
  * Zod schemas for message validation
  */
 const PostMessageSchema = z.object({
-  id: z.string().min(1, "Post ID is required"),
-  content: z.string().min(1, "Post content is required"),
+  id: z.string().min(1, { message: "Post ID is required" }),
+  content: z.string().min(1, { message: "Post content is required" }),
   type: z
     .number()
     .int()
-    .nonnegative("Post type must be a non-negative integer"),
+    .nonnegative({ message: "Post type must be a non-negative integer" }),
   author: z.string().nullable(),
-  boardId: z.string().min(1, "Board ID is required"),
+  boardId: z.string().min(1, { message: "Board ID is required" }),
   voteCount: z
     .number()
     .int()
-    .nonnegative("Vote count must be non-negative")
+    .nonnegative({ message: "Vote count must be non-negative" })
     .default(0),
   createdAt: z.union([z.date(), z.string()]),
   updatedAt: z.union([z.date(), z.string()]),
@@ -55,7 +55,7 @@ const PostMessageSchema = z.object({
  * Schema for partial post updates (only requires ID)
  */
 const PartialPostMessageSchema = z.object({
-  id: z.string().min(1, "Post ID is required"),
+  id: z.string().min(1, { message: "Post ID is required" }),
   content: z.string().optional(),
   type: z.number().int().nonnegative().optional(),
   author: z.string().nullable().optional(),
@@ -66,16 +66,16 @@ const PartialPostMessageSchema = z.object({
 });
 
 const VoteMessageSchema = z.object({
-  id: z.string().min(1, "Post ID is required"),
+  id: z.string().min(1, { message: "Post ID is required" }),
   operation: z.enum(["upvote", "downvote"], {
-    errorMap: () => ({ message: "Operation must be 'upvote' or 'downvote'" }),
+    message: "Operation must be 'upvote' or 'downvote'",
   }),
-  userId: z.string().min(1, "User ID is required"),
-  timestamp: z.number().positive("Timestamp must be positive"),
+  userId: z.string().min(1, { message: "User ID is required" }),
+  timestamp: z.number().positive({ message: "Timestamp must be positive" }),
 });
 
 const TaskMessageSchema = z.object({
-  postId: z.string().min(1, "Post ID is required"),
+  postId: z.string().min(1, { message: "Post ID is required" }),
   id: z.string().optional(),
   boardId: z.string().optional(),
   userId: z.string().nullable().optional(),
@@ -85,17 +85,17 @@ const TaskMessageSchema = z.object({
 });
 
 const PostMergeMessageSchema = z.object({
-  targetPostId: z.string().min(1, "Target post ID is required"),
+  targetPostId: z.string().min(1, { message: "Target post ID is required" }),
   sourcePostIds: z
-    .array(z.string().min(1, "Source post ID is required"))
-    .min(1, "At least one source post ID is required"),
+    .array(z.string().min(1, { message: "Source post ID is required" }))
+    .min(1, { message: "At least one source post ID is required" }),
   mergedPost: PostMessageSchema,
   uniqueVoteCount: z
     .number()
     .int()
-    .nonnegative("Unique vote count must be non-negative"),
-  deletedPostIds: z.array(z.string().min(1, "Deleted post ID is required")),
-  timestamp: z.number().positive("Timestamp must be positive"),
+    .nonnegative({ message: "Unique vote count must be non-negative" }),
+  deletedPostIds: z.array(z.string().min(1, { message: "Deleted post ID is required" })),
+  timestamp: z.number().positive({ message: "Timestamp must be positive" }),
 });
 
 /**
@@ -175,7 +175,8 @@ function validatePostData(
   const result = schema.safeParse(rawData);
 
   if (!result.success) {
-    const errorMessage = result.error.errors
+    const errors = result.error.issues || [];
+    const errorMessage = errors
       .map((err) => `${err.path.join(".")}: ${err.message}`)
       .join(", ");
 
@@ -183,7 +184,7 @@ function validatePostData(
       success: false,
       error: {
         message: `Post validation failed: ${errorMessage}`,
-        details: result.error.errors,
+        details: errors,
       },
     };
   }
@@ -198,7 +199,8 @@ function validateVoteData(rawData: unknown): ValidationResult<VoteMessageData> {
   const result = VoteMessageSchema.safeParse(rawData);
 
   if (!result.success) {
-    const errorMessage = result.error.errors
+    const errors = result.error.issues || [];
+    const errorMessage = errors
       .map((err) => `${err.path.join(".")}: ${err.message}`)
       .join(", ");
 
@@ -206,7 +208,7 @@ function validateVoteData(rawData: unknown): ValidationResult<VoteMessageData> {
       success: false,
       error: {
         message: `Vote validation failed: ${errorMessage}`,
-        details: result.error.errors,
+        details: errors,
       },
     };
   }
@@ -221,7 +223,8 @@ function validateTaskData(rawData: unknown): ValidationResult<TaskMessageData> {
   const result = TaskMessageSchema.safeParse(rawData);
 
   if (!result.success) {
-    const errorMessage = result.error.errors
+    const errors = result.error.issues || [];
+    const errorMessage = errors
       .map((err) => `${err.path.join(".")}: ${err.message}`)
       .join(", ");
 
@@ -229,7 +232,7 @@ function validateTaskData(rawData: unknown): ValidationResult<TaskMessageData> {
       success: false,
       error: {
         message: `Task validation failed: ${errorMessage}`,
-        details: result.error.errors,
+        details: errors,
       },
     };
   }
@@ -246,7 +249,8 @@ function validateMergeData(
   const result = PostMergeMessageSchema.safeParse(rawData);
 
   if (!result.success) {
-    const errorMessage = result.error.errors
+    const errors = result.error.issues || [];
+    const errorMessage = errors
       .map((err) => `${err.path.join(".")}: ${err.message}`)
       .join(", ");
 
@@ -254,7 +258,7 @@ function validateMergeData(
       success: false,
       error: {
         message: `Merge validation failed: ${errorMessage}`,
-        details: result.error.errors,
+        details: errors,
       },
     };
   }
