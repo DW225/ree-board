@@ -2,7 +2,7 @@
 
 import { AvatarIcon } from "@/components/common/AvatarIcon";
 import { DialogItem } from "@/components/common/DialogItem";
-import CustomLink from "@/components/common/Link";
+import MarkdownRender from "@/components/common/MarkdownRender";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,11 +61,7 @@ import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indi
 import { useComputed } from "@preact/signals-react";
 import { MoreHorizontal, ThumbsUp } from "lucide-react";
 import dynamic from "next/dynamic";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Markdown from "react-markdown";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import remarkBreaks from "remark-breaks";
-import remarkGfm from "remark-gfm";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "./AnonymousModeProvider";
@@ -75,25 +71,6 @@ import { useVotedPosts } from "./PostProvider";
 const MergePostDialog = dynamic(() => import("./MergePostDialog"), {
   ssr: false,
 });
-
-const MarkdownAnchor = ({
-  href,
-  children,
-  ...props
-}: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-  return href ? (
-    <CustomLink href={href} {...props}>
-      {children}
-    </CustomLink>
-  ) : (
-    <span>{children}</span>
-  );
-};
-
-// Create stable components object outside of component to prevent recreation on every render
-const markdownComponents = {
-  a: MarkdownAnchor,
-};
 
 interface PostCardHeaderProps {
   post: EnrichedPost;
@@ -532,19 +509,6 @@ function PostCard({
     setSourcePostForMerge(null);
   }, []);
 
-  const markdownRender = useMemo(
-    () => (
-      <Markdown
-        components={markdownComponents}
-        remarkPlugins={[remarkGfm, remarkBreaks]}
-        rehypePlugins={[[rehypeSanitize, { schema: defaultSchema }]]}
-      >
-        {post.content}
-      </Markdown>
-    ),
-    [post.content]
-  );
-
   return (
     <div className="relative">
       {/* Drop indicator for merge functionality */}
@@ -564,7 +528,7 @@ function PostCard({
               isAnonymous ? "blur-sm select-none" : "select-text"
             } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
           >
-            {markdownRender}
+            <MarkdownRender content={post.content} />
           </div>
         </CardContent>
         <PostCardFooter
