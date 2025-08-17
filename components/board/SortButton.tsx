@@ -36,7 +36,7 @@ function getSortKey(
   return `${criterion}@${direction || "desc"}`;
 }
 
-export default function SortButton({ className }: SortButtonProps) {
+export default function SortButton({ className }: Readonly<SortButtonProps>) {
   const [currentSort, setCurrentSort] = useState<SortOption>({
     criterion: "none",
   });

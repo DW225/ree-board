@@ -1,5 +1,6 @@
 "use client";
 
+import MarkdownRender from "@/components/common/MarkdownRender";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,10 +17,6 @@ import { mergePosts, rollbackMerge } from "@/lib/signal/postSignals";
 import { useComputed } from "@preact/signals-react";
 import { Calendar, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Markdown from "react-markdown";
-import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import remarkBreaks from "remark-breaks";
-import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
 interface MergePostDialogProps {
@@ -182,14 +179,7 @@ export default function MergePostDialog({
                   className="overflow-y-auto p-3 border rounded-lg bg-muted/20 prose prose-sm max-w-none"
                   aria-label="Merged content preview"
                 >
-                  <Markdown
-                    remarkPlugins={[remarkGfm, remarkBreaks]}
-                    rehypePlugins={[
-                      [rehypeSanitize, { schema: defaultSchema }],
-                    ]}
-                  >
-                    {mergedContent}
-                  </Markdown>
+                  <MarkdownRender content={mergedContent} />
                 </div>
               </div>
             </>
