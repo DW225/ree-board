@@ -1,9 +1,11 @@
+"use client"
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/hooks/useUser";
 import type { User } from "@/lib/types/user";
 import { cn } from "@/lib/utils";
 import { md5 } from "@/lib/utils/md5";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import type { ReactNode } from "react";
 import { forwardRef } from "react";
 

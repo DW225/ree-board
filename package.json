@@ -25,16 +25,6 @@
     "@libsql/client": "^0.15.10",
     "@next/env": "15.4.6",
     "@preact/signals-react": "^3.2.1",
-    "@radix-ui/react-avatar": "^1.1.9",
-    "@radix-ui/react-checkbox": "^1.3.2",
-    "@radix-ui/react-dialog": "^1.1.13",
-    "@radix-ui/react-dropdown-menu": "^2.1.15",
-    "@radix-ui/react-label": "^2.1.6",
-    "@radix-ui/react-scroll-area": "^1.2.9",
-    "@radix-ui/react-select": "^2.2.5",
-    "@radix-ui/react-separator": "^1.1.7",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@radix-ui/react-tooltip": "^1.2.7",
     "@sentry/nextjs": "^10.4.0",
     "@vercel/speed-insights": "^1.2.0",
     "ably": "^2.10.1",
@@ -62,7 +52,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tiny-invariant": "^1.3.3",
-    "zod": "^4.0.17"
+    "zod": "^4.0.17",
+    "radix-ui": "^1.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
