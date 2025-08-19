@@ -36,8 +36,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(next@15.4.7(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       ably:
-        specifier: ^2.10.1
-        version: 2.10.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^2.11.0
+        version: 2.11.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -3007,8 +3007,8 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  ably@2.10.1:
-    resolution: {integrity: sha512-GwFRZptZqGhJhNWgoycJmSSpkaF1PzGLlYgTiyOTvkWymS+ZMo2qE0b1x1KD7/0e4Fz5UJLq18489oFHCUQAwA==}
+  ably@2.11.0:
+    resolution: {integrity: sha512-3BgCzE1pRRpkmn40c7/KIyoWgwJNds7+k8llDOoUrXg9u1I+NnZ8U1Eo7u6fuc5Nz5dBaWXgOrU257P0Z5RDlQ==}
     engines: {node: '>=16'}
     peerDependencies:
       react: '>=16.8.0'
@@ -3706,8 +3706,8 @@ packages:
   electron-to-chromium@1.5.195:
     resolution: {integrity: sha512-URclP0iIaDUzqcAyV1v2PgduJ9N0IdXmWsnPzPfelvBmjmZzEy6xJcjb1cXj+TbYqXgtLrjHEoaSIdTYhw4ezg==}
 
-  electron-to-chromium@1.5.204:
-    resolution: {integrity: sha512-s9VbBXWxfDrl67PlO4avwh0/GU2vcwx8Fph3wlR8LJl7ySGYId59EFE17VWVcuC3sLWNPENm6Z/uGqKbkPCcXA==}
+  electron-to-chromium@1.5.207:
+    resolution: {integrity: sha512-mryFrrL/GXDTmAtIVMVf+eIXM09BBPlO5IQ7lUyKmK8d+A4VpRGG+M3ofoVef6qyF8s60rJei8ymlJxjUA8Faw==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -8904,7 +8904,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
       '@types/responselike': 1.0.3
 
   '@types/connect@3.4.38':
@@ -8971,7 +8971,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -9020,12 +9020,12 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/serve-static@1.15.7':
     dependencies:
@@ -9039,7 +9039,7 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 24.2.1
+      '@types/node': 24.3.0
 
   '@types/unist@2.0.11': {}
 
@@ -9419,7 +9419,7 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  ably@2.10.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  ably@2.11.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       '@ably/msgpack-js': 0.4.1
       dequal: 2.0.3
@@ -9721,7 +9721,7 @@ snapshots:
   browserslist@4.25.3:
     dependencies:
       caniuse-lite: 1.0.30001735
-      electron-to-chromium: 1.5.204
+      electron-to-chromium: 1.5.207
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.3)
 
@@ -10048,7 +10048,7 @@ snapshots:
 
   electron-to-chromium@1.5.195: {}
 
-  electron-to-chromium@1.5.204: {}
+  electron-to-chromium@1.5.207: {}
 
   emittery@0.13.1: {}
 

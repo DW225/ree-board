@@ -27,7 +27,7 @@
     "@preact/signals-react": "^3.2.1",
     "@sentry/nextjs": "^10.4.0",
     "@vercel/speed-insights": "^1.2.0",
-    "ably": "^2.10.1",
+    "ably": "^2.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
