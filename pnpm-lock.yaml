@@ -21,8 +21,8 @@ importers:
         specifier: ^0.14.0
         version: 0.14.0
       '@libsql/client':
-        specifier: ^0.15.10
-        version: 0.15.10
+        specifier: ^0.15.12
+        version: 0.15.12
       '@next/env':
         specifier: 15.4.6
         version: 15.4.6
@@ -49,10 +49,10 @@ importers:
         version: 17.2.1
       drizzle-orm:
         specifier: ^0.44.4
-        version: 0.44.4(@libsql/client@0.15.10)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0)
+        version: 0.44.4(@libsql/client@0.15.12)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.4(@libsql/client@0.15.10)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0))(zod@4.0.17)
+        version: 0.8.3(drizzle-orm@0.44.4(@libsql/client@0.15.12)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0))(zod@4.0.17)
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -1121,11 +1121,11 @@ packages:
   '@kinde/management-api-js@0.14.0':
     resolution: {integrity: sha512-4BUsr7+eHI9hIFGkqasmQ5oUAYiM2LaKmQVyOB4Gf5K+7DToHXiHZCmlgB/syeu3cBzItj04zLgOjEdg1lkXNA==}
 
-  '@libsql/client@0.15.10':
-    resolution: {integrity: sha512-J9cJQwrgH92JlPBYjUGxPIH5G9z3j/V/aPnQvcmmCgjatdVb/f7bzK3yNq15Phc+gVuKMwox3toXL+58qUMylg==}
+  '@libsql/client@0.15.12':
+    resolution: {integrity: sha512-JIqB0XsNrqYqBQZuhcgZdTcQoNOoQ5AMF+1yxc7vcZrLtm42QJwRazmTuBfyDwtWASEmVgjxeaLF4NT1iyVX8g==}
 
-  '@libsql/core@0.15.10':
-    resolution: {integrity: sha512-fAMD+GnGQNdZ9zxeNC8AiExpKnou/97GJWkiDDZbTRHj3c9dvF1y4jsRQ0WE72m/CqTdbMGyU98yL0SJ9hQVeg==}
+  '@libsql/core@0.15.12':
+    resolution: {integrity: sha512-S3tF6885ZizVjfym7f8SevL2VId/+DzxiKmP5zFbrhA8oMLh2XH8bYXChmhab7o9qUSHx+XjK4jCFpUwR5g+Ig==}
 
   '@libsql/darwin-arm64@0.5.17':
     resolution: {integrity: sha512-WTYG2skZsUnZmfZ2v7WFj7s3/5s2PfrYBZOWBKOnxHA8g4XCDc/4bFDaqob9Q2e88+GC7cWeJ8VNkVBFpD2Xxg==}
@@ -4725,8 +4725,8 @@ packages:
   jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
 
-  js-base64@3.7.7:
-    resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
+  js-base64@3.7.8:
+    resolution: {integrity: sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow==}
 
   js-cookie@2.2.1:
     resolution: {integrity: sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==}
@@ -7368,20 +7368,20 @@ snapshots:
       aws-jwt-verify: 5.1.0
       dotenv: 16.6.1
 
-  '@libsql/client@0.15.10':
+  '@libsql/client@0.15.12':
     dependencies:
-      '@libsql/core': 0.15.10
+      '@libsql/core': 0.15.12
       '@libsql/hrana-client': 0.7.0
-      js-base64: 3.7.7
+      js-base64: 3.7.8
       libsql: 0.5.17
       promise-limit: 2.7.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@libsql/core@0.15.10':
+  '@libsql/core@0.15.12':
     dependencies:
-      js-base64: 3.7.7
+      js-base64: 3.7.8
 
   '@libsql/darwin-arm64@0.5.17':
     optional: true
@@ -7393,7 +7393,7 @@ snapshots:
     dependencies:
       '@libsql/isomorphic-fetch': 0.3.1
       '@libsql/isomorphic-ws': 0.1.5
-      js-base64: 3.7.7
+      js-base64: 3.7.8
       node-fetch: 3.3.2
     transitivePeerDependencies:
       - bufferutil
@@ -10101,16 +10101,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.4(@libsql/client@0.15.10)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0):
+  drizzle-orm@0.44.4(@libsql/client@0.15.12)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0):
     optionalDependencies:
-      '@libsql/client': 0.15.10
+      '@libsql/client': 0.15.12
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.15.4
       gel: 2.0.0
 
-  drizzle-zod@0.8.3(drizzle-orm@0.44.4(@libsql/client@0.15.10)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0))(zod@4.0.17):
+  drizzle-zod@0.8.3(drizzle-orm@0.44.4(@libsql/client@0.15.12)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0))(zod@4.0.17):
     dependencies:
-      drizzle-orm: 0.44.4(@libsql/client@0.15.10)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0)
+      drizzle-orm: 0.44.4(@libsql/client@0.15.12)(@opentelemetry/api@1.9.0)(@types/pg@8.15.4)(gel@2.0.0)
       zod: 4.0.17
 
   dunder-proto@1.0.1:
@@ -11561,7 +11561,7 @@ snapshots:
 
   jose@4.15.9: {}
 
-  js-base64@3.7.7: {}
+  js-base64@3.7.8: {}
 
   js-cookie@2.2.1: {}
 
