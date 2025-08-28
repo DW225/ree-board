@@ -36,8 +36,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(next@15.4.7(@babel/core@7.28.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       ably:
-        specifier: ^2.11.0
-        version: 2.11.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^2.12.0
+        version: 2.12.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -2993,8 +2993,8 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  ably@2.11.0:
-    resolution: {integrity: sha512-3BgCzE1pRRpkmn40c7/KIyoWgwJNds7+k8llDOoUrXg9u1I+NnZ8U1Eo7u6fuc5Nz5dBaWXgOrU257P0Z5RDlQ==}
+  ably@2.12.0:
+    resolution: {integrity: sha512-sU2LSpXXxesYv+CbX/p/+w0dHUkn8+V92iusZVvhQBQpzUbENGvjsVlt5gph8Q/FzdY67lwTMFYQ6yo5od2SJw==}
     engines: {node: '>=16'}
     peerDependencies:
       react: '>=16.8.0'
@@ -3695,8 +3695,8 @@ packages:
   electron-to-chromium@1.5.195:
     resolution: {integrity: sha512-URclP0iIaDUzqcAyV1v2PgduJ9N0IdXmWsnPzPfelvBmjmZzEy6xJcjb1cXj+TbYqXgtLrjHEoaSIdTYhw4ezg==}
 
-  electron-to-chromium@1.5.209:
-    resolution: {integrity: sha512-Xoz0uMrim9ZETCQt8UgM5FxQF9+imA7PBpokoGcZloA1uw2LeHzTlip5cb5KOAsXZLjh/moN2vReN3ZjJmjI9A==}
+  electron-to-chromium@1.5.211:
+    resolution: {integrity: sha512-IGBvimJkotaLzFnwIVgW9/UD/AOJ2tByUmeOrtqBfACSbAw5b1G0XpvdaieKyc7ULmbwXVx+4e4Be8pOPBrYkw==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -9395,7 +9395,7 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  ably@2.11.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  ably@2.12.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       '@ably/msgpack-js': 0.4.1
       dequal: 2.0.3
@@ -9697,7 +9697,7 @@ snapshots:
   browserslist@4.25.3:
     dependencies:
       caniuse-lite: 1.0.30001737
-      electron-to-chromium: 1.5.209
+      electron-to-chromium: 1.5.211
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.3)
 
@@ -10026,7 +10026,7 @@ snapshots:
 
   electron-to-chromium@1.5.195: {}
 
-  electron-to-chromium@1.5.209: {}
+  electron-to-chromium@1.5.211: {}
 
   emittery@0.13.1: {}
 
