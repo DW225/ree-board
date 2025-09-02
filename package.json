@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.4",
-    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.2.3",
+    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.2.5",
     "@kinde-oss/kinde-auth-nextjs": "^2.8.3",
     "@kinde/management-api-js": "^0.14.0",
     "@libsql/client": "^0.15.12",
