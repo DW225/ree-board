@@ -24,7 +24,7 @@
     "@kinde/management-api-js": "^0.14.0",
     "@libsql/client": "^0.15.14",
     "@next/env": "15.5.2",
-    "@preact/signals-react": "^3.2.1",
+    "@preact/signals-react": "^3.3.0",
     "@sentry/nextjs": "^10.4.0",
     "@vercel/speed-insights": "^1.2.0",
     "ably": "^2.12.0",
