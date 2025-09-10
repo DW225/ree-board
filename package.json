@@ -30,7 +30,7 @@
     "ably": "^2.12.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dotenv": "^17.2.1",
+    "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
     "drizzle-zod": "^0.8.3",
     "jsonwebtoken": "^9.0.2",
