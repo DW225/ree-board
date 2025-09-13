@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const key = await client.getSigningKey(kid);
     const signingKey = key.getPublicKey();
 
-    const event = (await jwt.verify(token, signingKey)) as {
+    const event = jwt.verify(token, signingKey) as {
       type: string;
       data: KindeUserEventData;
     };
@@ -50,18 +50,20 @@ export async function POST(req: Request) {
         id: userID,
         kinde_id: event.data.user.id,
         name: kindUser.username ?? `User_${userID}`,
-        email: kindUser.preferred_email ?? `user_${event.data.user.id}@kinde.com`,
+        email:
+          kindUser.preferred_email ?? `user_${event.data.user.id}@kinde.com`,
       });
       console.log(`Created new user ${event.data.user.id}`);
     };
 
     switch (event?.type) {
-      case "user.authenticated":
+      case "user.authenticated": {
         const user = await getUserByKindeID(event.data.user.id);
         if (!user) {
           await createNewUser();
         }
         break;
+      }
       case "user.created":
         await createNewUser();
         break;
