@@ -57,7 +57,7 @@ type BoardPageParams = Promise<{ id: string }>;
 export default async function BoardPage({
   params,
 }: {
-  params: BoardPageParams;
+  params: Readonly<BoardPageParams>;
 }) {
   const { id } = await params;
 
@@ -97,26 +97,24 @@ export default async function BoardPage({
   };
 
   return (
-    <>
-      <RTLProvider boardId={id}>
-        <AnonymousModeProvider>
-          <PostProvider initials={initialData} boardId={id}>
-            <PostChannel boardId={id} userId={userID} />
-            <div className="container mx-auto w-full max-w-full px-4">
-              <div className="flex justify-end py-2">
-                <MemberManageModalComponent
-                  boardId={id}
-                  viewOnly={!hasManagePermission}
-                >
-                  <AvatarStack />
-                </MemberManageModalComponent>
-                <SortButton className="shrink-0 ml-1" />
-              </div>
-              <BoardGrid boardId={id} viewOnly={viewOnly} userId={userID} />
+    <RTLProvider boardId={id}>
+      <AnonymousModeProvider>
+        <PostProvider initials={initialData} boardId={id}>
+          <PostChannel boardId={id} userId={userID} />
+          <div className="container mx-auto w-full max-w-full px-4">
+            <div className="flex justify-end py-2">
+              <MemberManageModalComponent
+                boardId={id}
+                viewOnly={!hasManagePermission}
+              >
+                <AvatarStack />
+              </MemberManageModalComponent>
+              <SortButton className="shrink-0 ml-1" />
             </div>
-          </PostProvider>
-        </AnonymousModeProvider>
-      </RTLProvider>
-    </>
+            <BoardGrid boardId={id} viewOnly={viewOnly} userId={userID} />
+          </div>
+        </PostProvider>
+      </AnonymousModeProvider>
+    </RTLProvider>
   );
 }
