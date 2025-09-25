@@ -12,8 +12,8 @@ importers:
         specifier: ^1.7.7
         version: 1.7.7
       '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
-        specifier: ^3.2.6
-        version: 3.2.6(@types/react@19.1.13)(react@19.1.1)
+        specifier: ^3.2.7
+        version: 3.2.7(@types/react@19.1.13)(react@19.1.1)
       '@kinde-oss/kinde-auth-nextjs':
         specifier: ^2.9.0
         version: 2.9.0(eslint@9.35.0(jiti@1.21.6))(next@15.5.2(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.2)
@@ -211,18 +211,18 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@atlaskit/atlassian-context@0.5.0':
-    resolution: {integrity: sha512-ui8J50lnr7I8i8yq+nqupZqEQ3awJzWa3PsGUR+BY/vuM/A/UzNMA3EQApBItyeOPv49nov8lOIidtU0VnzLxw==}
+  '@atlaskit/atlassian-context@0.6.0':
+    resolution: {integrity: sha512-TjaV1OIjP8DaOyaqzPI5OkYvVckn3hYwE92v8RcdnpOiMKI0taedg1sLXD7x0nPx5MtXPmCJNNVJJprDN7pmxQ==}
     peerDependencies:
       react: ^18.2.0
 
-  '@atlaskit/ds-lib@5.0.1':
-    resolution: {integrity: sha512-vP71lCCXSM1S1TkGIpWDsNRs5IwQnM99BGa4Dsx14odTXRr/c9k/0ywL7voibHfofCPYgxn9I+iiq4T8KiQ1Ew==}
+  '@atlaskit/ds-lib@5.1.0':
+    resolution: {integrity: sha512-zt4Bt0DU/2JwXtQeZfSDoqUeZ5qMfhjEoVagUUjrSYyj0d/b1bUDFFKz+PtpwmC41qR34l/xCefgOFWpLhUY0Q==}
     peerDependencies:
       react: ^18.2.0
 
-  '@atlaskit/feature-gate-js-client@5.5.5':
-    resolution: {integrity: sha512-uuF/gK35LZoyEUtoVcjxXtbls9fb0RiF5kxp9kYfVwuT6XkZxrYAGuQMPq8tnHKpZE3m70tdMuANyIlMddLzqw==}
+  '@atlaskit/feature-gate-js-client@5.5.6':
+    resolution: {integrity: sha512-JmzLTOU4qMRj+v4wR/dziSBMSwMZVbeVicnBEg1R+xgHyfjXSPaS+40wJvn3bw1R3LFDellt03XFazNDvsyRVA==}
 
   '@atlaskit/platform-feature-flags@1.1.2':
     resolution: {integrity: sha512-PM+fVkV4Yn4/0keiN6ioAap2Y+odTyw1Z4uf+TA0zMmg3/lp/rVNJEc4a24dvd8DfVs5m9bxa/hbO1qJarhCBw==}
@@ -230,16 +230,16 @@ packages:
   '@atlaskit/pragmatic-drag-and-drop-hitbox@1.1.0':
     resolution: {integrity: sha512-JWt6eVp6Br2FPHRM8s0dUIHQk/jFInGP1f3ti5CdtM1Ji5/pt8Akm44wDC063Gv2i5RGseixtbW0z/t6RYtbdg==}
 
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.6':
-    resolution: {integrity: sha512-EM4USa28JoLNhNwgOFSgTbGu3Q8QZw3WzKea7IMQ9BcdAO6VsPmOihV46Ex1gOqOndFIe/JUM+7be/O6jG3H4g==}
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.7':
+    resolution: {integrity: sha512-QdJJuBnERhnR/iG9TDXJEc1HudIsPVjP3BKuFE14NSVVs8fnSkFsfUrpVxVQPJT6fYZdfEHXREoU+DdLtEI7Fg==}
     peerDependencies:
       react: ^18.2.0 || ^19.0.0
 
   '@atlaskit/pragmatic-drag-and-drop@1.7.7':
     resolution: {integrity: sha512-jX+68AoSTqO/fhCyJDTZ38Ey6/wyL2Iq+J/moanma0YyktpnoHxevjY1UNJHYp0NCburdQDZSL1ZFac1mO1osQ==}
 
-  '@atlaskit/tokens@6.3.0':
-    resolution: {integrity: sha512-gDiqeOMzh6VQNk6dQ3Eez8BT4lI1Bi8CyqtQNxB3tKzmdKnyZcp/4jRa7d23WDlBY68aOXFF71YgFXJKsyr//Q==}
+  '@atlaskit/tokens@6.3.3':
+    resolution: {integrity: sha512-32jI4ol2MwPcIqzSISrYyWO2GqdXw5N7Xvixd7bLgy5yStux56VcpkrJYr8XLoT1Ym7/vvs19Yaeb2+sKj7yFw==}
     peerDependencies:
       react: ^18.2.0
 
@@ -2445,11 +2445,11 @@ packages:
   '@sinonjs/fake-timers@13.0.5':
     resolution: {integrity: sha512-36/hTbH2uaWuGVERyC6da9YwGWnzUZXuPro/F2LfsdOsLnCojz/iSH8MxUt/FD2S5XBSVPhmArFUXcpCQ2Hkiw==}
 
-  '@statsig/client-core@3.25.1':
-    resolution: {integrity: sha512-QsJ1SVTjX3gCL0qmMC23E9KHHYe+LCXRwVXt7xNv28M1e6AChsrxhDIF+dHQv1Ug5iUiauDnFjnoFMHiby/sCA==}
+  '@statsig/client-core@3.25.5':
+    resolution: {integrity: sha512-MxoH0+iFim45z0w+ubcm5rEHwhMpCo5zcD4l20IR0Tr5OW/ZMqzGVN4TjKSv8rynV2RObXDJqItOErEt/NCzhQ==}
 
-  '@statsig/js-client@3.25.1':
-    resolution: {integrity: sha512-iAJkq7neUHdvl7YiwLaPHkF+eyBFzQaJEzYT0DfpdVKqpQHGARsh221Fca+vf5a0nYHoFTTeqCyaDUPA3+Mw6g==}
+  '@statsig/js-client@3.25.5':
+    resolution: {integrity: sha512-urUJ+MIXTBIdaWSU/0WMbANgRNbE/l/pxOiz41L5T0bFGbvYTc2QLDi3ZKzu8he3Jz8YgSNV/AS8ZZ1UW+WLRA==}
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -3260,8 +3260,8 @@ packages:
   caniuse-lite@1.0.30001741:
     resolution: {integrity: sha512-QGUGitqsc8ARjLdgAfxETDhRbJ0REsP6O3I96TAth/mVjh2cYzN2u+3AzPP3aVSm2FehEItaJw1xd+IGBXWeSw==}
 
-  caniuse-lite@1.0.30001743:
-    resolution: {integrity: sha512-e6Ojr7RV14Un7dz6ASD0aZDmQPT/A+eZU+nuTNfjqmRrmkmQlnTNWH0SKmqagx9PeW87UVqapSurtAXifmtdmw==}
+  caniuse-lite@1.0.30001745:
+    resolution: {integrity: sha512-ywt6i8FzvdgrrrGbr1jZVObnVv6adj+0if2/omv9cmR2oiZs30zL4DIyaptKcbOrBdOIc74QTMoJvSE2QHh5UQ==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -3674,8 +3674,8 @@ packages:
   electron-to-chromium@1.5.215:
     resolution: {integrity: sha512-TIvGp57UpeNetj/wV/xpFNpWGb0b/ROw372lHPx5Aafx02gjTBtWnEEcaSX3W2dLM3OSdGGyHX/cHl01JQsLaQ==}
 
-  electron-to-chromium@1.5.222:
-    resolution: {integrity: sha512-gA7psSwSwQRE60CEoLz6JBCQPIxNeuzB2nL8vE03GK/OHxlvykbLyeiumQy1iH5C2f3YbRAZpGCMT12a/9ih9w==}
+  electron-to-chromium@1.5.223:
+    resolution: {integrity: sha512-qKm55ic6nbEmagFlTFczML33rF90aU+WtrJ9MdTCThrcvDNdUHN4p6QfVN78U06ZmguqXIyMPyYhw2TrbDUwPQ==}
 
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
@@ -6382,12 +6382,12 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@atlaskit/atlassian-context@0.5.0(react@19.1.1)':
+  '@atlaskit/atlassian-context@0.6.0(react@19.1.1)':
     dependencies:
       '@babel/runtime': 7.28.4
       react: 19.1.1
 
-  '@atlaskit/ds-lib@5.0.1(@types/react@19.1.13)(react@19.1.1)':
+  '@atlaskit/ds-lib@5.1.0(@types/react@19.1.13)(react@19.1.1)':
     dependencies:
       '@atlaskit/platform-feature-flags': 1.1.2(react@19.1.1)
       '@babel/runtime': 7.28.4
@@ -6398,19 +6398,19 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@atlaskit/feature-gate-js-client@5.5.5(react@19.1.1)':
+  '@atlaskit/feature-gate-js-client@5.5.6(react@19.1.1)':
     dependencies:
-      '@atlaskit/atlassian-context': 0.5.0(react@19.1.1)
+      '@atlaskit/atlassian-context': 0.6.0(react@19.1.1)
       '@babel/runtime': 7.28.4
-      '@statsig/client-core': 3.25.1
-      '@statsig/js-client': 3.25.1
+      '@statsig/client-core': 3.25.5
+      '@statsig/js-client': 3.25.5
       eventemitter3: 4.0.7
     transitivePeerDependencies:
       - react
 
   '@atlaskit/platform-feature-flags@1.1.2(react@19.1.1)':
     dependencies:
-      '@atlaskit/feature-gate-js-client': 5.5.5(react@19.1.1)
+      '@atlaskit/feature-gate-js-client': 5.5.6(react@19.1.1)
       '@babel/runtime': 7.28.4
     transitivePeerDependencies:
       - react
@@ -6420,11 +6420,11 @@ snapshots:
       '@atlaskit/pragmatic-drag-and-drop': 1.7.7
       '@babel/runtime': 7.28.4
 
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.6(@types/react@19.1.13)(react@19.1.1)':
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.7(@types/react@19.1.13)(react@19.1.1)':
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop': 1.7.7
       '@atlaskit/pragmatic-drag-and-drop-hitbox': 1.1.0
-      '@atlaskit/tokens': 6.3.0(@types/react@19.1.13)(react@19.1.1)
+      '@atlaskit/tokens': 6.3.3(@types/react@19.1.13)(react@19.1.1)
       '@babel/runtime': 7.28.4
       '@compiled/react': 0.18.6(react@19.1.1)
       react: 19.1.1
@@ -6438,9 +6438,9 @@ snapshots:
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
 
-  '@atlaskit/tokens@6.3.0(@types/react@19.1.13)(react@19.1.1)':
+  '@atlaskit/tokens@6.3.3(@types/react@19.1.13)(react@19.1.1)':
     dependencies:
-      '@atlaskit/ds-lib': 5.0.1(@types/react@19.1.13)(react@19.1.1)
+      '@atlaskit/ds-lib': 5.1.0(@types/react@19.1.13)(react@19.1.1)
       '@atlaskit/platform-feature-flags': 1.1.2(react@19.1.1)
       '@babel/runtime': 7.28.4
       '@babel/traverse': 7.28.4
@@ -6484,7 +6484,7 @@ snapshots:
       '@babel/parser': 7.28.4
       '@babel/types': 7.28.4
       '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
       jsesc: 3.1.0
 
   '@babel/helper-compilation-targets@7.27.2':
@@ -7204,7 +7204,7 @@ snapshots:
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/gen-mapping@0.3.5':
     dependencies:
@@ -8761,11 +8761,11 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@statsig/client-core@3.25.1': {}
+  '@statsig/client-core@3.25.5': {}
 
-  '@statsig/js-client@3.25.1':
+  '@statsig/js-client@3.25.5':
     dependencies:
-      '@statsig/client-core': 3.25.1
+      '@statsig/client-core': 3.25.5
 
   '@swc/helpers@0.5.15':
     dependencies:
@@ -9618,8 +9618,8 @@ snapshots:
   browserslist@4.26.2:
     dependencies:
       baseline-browser-mapping: 2.8.6
-      caniuse-lite: 1.0.30001743
-      electron-to-chromium: 1.5.222
+      caniuse-lite: 1.0.30001745
+      electron-to-chromium: 1.5.223
       node-releases: 2.0.21
       update-browserslist-db: 1.1.3(browserslist@4.26.2)
 
@@ -9678,7 +9678,7 @@ snapshots:
 
   caniuse-lite@1.0.30001741: {}
 
-  caniuse-lite@1.0.30001743: {}
+  caniuse-lite@1.0.30001745: {}
 
   ccount@2.0.1: {}
 
@@ -9958,7 +9958,7 @@ snapshots:
 
   electron-to-chromium@1.5.215: {}
 
-  electron-to-chromium@1.5.222: {}
+  electron-to-chromium@1.5.223: {}
 
   emittery@0.13.1: {}
 
