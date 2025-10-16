@@ -22,7 +22,7 @@ import invariant from "tiny-invariant";
 const AddPostForm = dynamic(() => import("@/components/board/AddPostForm"), {
   ssr: false,
 });
-const PostCard = dynamic(() => import("@/components/board/PostCard"), {
+const PostCard = dynamic(() => import("@/components/board/Post/PostCard"), {
   ssr: false,
 });
 
@@ -96,7 +96,6 @@ export default function BoardColumn({
     },
     [boardId]
   );
-
 
   useEffect(() => {
     if (!viewOnly) {
