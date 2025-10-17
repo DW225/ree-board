@@ -8,7 +8,7 @@ interface InvitePageProps {
   params: Promise<{ token: string }>;
 }
 
-export default async function InvitePage({ params }: InvitePageProps) {
+export default async function InvitePage({ params }: Readonly<InvitePageProps>) {
   const { token } = await params;
   const { isAuthenticated } = getKindeServerSession();
 

@@ -23,7 +23,7 @@ interface MagicLinkManagerProps {
   boardId: string;
 }
 
-export default function MagicLinkManager({ boardId }: MagicLinkManagerProps) {
+export default function MagicLinkManager({ boardId }: Readonly<MagicLinkManagerProps>) {
   const { links, isLoading, revokeLink, copyLinkToClipboard } =
     useMagicLinks(boardId);
   const [linkToRevoke, setLinkToRevoke] = useState<LinkWithCreator | null>(

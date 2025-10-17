@@ -23,7 +23,7 @@ interface MagicLinkCreatorProps {
   boardId: string;
 }
 
-export default function MagicLinkCreator({ boardId }: MagicLinkCreatorProps) {
+export default function MagicLinkCreator({ boardId }: Readonly<MagicLinkCreatorProps>) {
   const { createLink } = useMagicLinks(boardId);
   const [role, setRole] = useState<Role.guest | Role.member>(Role.member);
   const [expirationHours, setExpirationHours] = useState<number | null>(24);
@@ -40,7 +40,7 @@ export default function MagicLinkCreator({ boardId }: MagicLinkCreatorProps) {
         expirationHours: expirationHours || undefined,
       });
 
-      const linkUrl = `${window.location.origin}/invite/${result.link.token}`;
+      const linkUrl = `${globalThis.location.origin}/invite/${result.link.token}`;
       setGeneratedLink(linkUrl);
       toast.success("Magic link created successfully!");
     } catch (error) {
