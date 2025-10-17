@@ -265,6 +265,6 @@ function getTimeUntilExpiration(expiresAt: Date | null): string {
  * Helper function to format magic link URL
  */
 export function formatMagicLinkUrl(token: string, baseUrl?: string): string {
-  const base = baseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+  const base = baseUrl || (typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '');
   return `${base}/invite/${token}`;
 }

@@ -140,7 +140,7 @@ export function useMagicLinks(boardId: string) {
    * Generates the full URL for a magic link token
    */
   const getLinkUrl = (token: string): string => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const baseUrl = typeof globalThis.window !== 'undefined' ? globalThis.location.origin : '';
     return `${baseUrl}/invite/${token}`;
   };
 
