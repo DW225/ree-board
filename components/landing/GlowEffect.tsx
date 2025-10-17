@@ -10,10 +10,10 @@ export default function GlowEffect() {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    globalThis.addEventListener("mousemove", handleMouseMove);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      globalThis.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 

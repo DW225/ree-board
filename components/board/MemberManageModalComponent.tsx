@@ -56,6 +56,30 @@ const ImportMembersComponent = dynamic(
   }
 );
 
+const MagicLinkCreator = dynamic(
+  () => import("@/components/board/MagicLinkCreator"),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <div className="h-20 bg-gray-200 rounded animate-pulse" />
+        <div className="h-10 bg-gray-200 rounded animate-pulse" />
+      </div>
+    ),
+  }
+);
+
+const MagicLinkManager = dynamic(
+  () => import("@/components/board/MagicLinkManager"),
+  {
+    loading: () => (
+      <div className="space-y-2">
+        <div className="h-16 bg-gray-200 rounded animate-pulse" />
+        <div className="h-16 bg-gray-200 rounded animate-pulse" />
+      </div>
+    ),
+  }
+);
+
 export default function MemberManageModalComponent({
   boardId,
   viewOnly,
@@ -135,7 +159,7 @@ export default function MemberManageModalComponent({
         <DialogTrigger asChild>
           <button>{children}</button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Board Members</DialogTitle>
           </DialogHeader>{" "}
@@ -177,6 +201,19 @@ export default function MemberManageModalComponent({
                     }}
                   />
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <hr className="flex-1" />
+                  <span className="text-xs text-muted-foreground">OR</span>
+                  <hr className="flex-1" />
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Create Magic Link</h4>
+                    <MagicLinkCreator boardId={boardId} />
+                  </div>
+                </div>
               </>
             )}
             <div className="mt-6">
@@ -187,6 +224,12 @@ export default function MemberManageModalComponent({
                 handleRoleChange={handleRoleChange}
               />
             </div>
+
+            {!viewOnly && (
+              <div className="mt-6">
+                <MagicLinkManager boardId={boardId} />
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

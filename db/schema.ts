@@ -166,3 +166,21 @@ export const taskTable = sqliteTable(
     index("actions_board_id_index").on(table.boardId),
   ]
 );
+
+export const linksTable = sqliteTable("links", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  boardId: text("board_id")
+    .references(() => boardTable.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  token: text("token").notNull().unique(), // Unique nano ID token
+  role: integer("role").$type<Role>().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(strftime('%s', 'now'))`),
+  creator: text("creator").references(() => userTable.id, {
+    onDelete: "set null",
+  }),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
+});
