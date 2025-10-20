@@ -297,6 +297,174 @@ function createProcessingError(
 }
 
 /**
+ * Handler for POST.ADD events
+ */
+function handlePostAdd(eventType: string, messageData: unknown): void {
+  const validation = validatePostData(messageData, true);
+  if (!validation.success) {
+    const error = createProcessingError(
+      `Invalid post data for ADD: ${validation.error.message}`,
+      eventType,
+      messageData
+    );
+    console.error(error.message, { details: validation.error.details });
+    return;
+  }
+
+  if (isValidPost(validation.data)) {
+    addPost(validation.data);
+  } else {
+    console.error("Post validation passed but type predicate failed", {
+      messageData,
+    });
+  }
+}
+
+/**
+ * Handler for POST.UPDATE_CONTENT events
+ */
+function handlePostUpdateContent(eventType: string, messageData: unknown): void {
+  const validation = validatePostData(messageData, false);
+  if (!validation.success) {
+    const error = createProcessingError(
+      `Invalid post data for UPDATE_CONTENT: ${validation.error.message}`,
+      eventType,
+      messageData
+    );
+    console.error(error.message, { details: validation.error.details });
+    return;
+  }
+  if (!validation.data.content) {
+    const error = createProcessingError(
+      "UPDATE_CONTENT requires content field",
+      eventType,
+      messageData
+    );
+    console.error(error.message);
+    return;
+  }
+  updatePostContent(validation.data.id, validation.data.content);
+}
+
+/**
+ * Handler for POST.UPDATE_TYPE events
+ */
+function handlePostUpdateType(eventType: string, messageData: unknown): void {
+  const validation = validatePostData(messageData, false);
+  if (!validation.success) {
+    const error = createProcessingError(
+      `Invalid post data for UPDATE_TYPE: ${validation.error.message}`,
+      eventType,
+      messageData
+    );
+    console.error(error.message, { details: validation.error.details });
+    return;
+  }
+  if (validation.data.type === undefined) {
+    const error = createProcessingError(
+      "UPDATE_TYPE requires type field",
+      eventType,
+      messageData
+    );
+    console.error(error.message);
+    return;
+  }
+  updatePostType(validation.data.id, validation.data.type);
+}
+
+/**
+ * Handler for POST.DELETE events
+ */
+function handlePostDelete(eventType: string, messageData: unknown): void {
+  const validation = validatePostData(messageData, false);
+  if (!validation.success) {
+    const error = createProcessingError(
+      `Invalid post data for DELETE: ${validation.error.message}`,
+      eventType,
+      messageData
+    );
+    console.error(error.message, { details: validation.error.details });
+    return;
+  }
+  removePost(validation.data.id);
+}
+
+/**
+ * Handler for POST.UPVOTE and POST.DOWNVOTE events
+ */
+function handlePostVote(
+  eventType: string,
+  messageData: unknown,
+  currentUserId: string
+): void {
+  const validation = validateVoteData(messageData);
+  if (!validation.success) {
+    const error = createProcessingError(
+      `Invalid vote data: ${validation.error.message}`,
+      eventType,
+      messageData
+    );
+    console.error(error.message, { details: validation.error.details });
+    return;
+  }
+
+  const voteData = validation.data;
+
+  // Ignore own actions to prevent double-counting
+  if (voteData.userId === currentUserId) {
+    return;
+  }
+
+  // Check if message is stale
+  if (isMessageStale(voteData.timestamp)) {
+    return;
+  }
+
+  // Apply the vote operation
+  if (eventType === EVENT_TYPE.POST.UPVOTE) {
+    incrementPostVoteCount(voteData.id);
+  } else {
+    decrementPostVoteCount(voteData.id);
+  }
+}
+
+/**
+ * Handler for POST.MERGE events
+ */
+function handlePostMerge(eventType: string, messageData: unknown): void {
+  const validation = validateMergeData(messageData);
+  if (!validation.success) {
+    const error = createProcessingError(
+      `Invalid merge data: ${validation.error.message}`,
+      eventType,
+      messageData
+    );
+    console.error(error.message, { details: validation.error.details });
+    return;
+  }
+
+  const mergeData = validation.data;
+
+  // Check if message is stale
+  if (isMessageStale(mergeData.timestamp)) {
+    return;
+  }
+
+  // Update the target post with merged data
+  if (isValidPost(mergeData.mergedPost)) {
+    updatePost(mergeData.targetPostId, mergeData.mergedPost);
+    // Remove source posts from state
+    for (const postId of mergeData.deletedPostIds) {
+      removePost(postId);
+    }
+  } else {
+    console.error("Merged post validation failed", {
+      mergedPost: mergeData.mergedPost,
+    });
+  }
+}
+
+/**
  * Process post-related messages
  */
 export function processPostMessage(
@@ -306,160 +474,30 @@ export function processPostMessage(
 ): void {
   try {
     switch (eventType) {
-      case EVENT_TYPE.POST.ADD: {
-        const validation = validatePostData(messageData, true); // Require complete post for ADD
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid post data for ADD: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-
-        // Type assertion is safe here due to validation
-        if (isValidPost(validation.data)) {
-          addPost(validation.data);
-        } else {
-          console.error("Post validation passed but type predicate failed", {
-            messageData,
-          });
-        }
+      case EVENT_TYPE.POST.ADD:
+        handlePostAdd(eventType, messageData);
         break;
-      }
 
-      case EVENT_TYPE.POST.UPDATE_CONTENT: {
-        const validation = validatePostData(messageData, false);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid post data for UPDATE_CONTENT: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-        if (!validation.data.content) {
-          const error = createProcessingError(
-            "UPDATE_CONTENT requires content field",
-            eventType,
-            messageData
-          );
-          console.error(error.message);
-          return;
-        }
-        updatePostContent(validation.data.id, validation.data.content);
+      case EVENT_TYPE.POST.UPDATE_CONTENT:
+        handlePostUpdateContent(eventType, messageData);
         break;
-      }
 
-      case EVENT_TYPE.POST.UPDATE_TYPE: {
-        const validation = validatePostData(messageData, false);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid post data for UPDATE_TYPE: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-        if (validation.data.type === undefined) {
-          const error = createProcessingError(
-            "UPDATE_TYPE requires type field",
-            eventType,
-            messageData
-          );
-          console.error(error.message);
-          return;
-        }
-        updatePostType(validation.data.id, validation.data.type);
+      case EVENT_TYPE.POST.UPDATE_TYPE:
+        handlePostUpdateType(eventType, messageData);
         break;
-      }
 
-      case EVENT_TYPE.POST.DELETE: {
-        const validation = validatePostData(messageData, false);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid post data for DELETE: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-        removePost(validation.data.id);
+      case EVENT_TYPE.POST.DELETE:
+        handlePostDelete(eventType, messageData);
         break;
-      }
 
       case EVENT_TYPE.POST.UPVOTE:
-      case EVENT_TYPE.POST.DOWNVOTE: {
-        const validation = validateVoteData(messageData);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid vote data: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-
-        const voteData = validation.data;
-
-        // Ignore own actions to prevent double-counting
-        if (voteData.userId === currentUserId) {
-          return;
-        }
-
-        // Check if message is stale
-        if (isMessageStale(voteData.timestamp)) {
-          return;
-        }
-
-        // Apply the vote operation
-        if (eventType === EVENT_TYPE.POST.UPVOTE) {
-          incrementPostVoteCount(voteData.id);
-        } else {
-          decrementPostVoteCount(voteData.id);
-        }
+      case EVENT_TYPE.POST.DOWNVOTE:
+        handlePostVote(eventType, messageData, currentUserId);
         break;
-      }
 
-      case EVENT_TYPE.POST.MERGE: {
-        const validation = validateMergeData(messageData);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid merge data: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-
-        const mergeData = validation.data;
-
-        // Check if message is stale
-        if (isMessageStale(mergeData.timestamp)) {
-          return;
-        }
-
-        // Update the target post with merged data
-        if (isValidPost(mergeData.mergedPost)) {
-          updatePost(mergeData.targetPostId, mergeData.mergedPost);
-          // Remove source posts from state
-          mergeData.deletedPostIds.forEach((postId) => {
-            removePost(postId);
-          });
-        } else {
-          console.error("Merged post validation failed", {
-            mergedPost: mergeData.mergedPost,
-          });
-        }
-
+      case EVENT_TYPE.POST.MERGE:
+        handlePostMerge(eventType, messageData);
         break;
-      }
 
       default: {
         const unknownError = createProcessingError(
