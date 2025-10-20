@@ -8,6 +8,7 @@ import type {
   RevokeLinkResponse
 } from '@/lib/types/link';
 import { toast } from 'sonner';
+import { MS_PER_HOUR } from '@/lib/constants/time';
 
 /**
  * SWR hook for managing magic links for a board
@@ -50,7 +51,7 @@ export function useMagicLinks(boardId: string) {
         createdAt: new Date(),
         creator: null,
         expiresAt: linkData.expirationHours
-          ? new Date(Date.now() + linkData.expirationHours * 60 * 60 * 1000)
+          ? new Date(Date.now() + linkData.expirationHours * MS_PER_HOUR)
           : null,
         creatorName: 'You',
         isExpired: false,
