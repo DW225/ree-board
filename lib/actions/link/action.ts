@@ -14,13 +14,17 @@ import {z} from "zod";
  * Server action to handle magic link usage
  * This is called when a user clicks on a magic link
  */
-export async function processMagicLinkAction(token: string): Promise<never> {
+export async function processMagicLinkAction(rawToken: string): Promise<never> {
   const { getUser, isAuthenticated } = getKindeServerSession();
+  const token = z.string().min(1, "Magic link token is required").safeParse(rawToken);
+  if (!token.success) {
+    redirect("/invite/error?reason=invalid_token");
+  }
 
   // Check if user is authenticated
   if (!(await isAuthenticated())) {
     // Redirect to login with the magic link as post-login redirect
-    redirect(`/api/auth/login?post_login_redirect_url=/invite/${token}`);
+    redirect(`/api/auth/login?post_login_redirect_url=/invite/${token.data}`);
   }
 
   const kindeUser = await getUser();
@@ -29,7 +33,7 @@ export async function processMagicLinkAction(token: string): Promise<never> {
   }
 
   // Find the magic link
-  const link = await findValidLinkByToken(token);
+  const link = await findValidLinkByToken(token.data);
   if (!link) {
     redirect("/invite/error?reason=invalid_or_expired");
   }

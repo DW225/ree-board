@@ -21,7 +21,7 @@ export default async function InvitePage({ params }: Readonly<InvitePageProps>) 
   // This will either redirect to the board or to an error page
   await processMagicLinkAction(token);
 
-  // If we reach here (shouldn't happen due to redirects in useMagicLinkAction),
+  // If we reach here (shouldn't happen due to redirects in processMagicLinkAction),
   // show a loading state as fallback
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
