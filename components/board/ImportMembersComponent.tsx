@@ -176,7 +176,7 @@ export default function ImportMembersComponent({
           selectedMembers.has(member.id)
         );
 
-        importedMembers.forEach((member) => {
+        for (const member of importedMembers) {
           const newMemberSignal = {
             id: nanoid(),
             userId: member.userId,
@@ -185,7 +185,7 @@ export default function ImportMembersComponent({
             role: member.role,
           };
           addMember(newMemberSignal);
-        });
+        }
 
         toast.success(
           `Successfully imported ${result.imported} members` +
