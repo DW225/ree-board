@@ -25,7 +25,7 @@ export async function createMagicLink(
   const token = await generateUniqueToken();
   const expiresAt =
     expirationHours > 0
-      ? new Date(Date.now() + expirationHours * 60 * 60 * 1000)
+      ? new Date(Date.now() + expirationHours * MS_PER_HOUR)
       : null;
 
   const [link] = await db
