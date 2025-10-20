@@ -17,6 +17,7 @@ import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 async function rbacWithAuth<T>(
   boardId: Board["id"],
@@ -118,6 +119,67 @@ export const UpdatePostContentAction = async (
     ])
   );
 
+// Zod schema for merge post input validation
+const MergePostsSchema = z.object({
+  targetPostId: z.string().trim().min(1, "Target post ID is required"),
+  sourcePostIds: z.array(z.string()).min(1, "At least one source post is required"),
+  mergedContent: z.string().trim().min(1, "Merged content cannot be empty"),
+  boardId: z.string().min(1, "Board ID is required"),
+}).refine(
+  (data) => !data.sourcePostIds.includes(data.targetPostId),
+  { message: "Target post cannot be included in source posts" }
+);
+
+// Helper function to publish merge event to real-time channel
+const publishMergeEvent = async (
+  boardId: Board["id"],
+  userID: string,
+  targetPostId: Post["id"],
+  sourcePostIds: Post["id"][],
+  result: MergePostResult
+): Promise<void> => {
+  try {
+    await ablyClient(boardId).publish({
+      name: EVENT_TYPE.POST.MERGE,
+      extras: {
+        headers: {
+          user: userID,
+        },
+      },
+      data: JSON.stringify({
+        targetPostId,
+        sourcePostIds,
+        mergedPost: result.mergedPost,
+        uniqueVoteCount: result.uniqueVoteCount,
+        deletedPostIds: result.deletedPostIds,
+        timestamp: Date.now(),
+      }),
+    });
+  } catch (realtimeError) {
+    // Log real-time error but don't fail the merge operation
+    console.error("Failed to publish real-time merge event:", realtimeError);
+  }
+};
+
+// Helper function to get user-friendly error message
+const getMergeErrorMessage = (error: unknown): string => {
+  if (!(error instanceof Error)) {
+    return "Failed to merge posts due to an unexpected error. Please try again.";
+  }
+
+  if (error.message.includes("not found")) {
+    return "One or more posts could not be found. They may have been deleted by another user.";
+  }
+  if (error.message.includes("board")) {
+    return "Posts do not belong to the specified board.";
+  }
+  if (error.message.includes("permission") || error.message.includes("access")) {
+    return "You do not have permission to merge these posts.";
+  }
+
+  return "Failed to merge posts due to an unexpected error. Please try again.";
+};
+
 export const MergePostsAction = async (
   targetPostId: Post["id"],
   sourcePostIds: Post["id"][],
@@ -125,49 +187,21 @@ export const MergePostsAction = async (
   boardId: Board["id"]
 ): Promise<MergePostResult | NextResponse> =>
   rbacWithAuth(boardId, async (userID): Promise<MergePostResult> => {
-    // Input validation
-    if (!targetPostId?.trim()) {
-      throw new Error("Target post ID is required");
-    }
-    if (!sourcePostIds?.length) {
-      throw new Error("At least one source post is required");
-    }
-    if (!mergedContent?.trim()) {
-      throw new Error("Merged content cannot be empty");
-    }
-    if (sourcePostIds.includes(targetPostId)) {
-      throw new Error("Target post cannot be included in source posts");
+    // Validate inputs using Zod schema
+    const validationResult = MergePostsSchema.safeParse({
+      targetPostId,
+      sourcePostIds,
+      mergedContent,
+      boardId,
+    });
+
+    if (!validationResult.success) {
+      throw new Error(validationResult.error.issues[0].message);
     }
 
     try {
-      // Perform the merge operation
       const result = await mergePost(targetPostId, sourcePostIds, mergedContent, boardId);
-
-      // Attempt to publish real-time merge event
-      try {
-        await ablyClient(boardId).publish({
-          name: EVENT_TYPE.POST.MERGE,
-          extras: {
-            headers: {
-              user: userID,
-            },
-          },
-          data: JSON.stringify({
-            targetPostId,
-            sourcePostIds,
-            mergedPost: result.mergedPost,
-            uniqueVoteCount: result.uniqueVoteCount,
-            deletedPostIds: result.deletedPostIds,
-            timestamp: Date.now(),
-          }),
-        });
-      } catch (realtimeError) {
-        // Log real-time error but don't fail the merge operation
-        console.error("Failed to publish real-time merge event:", realtimeError);
-        // The merge was successful, just real-time sync failed
-        // Users will see the change on page refresh
-      }
-
+      await publishMergeEvent(boardId, userID, targetPostId, sourcePostIds, result);
       return result;
     } catch (error) {
       // Enhanced error logging with context
@@ -180,20 +214,6 @@ export const MergePostsAction = async (
         timestamp: new Date().toISOString(),
       });
 
-      // Provide specific error messages based on error type
-      if (error instanceof Error) {
-        if (error.message.includes("not found")) {
-          throw new Error("One or more posts could not be found. They may have been deleted by another user.");
-        }
-        if (error.message.includes("board")) {
-          throw new Error("Posts do not belong to the specified board.");
-        }
-        if (error.message.includes("permission") || error.message.includes("access")) {
-          throw new Error("You do not have permission to merge these posts.");
-        }
-      }
-
-      // Generic error for unexpected issues
-      throw new Error("Failed to merge posts due to an unexpected error. Please try again.");
+      throw new Error(getMergeErrorMessage(error));
     }
   });
