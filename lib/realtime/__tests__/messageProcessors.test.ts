@@ -70,6 +70,34 @@ import {
   type VoteMessageData,
 } from "../messageProcessors";
 
+// Test helper functions to reduce nesting
+function expectNotToThrow(fn: () => void): void {
+  expect(fn).not.toThrow();
+}
+
+function expectConsoleError(
+  consoleSpy: jest.SpyInstance,
+  messageContaining: string
+): void {
+  expect(consoleSpy).toHaveBeenCalledWith(
+    expect.stringContaining(messageContaining),
+    expect.objectContaining({ details: expect.any(Array) })
+  );
+}
+
+function expectConsoleWarn(
+  consoleSpy: jest.SpyInstance,
+  messageContaining: string
+): void {
+  expect(consoleSpy).toHaveBeenCalledWith(
+    expect.stringContaining(messageContaining)
+  );
+}
+
+function createConsoleSpy(method: "error" | "warn" = "error"): jest.SpyInstance {
+  return jest.spyOn(console, method).mockImplementation();
+}
+
 describe("Message Processors", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -105,17 +133,14 @@ describe("Message Processors", () => {
 
       it("should handle missing post data gracefully", () => {
         const messageData = null;
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+        const consoleSpy = createConsoleSpy();
 
-        expect(() => {
-          processPostMessage(EVENT_TYPE.POST.ADD, messageData, "user-2");
-        }).not.toThrow();
+        expectNotToThrow(() =>
+          processPostMessage(EVENT_TYPE.POST.ADD, messageData, "user-2")
+        );
 
         expect(mockPostSignals.addPost).not.toHaveBeenCalled();
-        expect(consoleSpy).toHaveBeenCalledWith(
-          expect.stringContaining("Invalid post data for ADD"),
-          expect.objectContaining({ details: expect.any(Array) })
-        );
+        expectConsoleError(consoleSpy, "Invalid post data for ADD");
         consoleSpy.mockRestore();
       });
     });
@@ -144,7 +169,7 @@ describe("Message Processors", () => {
           content: "Updated content",
           // missing id
         } as Partial<PostMessageData>;
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+        const consoleSpy = createConsoleSpy();
 
         processPostMessage(
           EVENT_TYPE.POST.UPDATE_CONTENT,
@@ -153,10 +178,7 @@ describe("Message Processors", () => {
         );
 
         expect(mockPostSignals.updatePostContent).not.toHaveBeenCalled();
-        expect(consoleSpy).toHaveBeenCalledWith(
-          expect.stringContaining("Invalid post data for UPDATE_CONTENT"),
-          expect.objectContaining({ details: expect.any(Array) })
-        );
+        expectConsoleError(consoleSpy, "Invalid post data for UPDATE_CONTENT");
         consoleSpy.mockRestore();
       });
     });
@@ -278,7 +300,7 @@ describe("Message Processors", () => {
             userId: otherUserId,
             // no timestamp
           };
-          const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+          const consoleSpy = createConsoleSpy();
 
           processPostMessage(
             EVENT_TYPE.POST.UPVOTE,
@@ -287,10 +309,7 @@ describe("Message Processors", () => {
           );
 
           expect(mockPostSignals.incrementPostVoteCount).not.toHaveBeenCalled();
-          expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("Invalid vote data"),
-            expect.objectContaining({ details: expect.any(Array) })
-          );
+          expectConsoleError(consoleSpy, "Invalid vote data");
           consoleSpy.mockRestore();
         });
 
@@ -301,7 +320,7 @@ describe("Message Processors", () => {
             timestamp: currentTime,
             // no id
           } as Partial<VoteMessageData>;
-          const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+          const consoleSpy = createConsoleSpy();
 
           processPostMessage(
             EVENT_TYPE.POST.UPVOTE,
@@ -310,10 +329,7 @@ describe("Message Processors", () => {
           );
 
           expect(mockPostSignals.incrementPostVoteCount).not.toHaveBeenCalled();
-          expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("Invalid vote data"),
-            expect.objectContaining({ details: expect.any(Array) })
-          );
+          expectConsoleError(consoleSpy, "Invalid vote data");
           consoleSpy.mockRestore();
         });
       });
@@ -359,13 +375,11 @@ describe("Message Processors", () => {
 
     describe("Unknown event types", () => {
       it("should handle unknown event types gracefully", () => {
-        const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+        const consoleSpy = createConsoleSpy("warn");
 
         processPostMessage("UNKNOWN_EVENT", {}, "user-1");
 
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Unknown post event type: UNKNOWN_EVENT"
-        );
+        expectConsoleWarn(consoleSpy, "Unknown post event type: UNKNOWN_EVENT");
         consoleSpy.mockRestore();
       });
     });
@@ -397,7 +411,7 @@ describe("Message Processors", () => {
 
       it("should handle missing task data gracefully", () => {
         const messageData = null;
-        const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+        const consoleSpy = createConsoleSpy();
 
         expect(() => {
           processTaskMessage(EVENT_TYPE.ACTION.CREATE, messageData);
@@ -457,7 +471,7 @@ describe("Message Processors", () => {
 
     describe("Unknown event types", () => {
       it("should handle unknown task event types gracefully", () => {
-        const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+        const consoleSpy = createConsoleSpy("warn");
 
         processTaskMessage("UNKNOWN_TASK_EVENT", {});
 
