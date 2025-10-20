@@ -5,8 +5,8 @@
  * Tracks bundle size improvements over time
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const BUNDLE_STATS_FILE = path.join(__dirname, '../.bundle-stats.json');
 
