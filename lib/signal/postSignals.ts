@@ -87,16 +87,16 @@ export const initializePostSignals = (posts: Post[], tasks: Task[]) => {
 
     // Convert tasks array to record for efficient lookup
     const taskRecord: Record<string, Task> = {};
-    tasks.forEach((task) => {
+    for (const task of tasks) {
       taskRecord[task.postId] = task;
-    });
+    }
     tasksSignal.value = taskRecord;
 
     // Initialize votes from posts
     const voteRecord: Record<string, number> = {};
-    posts.forEach((post) => {
+    for (const post of posts) {
       voteRecord[post.id] = post.voteCount;
-    });
+    }
     votesSignal.value = voteRecord;
   });
 };
@@ -339,16 +339,16 @@ export const mergePosts = (
     const updatedVotes = { ...currentVotes };
     updatedVotes[targetPostId] = estimatedUniqueVotes;
     // Remove vote counts for deleted posts
-    sourcePostIds.forEach((id) => {
+    for (const id of sourcePostIds) {
       delete updatedVotes[id];
-    });
+    }
     votesSignal.value = updatedVotes;
 
     // Clean up tasks for deleted posts, keep target post's task if it exists
     const cleanedTasks = { ...currentTasks };
-    sourcePostIds.forEach((postId) => {
+    for (const postId of sourcePostIds) {
       delete cleanedTasks[postId];
-    });
+    }
     tasksSignal.value = cleanedTasks;
   });
 

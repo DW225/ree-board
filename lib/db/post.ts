@@ -138,11 +138,11 @@ export const mergePost = async (
 
     // 4. Create a map to keep only the first vote per user (prioritizing target post)
     const votesByUser = new Map<string, typeof votesToKeep[0]>();
-    votesToKeep.forEach(vote => {
+    for (const vote of votesToKeep) {
       if (!votesByUser.has(vote.userId)) {
         votesByUser.set(vote.userId, vote);
       }
-    });
+    }
 
     const votesToKeepIds = Array.from(votesByUser.values()).map(v => v.id);
 
