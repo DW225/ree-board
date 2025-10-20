@@ -190,7 +190,7 @@ export function md5(str: string): string {
 
   // Process the input string
   for (let i = 0; i < str.length; i += 1) {
-    let code = str.charCodeAt(i);
+    const code = str.charCodeAt(i);
     if (code < 128) {
       buffer8[bufferLength++] = code;
     } else if (code < 0x800) {
@@ -201,14 +201,18 @@ export function md5(str: string): string {
       buffer8[bufferLength++] = ((code >>> 6) & 0x3f) | 0x80;
       buffer8[bufferLength++] = (code & 0x3f) | 0x80;
     } else {
-      code = (code - 0xd800) * 0x400 + (str.charCodeAt(++i) - 0xdc00) + 0x10000;
-      if (code > 0x10ffff) {
+      // Handle surrogate pair
+      i += 1;
+      const lowSurrogate = str.charCodeAt(i);
+      const codePoint =
+        (code - 0xd800) * 0x400 + (lowSurrogate - 0xdc00) + 0x10000;
+      if (codePoint > 0x10ffff) {
         throw new Error("Unicode standard supports code points up to U+10FFFF");
       }
-      buffer8[bufferLength++] = (code >>> 18) + 0xf0;
-      buffer8[bufferLength++] = ((code >>> 12) & 0x3f) | 0x80;
-      buffer8[bufferLength++] = ((code >>> 6) & 0x3f) | 0x80;
-      buffer8[bufferLength++] = (code & 0x3f) | 0x80;
+      buffer8[bufferLength++] = (codePoint >>> 18) + 0xf0;
+      buffer8[bufferLength++] = ((codePoint >>> 12) & 0x3f) | 0x80;
+      buffer8[bufferLength++] = ((codePoint >>> 6) & 0x3f) | 0x80;
+      buffer8[bufferLength++] = (codePoint & 0x3f) | 0x80;
     }
     if (bufferLength >= 64) {
       dataLength += 64;
