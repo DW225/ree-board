@@ -40,7 +40,7 @@ export const sortedBoardsSignal = computed(() => {
       case "createdAt": {
         const dateA = new Date(a.createdAt);
         const dateB = new Date(b.createdAt);
-        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+        if (Number.isNaN(dateA.getTime()) || Number.isNaN(dateB.getTime())) {
           return 0;
         }
         comparison = dateA.getTime() - dateB.getTime();
@@ -49,7 +49,7 @@ export const sortedBoardsSignal = computed(() => {
       case "updatedAt": {
         const dateA = new Date(a.updatedAt);
         const dateB = new Date(b.updatedAt);
-        if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+        if (Number.isNaN(dateA.getTime()) || Number.isNaN(dateB.getTime())) {
           return 0;
         }
         comparison = dateA.getTime() - dateB.getTime();
