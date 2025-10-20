@@ -61,22 +61,3 @@ CREATE TABLE `vote` (
 );
 --> statement-breakpoint
 CREATE INDEX `votes_composite_index` ON `vote` (`board_id`,`user_id`,`post_id`);
-
---> statement-breakpoint
--- Trigger to increment vote_count when a vote is added
-CREATE TRIGGER increment_vote_count
-AFTER INSERT ON `vote`
-BEGIN
-    UPDATE `post`
-    SET `vote_count` = (SELECT COUNT(*) FROM `vote` WHERE `post_id` = NEW.post_id)
-    WHERE id = NEW.post_id;
-END;
---> statement-breakpoint
--- Trigger to decrement vote_count when a vote is removed
-CREATE TRIGGER decrement_vote_count
-AFTER DELETE ON `vote`
-BEGIN
-    UPDATE `post`
-    SET `vote_count` = (SELECT COUNT(*) FROM `vote` WHERE `post_id` = OLD.post_id)
-    WHERE id = OLD.post_id;
-END;
