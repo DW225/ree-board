@@ -14,17 +14,21 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useMagicLinks } from "@/hooks/useMagicLinks";
-import { Role } from "@/lib/constants/role";
 import { MS_PER_HOUR } from "@/lib/constants/time";
 import type { LinkWithCreator } from "@/lib/types/link";
+import { getRoleDisplayName } from "@/lib/utils/role";
 import { AlertTriangle, Clock, Copy, ExternalLink, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface MagicLinkManagerProps {
   boardId: string;
+  viewOnly?: boolean;
 }
 
-export default function MagicLinkManager({ boardId }: Readonly<MagicLinkManagerProps>) {
+export default function MagicLinkManager({
+  boardId,
+  viewOnly = true,
+}: Readonly<MagicLinkManagerProps>) {
   const { links, isLoading, revokeLink, copyLinkToClipboard } =
     useMagicLinks(boardId);
   const [linkToRevoke, setLinkToRevoke] = useState<LinkWithCreator | null>(
@@ -58,14 +62,6 @@ export default function MagicLinkManager({ boardId }: Readonly<MagicLinkManagerP
       console.error("Failed to copy link:", error);
       // Error toast is handled in the hook
     }
-  };
-
-  const getRoleDisplayName = (role: Role): string => {
-    return role === Role.member ? "Member" : "Guest";
-  };
-
-  const getRoleBadgeVariant = (role: Role) => {
-    return role === Role.member ? "default" : "secondary";
   };
 
   const getExpirationStatus = (link: LinkWithCreator) => {
@@ -155,7 +151,7 @@ export default function MagicLinkManager({ boardId }: Readonly<MagicLinkManagerP
                 <div className="flex-1 space-y-2">
                   {/* Role and Status */}
                   <div className="flex items-center gap-2">
-                    <Badge variant={getRoleBadgeVariant(link.role)}>
+                    <Badge variant="default">
                       {getRoleDisplayName(link.role)}
                     </Badge>
                     <Badge variant={expStatus.variant}>
@@ -195,15 +191,17 @@ export default function MagicLinkManager({ boardId }: Readonly<MagicLinkManagerP
                   >
                     <Copy className="size-4" />
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleRevoke(link)}
-                    aria-label="Revoke magic link"
-                    title="Revoke magic link"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {!viewOnly && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRevoke(link)}
+                      aria-label="Revoke magic link"
+                      title="Revoke magic link"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
@@ -247,13 +245,15 @@ export default function MagicLinkManager({ boardId }: Readonly<MagicLinkManagerP
 
                 {/* Actions for expired links */}
                 <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleRevoke(link)}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {!viewOnly && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRevoke(link)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
@@ -283,7 +283,7 @@ export default function MagicLinkManager({ boardId }: Readonly<MagicLinkManagerP
               <Card className="p-3 bg-muted/50">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant={getRoleBadgeVariant(linkToRevoke.role)}>
+                    <Badge variant="default">
                       {getRoleDisplayName(linkToRevoke.role)}
                     </Badge>
                     <Badge variant={getExpirationStatus(linkToRevoke).variant}>
