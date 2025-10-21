@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const createNewUser = async () => {
       const kindUser = await getKindeUser(event.data.user.id);
       if (!kindUser) {
-        return Error("Failed to fetch Kinde user");
+        return new Error("Failed to fetch Kinde user");
       }
 
       const userID = nanoid();

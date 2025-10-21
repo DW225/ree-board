@@ -1,3 +1,4 @@
+import LinkButton from "@/components/board/MagicLink/LinkButton";
 import { Role } from "@/lib/constants/role";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
@@ -110,6 +111,13 @@ export default async function BoardPage({
                 <AvatarStack />
               </MemberManageModalComponent>
               <SortButton className="shrink-0 ml-1" />
+              {!viewOnly && (
+                <LinkButton
+                  boardId={id}
+                  viewOnly={!hasManagePermission}
+                  className="shrink-0 ml-1"
+                />
+              )}
             </div>
             <BoardGrid boardId={id} viewOnly={viewOnly} userId={userID} />
           </div>

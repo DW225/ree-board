@@ -13,8 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMagicLinks } from "@/hooks/useMagicLinks";
-import { Role } from "@/lib/constants/role";
+import { Role, roleOptions } from "@/lib/constants/role";
 import { EXPIRATION_OPTIONS, isValidMagicLinkRole } from "@/lib/types/link";
+import { getRoleDisplayName, magicLinkRoleOptions } from "@/lib/utils/role";
 import { Check, Clock, Copy, Link } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -23,7 +24,9 @@ interface MagicLinkCreatorProps {
   boardId: string;
 }
 
-export default function MagicLinkCreator({ boardId }: Readonly<MagicLinkCreatorProps>) {
+export default function MagicLinkCreator({
+  boardId,
+}: Readonly<MagicLinkCreatorProps>) {
   const { createLink } = useMagicLinks(boardId);
   const [role, setRole] = useState<Role.guest | Role.member>(Role.member);
   const [expirationHours, setExpirationHours] = useState<number>(24);
@@ -66,10 +69,6 @@ export default function MagicLinkCreator({ boardId }: Readonly<MagicLinkCreatorP
     }
   };
 
-  const getRoleDisplayName = (roleValue: Role): string => {
-    return roleValue === Role.member ? "Member" : "Guest";
-  };
-
   const getExpirationDisplayName = (hours: number): string => {
     if (hours === 0) return "Never";
     const option = EXPIRATION_OPTIONS.find((opt) => opt.value === hours);
@@ -96,26 +95,21 @@ export default function MagicLinkCreator({ boardId }: Readonly<MagicLinkCreatorP
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={Role.member.toString()}>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default" className="text-xs">
-                      Member
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Can create and edit posts
-                    </span>
-                  </div>
-                </SelectItem>
-                <SelectItem value={Role.guest.toString()}>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
-                      Guest
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Read-only access
-                    </span>
-                  </div>
-                </SelectItem>
+                {magicLinkRoleOptions.map((option) => (
+                  <SelectItem
+                    key={roleOptions[option].label}
+                    value={option.toString()}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="text-xs">
+                        {roleOptions[option].label}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {roleOptions[option].description}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -146,24 +140,6 @@ export default function MagicLinkCreator({ boardId }: Readonly<MagicLinkCreatorP
             </Select>
           </div>
         </div>
-
-        {/* Preview */}
-        <Card className="p-3 bg-muted/50">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="text-sm font-medium">Preview</div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Badge variant={role === Role.member ? "default" : "secondary"}>
-                  {getRoleDisplayName(role)}
-                </Badge>
-                <span>•</span>
-                <span>
-                  Expires: {getExpirationDisplayName(expirationHours)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </Card>
 
         {/* Create Button */}
         <Button
