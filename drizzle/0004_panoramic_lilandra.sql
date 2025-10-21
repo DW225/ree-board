@@ -1,0 +1,1 @@
+CREATE INDEX `links_board_id_index` ON `links` (`board_id`);
