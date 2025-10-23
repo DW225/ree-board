@@ -57,9 +57,9 @@ type BoardPageParams = Promise<{ id: string }>;
 
 export default async function BoardPage({
   params,
-}: {
-  params: Readonly<BoardPageParams>;
-}) {
+}: Readonly<{
+  params: BoardPageParams;
+}>) {
   const { id } = await params;
 
   const { getUser } = getKindeServerSession();

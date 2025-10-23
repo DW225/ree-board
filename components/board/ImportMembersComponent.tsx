@@ -52,7 +52,7 @@ interface BoardMember {
 export default function ImportMembersComponent({
   currentBoardId,
   onImportComplete,
-}: ImportMembersProps) {
+}: Readonly<ImportMembersProps>) {
   const [isOpen, setIsOpen] = useState(false);
   const [availableBoards, setAvailableBoards] = useState<Board[]>([]);
   const [selectedBoardId, setSelectedBoardId] = useState<string>("");
