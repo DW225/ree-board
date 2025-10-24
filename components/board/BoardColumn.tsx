@@ -172,7 +172,7 @@ export default function BoardColumn({
         return (
           <div
             key={post.id}
-            className={"animate-in fade-in slide-in-from-bottom-5 duration-300"}
+            className={"animate-fade-right animate-duration-[1200ms] animate-ease-in-out"}
           >
             <PostCard
               post={post}
@@ -206,7 +206,7 @@ export default function BoardColumn({
           <AddPostForm postType={postType} boardId={boardId} userId={userId} />
         )}
       </div>
-      <div ref={columnRef} className="flex-grow overflow-y-auto p-3 space-y-3">
+      <div ref={columnRef} className="grow overflow-y-auto p-3 space-y-3">
         {renderPosts}
       </div>
     </div>
