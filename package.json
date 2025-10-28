@@ -25,7 +25,7 @@
     "@libsql/client": "^0.15.15",
     "@next/env": "15.5.5",
     "@preact/signals-react": "^3.3.1",
-    "@sentry/nextjs": "^10.21.0",
+    "@sentry/nextjs": "^10.22.0",
     "@vercel/speed-insights": "^1.2.0",
     "ably": "^2.14.0",
     "class-variance-authority": "^0.7.1",
