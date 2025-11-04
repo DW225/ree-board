@@ -72,7 +72,7 @@
     "@typescript-eslint/parser": "^8.46.2",
     "@vercel/toolbar": "^0.1.41",
     "autoprefixer": "^10.4.21",
-    "drizzle-kit": "^0.31.5",
+    "drizzle-kit": "^0.31.6",
     "esbuild": "^0.25.11",
     "esbuild-register": "^3.6.0",
     "eslint": "^9.38.0",
