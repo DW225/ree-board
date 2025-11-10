@@ -19,11 +19,16 @@ export const userTable = sqliteTable(
     name: text("name").notNull().unique(),
     kinde_id: text("kinde_id").notNull().unique(),
     email: text("email").notNull().unique(),
+    supabase_id: text("supabase_id"), // TODO: change to notNull when supabase auth is fully implemented
+    isGuest: integer("is_guest", { mode: "boolean" }).default(false),
+    guestExpiresAt: integer("guest_expires_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(strftime('%s', 'now'))`),
   },
-  (table) => [index("user_name_index").on(table.name)]
+  (table) => [
+    index("user_name_index").on(table.name),
+  ]
 );
 
 export const boardTable = sqliteTable(
