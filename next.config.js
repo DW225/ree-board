@@ -5,9 +5,14 @@ const nextConfig = {
   experimental: {
     // Enable CSS chunking for better caching
     cssChunking: true,
+    // Note: PPR requires Next.js canary version - uncomment when ready to upgrade
+    // ppr: 'incremental',
     // Optimize package imports for packages not in the default list
+    // Note: lucide-react is already optimized by default in Next.js 15
     optimizePackageImports: [
-      '@atlaskit/pragmatic-drag-and-drop',
+      "@atlaskit/pragmatic-drag-and-drop",
+      "@kinde-oss/kinde-auth-nextjs",
+      "ably",
     ],
   },
   images: {
@@ -25,6 +30,7 @@ const nextConfig = {
         pathname: "/avatar/**",
       },
     ],
+    minimumCacheTTL: 60,
   },
   webpack: (config, { webpack }) => {
     config.plugins.push(

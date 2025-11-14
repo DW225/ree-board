@@ -6,8 +6,30 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ree Board",
-  description: "Retro board application for your team",
+  title: {
+    default: "Ree Board - Collaborative Retrospective Board",
+    template: "%s | Ree Board",
+  },
+  description: "A modern, real-time retrospective board application for agile teams. Create boards, collaborate with your team, and improve your workflow.",
+  keywords: ["retrospective", "agile", "scrum", "team collaboration", "board", "retro"],
+  authors: [{ name: "Ree Board Team" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://ree-board.vercel.app",
+    title: "Ree Board - Collaborative Retrospective Board",
+    description: "A modern, real-time retrospective board application for agile teams",
+    siteName: "Ree Board",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ree Board - Collaborative Retrospective Board",
+    description: "A modern, real-time retrospective board application for agile teams",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const SpeedInsights = dynamic(() =>

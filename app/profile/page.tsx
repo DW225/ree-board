@@ -1,17 +1,16 @@
 import NavBar from "@/components/common/NavBar";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { getCurrentUser } from "@/lib/dal";
+import type { Metadata } from "next";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Profile",
+  description: "View and manage your profile settings",
+};
 
 export default async function ProfilePage() {
-  const { getUser, isAuthenticated } = getKindeServerSession();
-  const isUserAuthenticated = await isAuthenticated();
-
-  if (!isUserAuthenticated) {
-    redirect("/api/auth/login");
-  }
-
-  const user = await getUser();
+  // Verify session and get user using centralized DAL
+  const user = await getCurrentUser();
 
   return (
     <div className="min-h-screen bg-gray-100">
