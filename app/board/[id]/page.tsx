@@ -5,7 +5,7 @@ import { fetchPostsByBoardID } from "@/lib/db/post";
 import { fetchTasks } from "@/lib/db/task";
 import { findUserIdByKindeID } from "@/lib/db/user";
 import { fetchUserVotedPost } from "@/lib/db/vote";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { verifySession } from "@/lib/dal";
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 
@@ -62,15 +62,11 @@ export default async function BoardPage({
 }>) {
   const { id } = await params;
 
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
-
-  if (!user) {
-    redirect("/api/auth/login");
-  }
+  // Verify session using centralized DAL
+  const session = await verifySession();
 
   const [userID, posts, members, actions] = await Promise.all([
-    findUserIdByKindeID(user.id),
+    findUserIdByKindeID(session.kindeId),
     fetchPostsByBoardID(id),
     fetchMembersByBoardID(id),
     fetchTasks(id),

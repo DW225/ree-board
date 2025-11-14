@@ -14,25 +14,25 @@ import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { verifySession } from "@/lib/dal";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+/**
+ * Role-Based Access Control wrapper for Server Actions
+ *
+ * Verifies authentication and checks user role before executing action.
+ * Only allows users with non-guest roles to perform mutations.
+ */
 async function rbacWithAuth<T>(
   boardId: Board["id"],
   action: (userID: User["id"]) => Promise<T>
 ) {
-  const { getUser, isAuthenticated } = getKindeServerSession();
-  const kindeUser = await getUser();
-  const kindeID = kindeUser?.id;
+  // Verify session using centralized DAL
+  const session = await verifySession();
 
-  if (!isAuthenticated || !kindeID) {
-    console.warn("Not authenticated");
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
-  const user = await checkRoleByKindeID(kindeID, boardId);
+  const user = await checkRoleByKindeID(session.kindeId, boardId);
 
   if (!user) {
     console.warn("User not found");
