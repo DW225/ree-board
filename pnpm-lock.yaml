@@ -27,8 +27,8 @@ importers:
         specifier: 15.5.5
         version: 15.5.5
       '@preact/signals-react':
-        specifier: ^3.4.0
-        version: 3.4.0(react@19.1.1)
+        specifier: ^3.6.0
+        version: 3.6.0(react@19.1.1)
       '@sentry/nextjs':
         specifier: ^10.24.0
         version: 10.24.0(@opentelemetry/context-async-hooks@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(next@15.5.4(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)(webpack@5.94.0(esbuild@0.27.0))
@@ -1649,8 +1649,8 @@ packages:
   '@preact/signals-core@1.12.1':
     resolution: {integrity: sha512-BwbTXpj+9QutoZLQvbttRg5x3l5468qaV2kufh+51yha1c53ep5dY4kTuZR35+3pAZxpfQerGJiQqg34ZNZ6uA==}
 
-  '@preact/signals-react@3.4.0':
-    resolution: {integrity: sha512-JduUcKC+Fu9BGehV645WpU7ZOjZYb6Yngwi/CoeGmxUA/ZRQEkepxJHh8t+2WJBV2QBTxlFbOnw3UqqHohT0YQ==}
+  '@preact/signals-react@3.6.0':
+    resolution: {integrity: sha512-mouP63uP1GrUg9X/5FC5vGRkSee+ACShnNHjHWOwkrqOcqD2XLM+aI6uB774hjI85B7tHkobwFN9nHGJJvWQaQ==}
     peerDependencies:
       react: ^16.14.0 || 17.x || 18.x || 19.x
 
@@ -8069,7 +8069,7 @@ snapshots:
 
   '@preact/signals-core@1.12.1': {}
 
-  '@preact/signals-react@3.4.0(react@19.1.1)':
+  '@preact/signals-react@3.6.0(react@19.1.1)':
     dependencies:
       '@preact/signals-core': 1.12.1
       react: 19.1.1
