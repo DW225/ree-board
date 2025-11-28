@@ -1,8 +1,9 @@
-import { fetchBoards } from "@/lib/db/board";
 import { findUserIdByKindeID } from "@/lib/db/user";
 import { retryWithBackoff } from "@/lib/utils/retryWithBackoff";
 import { verifySession } from "@/lib/dal";
+import { BoardListSkeleton } from "@/components/ui/skeletons";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
@@ -10,24 +11,26 @@ export const metadata: Metadata = {
   description: "View and manage all your retrospective boards",
 };
 
-const BoardList = dynamic(() => import("@/components/home/BoardList"));
-const CreateBoardForm = dynamic(() => import("@/components/home/CreateBoardForm"));
-const HomeProvider = dynamic(() => import("@/components/home/HomeProvider"));
+const CreateBoardForm = dynamic(
+  () => import("@/components/home/CreateBoardForm")
+);
+const BoardListWrapper = dynamic(
+  () => import("@/components/home/BoardListWrapper")
+);
 
 export default async function Boards() {
   // Verify session using centralized DAL
   const session = await verifySession();
 
-  const [initialBoardList, userID] = await retryWithBackoff(
+  // Fetch only the userID which is needed for CreateBoardForm
+  // BoardListWrapper will fetch its own data
+  const userID = await retryWithBackoff(
     async () => {
-      const [boards, id] = await Promise.all([
-        fetchBoards(session.kindeId),
-        findUserIdByKindeID(session.kindeId),
-      ]);
+      const id = await findUserIdByKindeID(session.kindeId);
       if (!id) {
         throw new Error("User not found");
       }
-      return [boards, id];
+      return id;
     },
     { maxRetries: 3, initialDelay: 500 }
   );
@@ -37,10 +40,10 @@ export default async function Boards() {
       <div className="container mx-auto mt-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
         <div className="flex flex-wrap gap-4">
-          <HomeProvider initialBoards={initialBoardList}>
-            <CreateBoardForm userID={userID} />
-            <BoardList />
-          </HomeProvider>
+          <CreateBoardForm userID={userID} />
+          <Suspense fallback={<BoardListSkeleton />}>
+            <BoardListWrapper />
+          </Suspense>
         </div>
       </div>
     </div>
