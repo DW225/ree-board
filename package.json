@@ -26,7 +26,7 @@
     "@next/env": "15.5.5",
     "@preact/signals-react": "^3.6.1",
     "@sentry/nextjs": "^10.27.0",
-    "@supabase/ssr": "^0.7.0",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.84.0",
     "@vercel/speed-insights": "^1.2.0",
     "ably": "^2.14.0",
