@@ -35,7 +35,7 @@
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.0",
     "drizzle-zod": "^0.8.3",
-    "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken": "^9.0.3",
     "jwks-rsa": "^3.2.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.556.0",
