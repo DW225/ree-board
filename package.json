@@ -23,7 +23,7 @@
     "@kinde-oss/kinde-auth-nextjs": "^2.11.0",
     "@kinde/management-api-js": "^0.14.0",
     "@libsql/client": "^0.15.15",
-    "@next/env": "15.5.5",
+    "@next/env": "16.0.7",
     "@preact/signals-react": "^3.6.1",
     "@sentry/nextjs": "^10.29.0",
     "@supabase/ssr": "^0.8.0",
