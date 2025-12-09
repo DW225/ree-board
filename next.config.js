@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Packages with dynamic requires that need to be external for server builds
+  serverExternalPackages: ["ably", "got", "keyv", "cacheable-request"],
   // Bundle optimization settings
   experimental: {
     // Enable CSS chunking for better caching
@@ -12,7 +14,6 @@ const nextConfig = {
     optimizePackageImports: [
       "@atlaskit/pragmatic-drag-and-drop",
       "@kinde-oss/kinde-auth-nextjs",
-      "ably",
     ],
   },
   images: {
