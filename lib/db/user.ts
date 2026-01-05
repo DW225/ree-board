@@ -1,6 +1,6 @@
 import { userTable } from "@/db/schema";
 import type { NewUser, User } from "@/lib/types/user";
-import { eq, or, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { db } from "./client";
 
 const prepareFindUserIdByKindeID = db
@@ -63,4 +63,56 @@ export const getUserByUserID = async (userID: User["id"]) => {
     .from(userTable)
     .where(eq(userTable.id, userID));
   return result.length > 0 ? result[0] : undefined;
+};
+
+/**
+ * Migration Helper Functions
+ * These functions support the Kinde to Supabase migration process
+ */
+
+/**
+ * Get user by Supabase ID
+ * Used after migration to authenticate users with their Supabase account
+ */
+export const getUserBySupabaseId = async (supabaseId: string) => {
+  const result = await db
+    .select()
+    .from(userTable)
+    .where(eq(userTable.supabase_id, supabaseId))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+};
+
+/**
+ * Update user with Supabase ID
+ * Used during migration to link Supabase accounts to existing user records
+ */
+export const updateUserSupabaseId = async (
+  userId: User["id"],
+  supabaseId: string
+) => {
+  await db
+    .update(userTable)
+    .set({ supabase_id: supabaseId })
+    .where(eq(userTable.id, userId));
+};
+
+/**
+ * Get all users that need to be migrated
+ * Returns users with kinde_id but no supabase_id
+ */
+export const getAllUsersToMigrate = async () => {
+  const result = await db
+    .select()
+    .from(userTable)
+    .where(
+      and(
+        isNotNull(userTable.kinde_id),
+        or(
+          isNull(userTable.supabase_id),
+          eq(userTable.supabase_id, "supabase_id")
+        )
+      )
+    );
+  return result;
 };
