@@ -116,3 +116,51 @@ export const getAllUsersToMigrate = async () => {
     );
   return result;
 };
+
+/**
+ * Create a guest user with temporary access
+ * Used for anonymous users who want to try the app before signing up
+ */
+export const createGuestUser = async (data: {
+  id: User["id"];
+  supabase_id: User["supabase_id"];
+  name: User["name"];
+  guestExpiresAt: User["guestExpiresAt"];
+}) => {
+  const user = await db
+    .insert(userTable)
+    .values({
+      id: data.id,
+      supabase_id: data.supabase_id,
+      name: data.name,
+      email: `guest_${data.id}@example.com`, // Placeholder email for guest users
+      isGuest: true,
+      guestExpiresAt: data.guestExpiresAt,
+      kinde_id: `guest_${data.id}`, // Placeholder for required field until kinde_id is deprecated
+    })
+    .returning();
+
+  if (user.length === 0) {
+    throw new Error("Failed to create guest user");
+  }
+
+  return user[0];
+};
+
+/**
+ * Convert a guest user to a permanent user
+ * Used when a guest user claims their account with an email
+ */
+export const convertGuestToUser = async (
+  supabaseId: string, // TODO: Change to use User["supabase_id"] after migration
+  email: User["email"]
+) => {
+  await db
+    .update(userTable)
+    .set({
+      isGuest: false,
+      guestExpiresAt: null,
+      email,
+    })
+    .where(eq(userTable.supabase_id, supabaseId));
+};
