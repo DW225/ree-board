@@ -22,7 +22,7 @@
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.2.10",
     "@kinde-oss/kinde-auth-nextjs": "^2.11.0",
     "@kinde/management-api-js": "^0.14.0",
-    "@libsql/client": "^0.15.15",
+    "@libsql/client": "^0.17.0",
     "@next/env": "16.1.1",
     "@preact/signals-react": "^3.6.1",
     "@sentry/nextjs": "^10.32.1",
