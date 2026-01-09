@@ -34,7 +34,9 @@ describe("Supabase Client Utilities", () => {
       delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
       const { createClient } = require("../client");
-      expect(() => createClient()).toThrow(/Missing.*NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
+      expect(() => createClient()).toThrow(
+        /Missing.*NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/
+      );
     });
 
     it("should create client when all environment variables are present", () => {
@@ -55,7 +57,9 @@ describe("Supabase Client Utilities", () => {
       process.env.SUPABASE_SECRET_KEY = "test-secret";
 
       const { createAdminClient } = require("../admin");
-      expect(() => createAdminClient()).toThrow(/Missing NEXT_PUBLIC_SUPABASE_URL/);
+      expect(() => createAdminClient()).toThrow(
+        /Missing NEXT_PUBLIC_SUPABASE_URL/
+      );
     });
 
     it("should throw error when SUPABASE_SECRET_KEY is missing", () => {
@@ -99,7 +103,7 @@ describe("Supabase Client Utilities", () => {
       ];
 
       // This test documents which environment variables are required
-      requiredVars.forEach(varName => {
+      requiredVars.forEach((varName) => {
         expect(varName).toBeTruthy();
       });
     });
