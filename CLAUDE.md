@@ -1,560 +1,375 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Project memory for Claude Code working on **ree-board** - A collaborative retrospective board application.
 
-## ⚠️ CRITICAL: Sequential Thinking Requirement
+## Tech Stack
 
-**MANDATORY**: Before starting ANY complex task (3+ steps or requiring multiple file changes), you MUST use the `mcp__sequential-thinking__sequentialthinking` tool to plan your approach. This includes:
-
-- Feature implementations
-- Bug fixes involving multiple files
-- Refactoring tasks
-- Security reviews
-- Performance optimizations
-- Any task requiring coordination between frontend/backend/database
-
-**Example Planning Process:**
-
-1. Use sequential-thinking to break down the task
-2. Identify files and components to be modified
-3. Plan the implementation sequence
-4. Consider testing and validation steps
-5. Only then proceed with implementation
-
-## Development Commands
-
-### Core Commands
-
-- `pnpm dev` - Start development server (Next.js)
-- `pnpm dev:sql` - Start local Turso SQLite database for development
-- `pnpm build` - Build for production
-- `pnpm test` - Run Jest tests
-- `pnpm lint` - Run ESLint
-
-### Database Commands
-
-- `pnpm push:dev` - Push schema changes to local development database
-- `pnpm push` - Push schema changes to production database
-- `pnpm generate` - Generate Drizzle migration files
-- `pnpm migrate` - Run database migrations
-
-### Analysis Commands
-
-- `pnpm build:analyze` - Build with bundle analysis
-- `pnpm bundle-stats` - Generate bundle analysis report
-- `pnpm build:stats` - Build and generate bundle stats
-
-## Architecture Overview
-
-### Tech Stack
-
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS
-- **Backend**: Next.js API routes with Drizzle ORM
-- **Database**: Turso SQLite (local: file:test.db, production: Turso cloud)
-- **Authentication**: Kinde Auth
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS
+- **Backend**: Next.js server actions with Drizzle ORM
+- **Database**: Turso SQLite (local: `file:test.db`, production: Turso Cloud)
+- **Auth**: Supabase Auth with RBAC (migrating from Kinde)
 - **Real-time**: Ably for live collaboration
-- **State Management**: Preact Signals for reactive state
-- **UI Components**: Radix UI + Shadcn/ui components
+- **State**: Preact Signals for reactive state
+- **UI**: Radix UI + Shadcn/ui components
 - **Testing**: Jest with ts-jest
 
-### Key Architecture Patterns
-
-#### Database Schema (db/schema.ts)
-
-- Uses Nano IDs as primary keys across all tables
-- Core entities: `user`, `board`, `post`, `member`, `vote`, `task` (stored as "action")
-- Role-based access control with user roles (owner, member, guest)
-- Posts are categorized by `PostType` (went_well, to_improve, action_items)
-- Voting system with vote count optimization and unique constraints
-
-#### State Management with Signals
-
-Located in `lib/signal/` - uses Preact Signals for reactive state management:
-
-- `boardSignals.ts` - Board listing, filtering, and sorting
-- `postSignals.ts` - Post management within boards
-- `memberSignals.ts` - Board member management
-- Signals provide computed values and action creators for state updates
-
-#### Server Actions Pattern
-
-Located in `lib/actions/` - server-side operations with authentication:
-
-- `actionWithAuth.ts` - HOF that wraps actions with Kinde authentication
-- Organized by entity: `board/`, `post/`, `member/`, `task/`, `vote/`
-- Actions handle database operations and return serializable data
-
-#### Real-time Collaboration
-
-- Uses Ably channels for real-time updates
-- `PostProvider.tsx` manages real-time post updates and drag-and-drop
-- Lazy-loaded drag-and-drop using Atlaskit's pragmatic-drag-and-drop
-- Posts can be dragged between columns (PostType categories)
-
-#### Component Architecture
-
-- `components/board/` - Board-specific components with real-time features
-- `components/common/` - Shared components (AuthProvider, NavBar)
-- `components/ui/` - Shadcn/ui base components
-- Context providers for cross-cutting concerns (auth, voting state)
-
-### Database Development Workflow
-
-1. For local development: Start `pnpm dev:sql` first, then `pnpm push:dev`
-2. For schema changes: Modify `db/schema.ts`, then run `pnpm generate` and `pnpm push:dev`
-3. Production deployments use `pnpm push` with Turso cloud credentials
-
-### Environment Setup
-
-- Requires Turso, Kinde, Ably, and Sentry accounts
-- Local development uses `test.db` SQLite file
-- Environment variables should follow `.env.example` format
-
-### Testing
-
-- Jest configuration in `jest.config.js` with ts-jest preset
-- Tests use Node environment for server-side code testing
-- Run individual tests with standard Jest patterns
-
-### Key Files to Understand
-
-- `db/schema.ts` - Complete database schema with relationships
-- `lib/signal/` - Reactive state management layer
-- `components/board/PostProvider.tsx` - Real-time collaboration setup
-- `lib/actions/actionWithAuth.ts` - Authentication wrapper for server actions
-
-## 🔐 Security Guidelines
-
-### Authentication & Authorization
-
-**CRITICAL**: All server actions MUST use `actionWithAuth` or `rbacWithAuth` patterns:
-
-```typescript
-// ✅ CORRECT - Authentication wrapper
-export const MyAction = async (data: MyData) =>
-  rbacWithAuth(data.boardId, async (userID) => {
-    // Your business logic here
-  });
-
-// ❌ INCORRECT - No authentication
-export const MyAction = async (data: MyData) => {
-  // Direct database access without auth check
-};
-```
-
-**Role-Based Access Control (RBAC)**:
-
-- `Role.owner` - Full board access (create, delete, manage members)
-- `Role.member` - Post creation, voting, task management
-- `Role.guest` - Read-only access (NO write operations)
-
-**Security Checklist for New Features**:
-
-- [ ] All server actions use authentication wrappers
-- [ ] Input validation with Zod schemas where applicable
-- [ ] No direct database access without RBAC checks
-- [ ] Sensitive operations logged appropriately
-- [ ] No secrets in client-side code
-- [ ] Real-time message validation implemented
-
-### Input Validation
-
-**Zod Schema Pattern** (when adding new validation):
-
-```typescript
-const MyDataSchema = z.object({
-  id: z.string().min(1, "ID is required"),
-  content: z.string().min(1, "Content is required"),
-  // Add proper constraints for all fields
-});
-```
-
-**Critical Validation Points**:
-
-- Real-time message processors (already implemented with strong validation)
-- Form submissions
-- API route parameters
-- Environment variable validation
-
-## ⚡ Performance Standards
-
-### Database Optimization
-
-**Query Performance Patterns**:
-
-```typescript
-// ✅ CORRECT - Use prepared statements for repeated queries
-const prepareFetchPostsByBoardID = db
-  .select()
-  .from(postTable)
-  .where(eq(postTable.boardId, sql.placeholder("boardId")))
-  .prepare();
-
-// ✅ CORRECT - Efficient indexing (see db/schema.ts)
-index("post_board_id_index").on(table.boardId)
-```
-
-**Database Best Practices**:
-
-- Use prepared statements for repeated queries
-- Leverage indexes on foreign keys and frequently queried fields
-- Batch database operations when possible
-- Use transactions for multi-table operations
-
-### Frontend Performance
-
-**Bundle Optimization**:
-
-- Dynamic imports for large components (drag-and-drop is lazy-loaded)
-- Code splitting by route
-- Optimized package imports in `next.config.js`
-- Use `pnpm build:analyze` to monitor bundle size
-
-**Real-time Performance**:
-
-- Signal-based state management for efficient reactivity
-- Message staleness threshold (30s) to prevent processing old updates
-- Optimistic updates for voting to reduce perceived latency
-
-**Performance Monitoring**:
-
-- Bundle analysis with `scripts/bundle-analysis.js`
-- Vercel Speed Insights integration
-- Core Web Vitals tracking
-
-## 🛡️ Reliability Framework
-
-### Error Handling Standards
-
-**Error Boundaries**: Global error boundary captures and reports to Sentry:
-
-```typescript
-// app/global-error.tsx - Automatic Sentry reporting
-useEffect(() => {
-  captureException(error);
-}, [error]);
-```
-
-**Real-time Error Recovery**:
-
-```typescript
-// Standardized error handling with recovery strategies
-const processingError = createProcessingError(
-  "Error message",
-  eventType,
-  rawData,
-  ErrorRecoveryStrategy.LOG_AND_CONTINUE
-);
-```
-
-**Server Action Error Patterns**:
-
-```typescript
-// ✅ CORRECT - Proper error handling
-try {
-  const result = await databaseOperation();
-  return result;
-} catch (error) {
-  console.error("Operation failed:", error);
-  return NextResponse.json({ error: "Operation failed" }, { status: 500 });
-}
-```
-
-### Monitoring & Observability
-
-**Sentry Integration**:
-
-- Automatic error capture and performance monitoring
-- Source map upload for better stack traces
-- Custom error boundaries for React components
-
-**Logging Strategy**:
-
-- Structured console logging for development
-- Error context preservation in production
-- Real-time message processing errors tracked
-
-### Retry & Resilience
-
-**Exponential Backoff** (`lib/utils/retryWithBackoff.ts`):
-
-```typescript
-// For external service calls
-await retryWithBackoff(
-  () => externalServiceCall(),
-  { maxRetries: 5, initialDelay: 1000 }
-);
-```
-
-**Real-time Message Resilience**:
-
-- Message staleness filtering (30s threshold)
-- Validation before processing
-- Graceful degradation for connection issues
-
-## 🚀 Operational Readiness
-
-### Deployment Standards
-
-**Environment Configuration**:
-
-- Development: Local Turso DB (`file:test.db`)
-- Production: Turso Cloud with authentication tokens
-- Environment-specific settings in `next.config.js`
-
-**Build Process**:
+## Essential Commands
 
 ```bash
 # Development
-pnpm dev:sql        # Start local DB
-pnpm push:dev       # Apply schema changes
-pnpm dev           # Start development server
+pnpm dev           # Start Next.js dev server
+pnpm dev:sql       # Start local Turso database
+pnpm test          # Run Jest tests
+pnpm lint          # Run ESLint
 
-# Production
-pnpm build         # Build application
-pnpm push          # Apply production schema changes
-```
-
-**Database Migration Strategy**:
-
-1. Generate migration: `pnpm generate`
-2. Review generated SQL in `drizzle/` folder
-3. Apply to development: `pnpm push:dev`
-4. Test thoroughly
-5. Apply to production: `pnpm push`
-
-### Health Monitoring
-
-**Application Health Indicators**:
-
-- Database connectivity (Turso)
-- Authentication service (Kinde)
-- Real-time messaging (Ably)
-- Error rates (Sentry)
-
-**Operational Checklist**:
-
-- [ ] Environment variables properly configured
-- [ ] Database migrations applied
-- [ ] External service credentials valid
-- [ ] Monitoring and alerting active
-- [ ] Bundle size within acceptable limits
-
-### Configuration Management
-
-**Environment Variables Structure**:
-
-```bash
 # Database
-TURSO_DATABASE_URL=<production_url>
-TURSO_AUTH_TOKEN=<production_token>
+pnpm generate      # Generate Drizzle migrations
+pnpm push:dev      # Push schema to local DB
+pnpm push          # Push schema to production DB
 
-# Authentication
-KINDE_CLIENT_ID=<client_id>
-KINDE_CLIENT_SECRET=<client_secret>
-KINDE_ISSUER_URL=<issuer_url>
-
-# Real-time
-ABLY_API_KEY=<api_key>
-
-# Monitoring
-SENTRY_TOKEN=<auth_token>
+# Analysis
+pnpm build:analyze # Bundle analysis
 ```
 
-## 📋 Code Quality Standards
+## Key Directories
 
-### Testing Requirements
+```
+app/                          # Next.js App Router (pages, layouts, routes)
+components/
+  ├── board/                  # Board-specific components with real-time
+  ├── common/                 # Shared components (AuthProvider, NavBar)
+  └── ui/                     # Shadcn/ui base components
+db/
+  └── schema.ts               # Database schema (Drizzle ORM)
+lib/
+  ├── actions/                # Server actions by entity (with auth wrappers)
+  ├── db/                     # Database operations (prepared statements)
+  ├── signal/                 # Preact Signals state management
+  ├── realtime/               # Ably message processors
+  └── types/                  # TypeScript type definitions
+.claude/
+  ├── skills/                 # Domain knowledge (Next.js, Drizzle, security, etc.)
+  ├── agents/                 # Code reviewers (security, database)
+  └── hooks/                  # Automation (linting, type-checking, tests)
+```
 
-**Test Coverage Expectations**:
+## Code Standards
 
-- Unit tests for utility functions (see `lib/utils/md5.test.ts`)
-- Integration tests for message processors (`lib/realtime/__tests__/`)
-- Server action testing with mocked authentication
+### TypeScript
 
-**Testing Patterns**:
+- Strict mode enabled
+- Prefer `interface` over `type` for object shapes
+- Use `type` for unions, intersections, utilities
+- Never use `any` - use `unknown` or proper types
+
+### Code Style
+
+- Use early returns, avoid nested conditionals
+- Prefer composition over inheritance
+- Functional patterns where appropriate
+- Import types with `import type { ... }`
+
+### Git Conventions
+
+**Branches**: `{initials}/{type}-{description}`
+- Examples: `jd/feat-dark-mode`, `sm/fix-vote-bug`
+
+**Commits**: Conventional Commits format
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code refactor (no behavior change)
+- `docs:` - Documentation
+- `test:` - Test changes
+- `chore:` - Build/tooling changes
+
+## 🔐 CRITICAL: Security Rules
+
+### Server Actions MUST Use Auth Wrappers
+
+**NEVER write server actions without authentication:**
 
 ```typescript
-// ✅ CORRECT - Comprehensive message processor testing
-describe("Message Processors", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
-  });
+// ❌ WRONG - Security vulnerability
+export async function deletePost(postId: string) {
+  await db.delete(postTable).where(eq(postTable.id, postId));
+}
 
-  it("should handle invalid data gracefully", () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-    // Test implementation
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Invalid data"),
-      expect.objectContaining({ details: expect.any(Array) })
-    );
-    consoleSpy.mockRestore();
+// ✅ CORRECT - Authentication enforced
+export const deletePost = async (postId: string, boardId: string) =>
+  rbacWithAuth(boardId, async (userId, role) => {
+    // Authenticated user with verified role
+    await db.delete(postTable).where(eq(postTable.id, postId));
   });
+```
+
+### Role Hierarchy
+
+- **owner**: Full control (delete board, manage members)
+- **member**: Create/edit posts, vote, manage own content
+- **guest**: Read-only (NO mutations allowed)
+
+### Input Validation
+
+Validate all user input, especially:
+- Real-time messages (Ably) - use Zod schemas
+- Form data - validate before processing
+- API parameters - never trust client input
+
+## 💻 Critical Implementation Patterns
+
+### 1. Error Handling
+
+**Never fail silently** - Always provide user feedback:
+
+```typescript
+// ✅ CORRECT
+try {
+  await submitAction();
+  toast.success('Saved successfully');
+} catch (error) {
+  toast.error('Failed to save');
+  console.error(error);
+}
+
+// ❌ WRONG
+try {
+  await submitAction();
+} catch (error) {
+  // Silent failure - user doesn't know it failed
+}
+```
+
+### 2. UI States
+
+All interactive UI must handle:
+- **Loading**: Show spinner/skeleton while processing
+- **Error**: Display error message with retry option
+- **Empty**: Show empty state with call-to-action
+- **Success**: Confirm operation completed
+
+```typescript
+// ✅ CORRECT - All states handled
+{isLoading && <Spinner />}
+{error && <ErrorMessage error={error} onRetry={retry} />}
+{!isLoading && !error && data.length === 0 && <EmptyState />}
+{!isLoading && !error && data.map(...)}
+```
+
+### 3. Mutations (Form Submissions, Actions)
+
+Every mutation must have:
+- Disabled button during processing
+- Loading indicator
+- Error handling with user-visible message
+- Success confirmation
+
+```typescript
+// ✅ CORRECT
+const [isPending, startTransition] = useTransition();
+
+const handleSubmit = async () => {
+  startTransition(async () => {
+    try {
+      await createPost(data);
+      toast.success('Post created');
+    } catch (error) {
+      toast.error('Failed to create post');
+    }
+  });
+};
+
+return <Button disabled={isPending} onClick={handleSubmit}>
+  {isPending ? 'Creating...' : 'Create Post'}
+</Button>;
+```
+
+## Database Patterns
+
+### Schema Design (db/schema.ts)
+
+- **Primary Keys**: Nano IDs for all tables
+- **Foreign Keys**: Index all foreign keys
+- **Relationships**: Define with Drizzle relations
+- **Timestamps**: Use `integer('created_at', { mode: 'timestamp' })`
+- **Enums**: Use SQLite text with TypeScript enum types
+
+### Query Optimization
+
+```typescript
+// ✅ Use prepared statements for repeated queries
+const prepareGetPosts = db
+  .select()
+  .from(postTable)
+  .where(eq(postTable.boardId, sql.placeholder('boardId')))
+  .prepare();
+
+// ✅ Select only needed columns
+const posts = await db.select({
+  id: postTable.id,
+  content: postTable.content
+}).from(postTable);
+
+// ✅ Use transactions for multi-table operations
+await db.transaction(async (tx) => {
+  await tx.insert(boardTable).values(board);
+  await tx.insert(memberTable).values(member);
 });
 ```
 
-### Code Organization
+### Migration Workflow
 
-**File Structure Patterns**:
+1. Modify `db/schema.ts`
+2. `pnpm generate` - Generate migration
+3. Review SQL in `drizzle/` folder
+4. `pnpm push:dev` - Test locally
+5. Verify changes work
+6. `pnpm push` - Deploy to production
 
-- `lib/actions/[entity]/action.ts` - Server actions by domain
-- `lib/db/[entity].ts` - Database operations by table
-- `lib/signal/[entity]Signals.ts` - State management by domain
-- `components/[feature]/` - Feature-specific components
-- `lib/types/[entity].ts` - TypeScript type definitions
+## Testing Strategy
 
-**Import Organization**:
+### Test What Matters
+
+- **Test behavior, not implementation**
+- Use factory patterns for test data
+- Mock external dependencies (Supabase, Ably, DB)
+- Use fake timers for time-dependent tests
 
 ```typescript
-// ✅ CORRECT - Consistent type imports
-import type { Post } from "@/lib/types/post";
-import { updatePostContent } from "@/lib/signal/postSignals";
+// ✅ CORRECT - Tests behavior
+it('filters posts by type', () => {
+  const filtered = filterPosts(posts, 'went_well');
+  expect(filtered.every(p => p.type === 'went_well')).toBe(true);
+});
+
+// ❌ WRONG - Tests implementation
+it('uses Array.filter', () => {
+  const spy = jest.spyOn(Array.prototype, 'filter');
+  filterPosts(posts, 'went_well');
+  expect(spy).toHaveBeenCalled();
+});
 ```
 
-### Documentation Standards
+## 🎯 Skill Activation
 
-**Code Documentation Requirements**:
+Before starting work, check if these skills apply:
 
-- JSDoc comments for public APIs
-- Type definitions for all interfaces
-- README updates for architectural changes
-- Schema documentation in `db/schema.ts`
+- **nextjs-app-router** - Server/client components, server actions, routing
+- **drizzle-patterns** - Database schema, queries, migrations
+- **rbac-security** - Authentication, authorization, validation (CRITICAL for server actions)
+- **ably-realtime** - Real-time messaging, channels, message validation
+- **signal-state-management** - Preact Signals, reactive state
+- **testing-patterns** - Jest tests, mocking, test organization
 
-**Comment Guidelines**:
+Skills are in `.claude/skills/` - Claude will auto-activate based on context.
 
-- Explain WHY, not WHAT
-- Document complex business logic
-- Mark TODO items with context
-- Reference external dependencies clearly
+## 🤖 Code Reviewers
 
-## 🔧 Development Workflow
+Specialized agents automatically review code:
 
-### Before Starting Development
+- **security-reviewer** - Checks auth, RBAC, input validation (activates on `lib/actions/` edits)
+- **database-reviewer** - Reviews schema, indexes, migrations (activates on `db/schema.ts` edits)
 
-1. **Use Sequential Thinking**: Plan complex tasks thoroughly
-2. **Check Dependencies**: Ensure all services are running
-3. **Environment Setup**: Verify all environment variables
-4. **Database State**: Confirm migrations are applied
+## Common Operations
 
-### Code Review Standards
+### Create New Server Action
 
-**Pre-submission Checklist**:
+```typescript
+// lib/actions/entity/myAction.ts
+'use server';
 
-- [ ] Tests pass (`pnpm test`)
-- [ ] Linting passes (`pnpm lint`)
-- [ ] Type checking passes
-- [ ] Bundle size impact assessed
-- [ ] Security implications reviewed
-- [ ] Performance impact considered
+import { rbacWithAuth } from '@/lib/actions/actionWithAuth';
+import { z } from 'zod';
 
-### Git Workflow
+const InputSchema = z.object({
+  // Define validation
+});
 
-**Branch Naming**:
+export const myAction = async (data: unknown) =>
+  rbacWithAuth(data.boardId, async (userId, role) => {
+    const validated = InputSchema.parse(data);
+    // Perform operation
+    return result;
+  });
+```
 
-- `feat/feature-name` - New features
-- `fix/issue-description` - Bug fixes
-- `refactor/component-name` - Code improvements
-- `docs/update-description` - Documentation updates
+### Add Real-time Feature
 
-## 🚨 Troubleshooting Guide
+```typescript
+'use client';
 
-### Common Issues
+import { useChannel } from 'ably/react';
 
-**Database Connection Issues**:
+export function MyComponent({ boardId }) {
+  useChannel(`board:${boardId}`, (message) => {
+    // Validate message
+    const validated = MessageSchema.safeParse(message.data);
+    if (!validated.success) return;
+
+    // Check staleness (30s threshold)
+    if (Date.now() - validated.data.timestamp > 30000) return;
+
+    // Process message
+    handleMessage(validated.data);
+  });
+}
+```
+
+### Update Database Schema
 
 ```bash
-# Local development
-pnpm dev:sql        # Ensure local DB is running
-pnpm push:dev       # Reapply schema
+# 1. Edit db/schema.ts
+# 2. Generate migration
+pnpm generate
 
-# Production
-# Check TURSO_DATABASE_URL and TURSO_AUTH_TOKEN
+# 3. Review generated SQL in drizzle/
+
+# 4. Test locally
+pnpm push:dev
+
+# 5. Verify changes work
+
+# 6. Deploy to production
+pnpm push
 ```
 
-**Authentication Failures**:
+## Key Files Reference
 
-- Verify Kinde configuration in `.env`
-- Check callback URLs match environment
-- Ensure middleware configuration is correct
+- `db/schema.ts` - Database schema with all tables and relationships
+- `lib/actions/actionWithAuth.ts` - Auth wrappers (MUST use for server actions)
+- `lib/signal/` - Signal-based state management by domain
+- `lib/realtime/messageProcessors.ts` - Real-time message validation
+- `components/board/PostProvider.tsx` - Real-time collaboration setup
+- `.claude/skills/` - Domain knowledge and patterns
+- `.claude/agents/` - Automated code reviewers
 
-**Real-time Issues**:
-
-- Verify Ably API key configuration
-- Check message processor error logs
-- Validate WebSocket connection in browser dev tools
-
-**Build Failures**:
+## Environment Variables
 
 ```bash
-# Clear Next.js cache
-rm -rf .next
+# Database
+TURSO_DATABASE_URL=<TURSO_DATABASE_URL>
+TURSO_AUTH_TOKEN=<TURSO_AUTH_TOKEN>
 
-# Reinstall dependencies
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
+# Authentication (Supabase)
+NEXT_PUBLIC_SUPABASE_URL=<NEXT_PUBLIC_SUPABASE_URL>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<NEXT_PUBLIC_SUPABASE_ANON_KEY>
+SUPABASE_SERVICE_ROLE_KEY=<SUPABASE_SERVICE_ROLE_KEY>
+
+# Real-time
+ABLY_API_KEY=<ABLY_API_KEY>
+
+# Monitoring
+SENTRY_AUTH_TOKEN=<SENTRY_AUTH_TOKEN>
 ```
 
-### Performance Debugging
+## Troubleshooting
 
-**Bundle Analysis**:
-
-```bash
-pnpm build:analyze  # Generate bundle analyzer
-pnpm build:stats    # Generate size statistics
-```
-
-**Database Query Performance**:
-
-- Use Drizzle's query logging in development
-- Check index usage for slow queries
-- Monitor prepared statement efficiency
-
-### Debug Mode Configuration
-
-**Development Debugging**:
-
-```bash
-# Enable verbose logging
-DEBUG=* pnpm dev
-
-# Database query logging
-# Set in drizzle.config.ts: verbose: true
-```
-
-## 📚 Learning Resources
-
-### Architecture Deep Dive
-
-**Signal-Based State Management**:
-
-- Read `lib/signal/postSignals.ts` for patterns
-- Understand computed vs. simple signals
-- Batch updates for performance
-
-**Real-time Architecture**:
-
-- Study `lib/realtime/messageProcessors.ts` for message handling
-- Review `components/board/PostChannelComponent.tsx` for integration
-- Understand Ably channel management
-
-**Database Patterns**:
-
-- Examine `db/schema.ts` for relational design
-- Study prepared statement usage in `lib/db/`
-- Understand migration workflow with Drizzle
-
-### External Dependencies
-
-**Key Third-Party Integrations**:
-
-- [Next.js 15 App Router](https://nextjs.org/docs)
-- [Drizzle ORM](https://orm.drizzle.team/)
-- [Turso Database](https://turso.tech/docs)
-- [Kinde Authentication](https://docs.kinde.com/)
-- [Ably Real-time](https://ably.com/docs)
-- [Preact Signals](https://preactjs.com/guide/v10/signals)
+**Database Issues**: `pnpm dev:sql` then `pnpm push:dev`
+**Type Errors**: `npx tsc --noEmit` to see all errors
+**Build Fails**: `rm -rf .next && pnpm build`
+**Tests Fail**: Check mocks in `jest.setup.js`
 
 ---
 
-**Last Updated**: Latest comprehensive review completed
-**Version**: 1.0 - Complete architectural documentation
+**For detailed patterns**: See `.claude/skills/` directory
+**For security/database reviews**: Agents auto-activate on relevant file edits
+**For automation**: Hooks run automatically (linting, type-checking, tests)
