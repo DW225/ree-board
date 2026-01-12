@@ -44,3 +44,6 @@ test.db*
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# claude code
+.claude/settings.local.json
