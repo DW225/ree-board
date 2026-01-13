@@ -1,6 +1,6 @@
 ---
 name: nextjs-app-router
-description: Next.js 15 App Router patterns including server components, client components, server actions, route handlers, layouts, metadata API, dynamic routes, file conventions, data fetching, caching strategies, and Next.js best practices for building modern React applications
+description: Next.js 16 App Router patterns including server components, client components, server actions, route handlers, layouts, metadata API, dynamic routes, file conventions, data fetching, caching strategies, and Next.js best practices for building modern React applications
 model: sonnet
 ---
 
