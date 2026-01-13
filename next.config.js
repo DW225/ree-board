@@ -10,7 +10,7 @@ const nextConfig = {
     // Note: PPR requires Next.js canary version - uncomment when ready to upgrade
     // ppr: 'incremental',
     // Optimize package imports for packages not in the default list
-    // Note: lucide-react is already optimized by default in Next.js 15
+    // Note: lucide-react is already optimized by default in Next.js 16
     optimizePackageImports: [
       "@atlaskit/pragmatic-drag-and-drop",
       "@kinde-oss/kinde-auth-nextjs",

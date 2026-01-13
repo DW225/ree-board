@@ -17,7 +17,7 @@ Skills are specialized knowledge modules that Claude can reference when working 
 
 #### [Next.js App Router](nextjs-app-router/SKILL.md)
 
-**Triggers:** server components, client components, server actions, app router, Next.js 15
+**Triggers:** server components, client components, server actions, app router, Next.js 16
 
 **Use for:** Building pages, routes, layouts, metadata, server actions, and Next.js-specific patterns
 
