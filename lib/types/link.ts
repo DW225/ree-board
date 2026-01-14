@@ -133,7 +133,8 @@ export type MagicLinkError =
   | "USER_ALREADY_MEMBER"
   | "BOARD_NOT_FOUND"
   | "AUTHENTICATION_REQUIRED"
-  | "INVALID_TOKEN";
+  | "INVALID_TOKEN"
+  | "GUEST_LIMIT_REACHED";
 
 /**
  * Result of attempting to use a magic link
