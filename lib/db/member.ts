@@ -3,7 +3,7 @@ import type { Board } from "@/lib/types/board";
 import type { Transaction } from "@/lib/types/db";
 import type { NewMember } from "@/lib/types/member";
 import type { User } from "@/lib/types/user";
-import { and, eq, inArray, ne, notExists, sql } from "drizzle-orm";
+import { and, count, eq, inArray, ne, notExists, sql } from "drizzle-orm";
 import { db } from "./client";
 
 export const addMember = async (newMember: NewMember) => {
@@ -78,9 +78,9 @@ export const checkMemberRole = async (
   userID: User["id"],
   boardId: Board["id"]
 ) => {
-  const member = await prepareCheckMemberRole.execute({ 
-    userId: userID, 
-    boardId 
+  const member = await prepareCheckMemberRole.execute({
+    userId: userID,
+    boardId,
   });
   return member ? member[0].role : null;
 };
@@ -104,9 +104,9 @@ export const checkRoleByKindeID = async (
   kindeID: User["kinde_id"],
   boardId: Board["id"]
 ) => {
-  const member = await prepareCheckRoleByKindeID.execute({ 
-    kindeId: kindeID, 
-    boardId 
+  const member = await prepareCheckRoleByKindeID.execute({
+    kindeId: kindeID,
+    boardId,
   });
   return member ? member[0] : null;
 };
@@ -179,10 +179,25 @@ export const checkIfMemberExists = async (
   userId: User["id"],
   boardId: Board["id"]
 ): Promise<boolean> => {
-  const existing = await prepareCheckIfMemberExists.execute({ 
-    userId, 
-    boardId 
+  const existing = await prepareCheckIfMemberExists.execute({
+    userId,
+    boardId,
   });
 
   return existing.length > 0;
+};
+
+/**
+ * Get the number of boards a user is a member of
+ * Useful for enforcing one-board limit for guest users
+ */
+export const getBoardCountForUser = async (
+  userId: User["id"]
+): Promise<number> => {
+  const result = await db
+    .select({ value: count() })
+    .from(memberTable)
+    .where(eq(memberTable.userId, userId));
+
+  return result[0]?.value || 0;
 };
