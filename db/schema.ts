@@ -17,9 +17,8 @@ export const userTable = sqliteTable(
   {
     id: text("id").primaryKey(), // Use Nano ID for primary key
     name: text("name").notNull().unique(),
-    kinde_id: text("kinde_id").notNull().unique(),
     email: text("email").notNull().unique(),
-    supabase_id: text("supabase_id"), // TODO: change to notNull when supabase auth is fully implemented
+    supabase_id: text("supabase_id").notNull().unique(),
     isGuest: integer("is_guest", { mode: "boolean" }).default(false),
     guestExpiresAt: integer("guest_expires_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" })
