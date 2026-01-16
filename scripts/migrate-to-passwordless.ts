@@ -25,21 +25,28 @@
  *   - Database backup created
  */
 
+import { eq, isNull, or } from "drizzle-orm";
+import { userTable } from "../db/schema";
+import { db } from "../lib/db/client";
+import { updateUserSupabaseId } from "../lib/db/user";
 import { createAdminClient } from "../lib/utils/supabase/admin";
-import { getAllUsersToMigrate, updateUserSupabaseId } from "../lib/db/user";
 
 interface MigrationResult {
   success: number;
   failed: number;
   skipped: number;
   errors: Array<{ email: string; error: string; userId: string }>;
-  successfulMigrations: Array<{ email: string; userId: string; supabaseId: string }>;
+  successfulMigrations: Array<{
+    email: string;
+    userId: string;
+    supabaseId: string;
+  }>;
 }
 
 async function migrateToPasswordless(): Promise<MigrationResult> {
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log("Kinde to Supabase Passwordless Migration");
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log();
 
   const supabase = createAdminClient();
@@ -47,12 +54,22 @@ async function migrateToPasswordless(): Promise<MigrationResult> {
   console.log("⏳ Fetching users to migrate...\n");
 
   // Get all users that need migration
-  const usersToMigrate = await getAllUsersToMigrate();
+  const usersToMigrate = await db
+    .select()
+    .from(userTable)
+    .where(
+      or(
+        isNull(userTable.supabase_id),
+        eq(userTable.supabase_id, "supabase_id")
+      )
+    );
 
   console.log(`📊 Found ${usersToMigrate.length} users to migrate\n`);
 
   if (usersToMigrate.length === 0) {
-    console.log("✅ No users need migration. All users already have Supabase accounts.\n");
+    console.log(
+      "✅ No users need migration. All users already have Supabase accounts.\n"
+    );
     return {
       success: 0,
       failed: 0,
@@ -92,7 +109,7 @@ async function migrateToPasswordless(): Promise<MigrationResult> {
           migrated_from_kinde: true,
           migration_date: new Date().toISOString(),
           original_user_id: user.id,
-          original_kinde_id: user.kinde_id,
+          // original_kinde_id: user.kinde_id,
         },
       });
 
@@ -128,7 +145,6 @@ async function migrateToPasswordless(): Promise<MigrationResult> {
         userId: user.id,
         supabaseId: data.user.id,
       });
-
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       console.log(`   ✗ Failed: ${errorMsg}`);
@@ -179,17 +195,23 @@ async function main() {
       console.log("🎉 All users migrated successfully!");
       console.log();
       console.log("Next steps:");
-      console.log("1. Run verification script: npx tsx scripts/verify-migration.ts");
+      console.log(
+        "1. Run verification script: npx tsx scripts/verify-migration.ts"
+      );
       console.log("2. Test sign-in with 2-3 users");
       console.log("3. Deploy new code with Supabase authentication");
       console.log();
       process.exit(0);
     } else {
-      console.log("⚠️  Some users failed to migrate. Please review errors above.");
+      console.log(
+        "⚠️  Some users failed to migrate. Please review errors above."
+      );
       console.log();
       console.log("To retry failed users:");
       console.log("1. Fix any issues identified in the errors");
-      console.log("2. Run this script again (it will only migrate remaining users)");
+      console.log(
+        "2. Run this script again (it will only migrate remaining users)"
+      );
       console.log();
       process.exit(1);
     }
