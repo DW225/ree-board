@@ -1,5 +1,6 @@
 import NavBar from "@/components/common/NavBar";
 import { getCurrentUser } from "@/lib/dal";
+import { md5 } from "@/lib/utils/md5";
 import type { Metadata } from "next";
 import Image from "next/image";
 
@@ -23,15 +24,19 @@ export default async function ProfilePage() {
               <h2 className="text-lg font-semibold mb-2">About</h2>
               <div className="flex items-center mb-4">
                 <Image
-                  src={user?.picture ?? "https://www.gravatar.com/avatar/?d=mp"}
+                  src={`https://www.gravatar.com/avatar/${md5(
+                    (user?.email ?? "").trim().toLowerCase()
+                  )}?d=mp&s=64`}
                   alt="Profile"
                   className="w-16 h-16 rounded-full mr-4"
-                  width={32}
-                  height={32}
+                  width={64}
+                  height={64}
                 />
                 <div>
                   <p className="font-bold">
-                    {user?.given_name} {user?.family_name}
+                    {user?.user_metadata?.display_name ??
+                      user?.email?.split("@")[0] ??
+                      "User"}
                   </p>
                   <p className="text-gray-600">{user?.email}</p>
                 </div>

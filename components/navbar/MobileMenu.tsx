@@ -1,8 +1,8 @@
-import NavLink from "./NavLink";
-import NavButton from "./NavButton";
-import { LogOut, X } from "lucide-react";
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
+import { X } from "lucide-react";
 import { useEffect } from "react";
+import { LogoutButton } from "@/components/ui/logout";
+import NavButton from "./NavButton";
+import NavLink from "./NavLink";
 
 type MobileMenuProps = {
   isOpen: boolean;
@@ -64,18 +64,7 @@ export default function MobileMenu({
           </div>
 
           <div className="pt-6 mt-6 border-t border-gray-200">
-            <NavButton
-              onClick={() => {
-                onClose();
-              }}
-              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-              ariaLabel="Logout"
-            >
-              <LogoutLink>
-                <LogOut className="h-5 w-5 inline-block" />
-                <span className="sr-only">Logout</span>
-              </LogoutLink>
-            </NavButton>
+            <LogoutButton className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
         </nav>
       </div>

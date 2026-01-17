@@ -6,7 +6,7 @@ import { db } from "@/lib/db/client";
 import {
   addMember,
   bulkAddMembers,
-  checkRoleByKindeID,
+  checkMemberRole,
   fetchMembersByBoardID,
   fetchMembersWithExclude,
   removeMember,
@@ -15,7 +15,7 @@ import { findUserByEmail } from "@/lib/db/user";
 import type { Board } from "@/lib/types/board";
 import type { NewMember } from "@/lib/types/member";
 import type { User } from "@/lib/types/user";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { verifySession } from "@/lib/dal";
 import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
@@ -26,23 +26,17 @@ async function rbacWithAuth<T>(
   minRole: Role,
   action: () => Promise<T>
 ) {
-  const { getUser, isAuthenticated } = getKindeServerSession();
-  const kindeUser = await getUser();
-  const kindeID = kindeUser?.id;
+  // Verify session using centralized DAL
+  const session = await verifySession();
 
-  if (!isAuthenticated || !kindeID) {
-    console.warn("Not authenticated");
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
+  const role = await checkMemberRole(session.userId, boardId);
 
-  const user = await checkRoleByKindeID(kindeID, boardId);
-
-  if (!user) {
-    console.warn("User not found");
+  if (role === null) {
+    console.warn("User not a member of this board");
     redirect("/");
   }
 
-  if (!hasRequiredRole(user.role, minRole)) {
+  if (!hasRequiredRole(role, minRole)) {
     console.warn("User does not have sufficient role to perform this action");
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
@@ -63,14 +57,8 @@ export const removeMemberFromBoardAction = async (
 
 export const getBoardsWhereUserIsAdminAction = async () =>
   actionWithAuth(async () => {
-    const { getUser } = getKindeServerSession();
-    const kindeUser = await getUser();
-
-    if (!kindeUser?.id) {
-      throw new Error("User not authenticated");
-    }
-
-    return await fetchBoardsWhereUserIsAdmin(kindeUser.id);
+    const session = await verifySession();
+    return await fetchBoardsWhereUserIsAdmin(session.userId);
   });
 
 export const getMembersFromBoardWithExclusionAction = async (

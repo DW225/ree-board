@@ -1,35 +1,29 @@
 "use server";
 
 import { Role } from "@/lib/constants/role";
-import { checkRoleByKindeID } from "@/lib/db/member";
+import { checkMemberRole } from "@/lib/db/member";
 import { assignTask, createTask, updateTaskState } from "@/lib/db/task";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import type { NewTask, Task } from "@/lib/types/task";
 import type { User } from "@/lib/types/user";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { verifySession } from "@/lib/dal";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
 async function rbacWithAuth<T>(boardId: Board["id"], action: () => Promise<T>) {
-  const { getUser, isAuthenticated } = getKindeServerSession();
-  const kindeUser = await getUser();
-  const kindeID = kindeUser?.id;
+  // Verify session using centralized DAL
+  const session = await verifySession();
 
-  if (!isAuthenticated || !kindeID) {
-    console.warn("Not authenticated");
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
+  const role = await checkMemberRole(session.userId, boardId);
 
-  const user = await checkRoleByKindeID(kindeID, boardId);
-
-  if (user === null) {
-    console.warn("User not found");
+  if (role === null) {
+    console.warn("User not a member of this board");
     redirect("/");
   }
 
-  if (user.role === Role.guest) {
+  if (role === Role.guest) {
     console.warn("Access denied for guest role");
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }

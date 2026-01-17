@@ -1,7 +1,7 @@
-import { postTable, voteTable, taskTable } from "@/db/schema";
+import { postTable, taskTable, voteTable } from "@/db/schema";
 import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
-import { eq, sql, inArray, and, not } from "drizzle-orm";
+import { and, eq, inArray, not, sql } from "drizzle-orm";
 import { db } from "./client";
 
 export const createPost = async (post: NewPost) => {
@@ -74,7 +74,7 @@ export interface MergePostResult {
 /**
  * Merges multiple posts into a single post with proper vote recalculation.
  * Vote counts are recalculated based on unique voters, not just combined totals.
- * 
+ *
  * @param targetPostId - The post that will receive the merged content
  * @param sourcePostIds - Array of post IDs to be merged into the target
  * @param mergedContent - The combined content for the merged post
@@ -101,16 +101,17 @@ export const mergePost = async (
     const posts = await tx
       .select()
       .from(postTable)
-      .where(and(
-        inArray(postTable.id, allPostIds),
-        eq(postTable.boardId, boardId)
-      ));
+      .where(
+        and(inArray(postTable.id, allPostIds), eq(postTable.boardId, boardId))
+      );
 
     if (posts.length !== allPostIds.length) {
-      throw new Error("One or more posts not found or don't belong to the specified board");
+      throw new Error(
+        "One or more posts not found or don't belong to the specified board"
+      );
     }
 
-    const targetPost = posts.find(p => p.id === targetPostId);
+    const targetPost = posts.find((p) => p.id === targetPostId);
     if (!targetPost) {
       throw new Error("Target post not found");
     }
@@ -128,7 +129,7 @@ export const mergePost = async (
       .select({
         id: voteTable.id,
         userId: voteTable.userId,
-        postId: voteTable.postId
+        postId: voteTable.postId,
       })
       .from(voteTable)
       .where(inArray(voteTable.postId, allPostIds))
@@ -137,23 +138,25 @@ export const mergePost = async (
       );
 
     // 4. Create a map to keep only the first vote per user (prioritizing target post)
-    const votesByUser = new Map<string, typeof votesToKeep[0]>();
+    const votesByUser = new Map<string, (typeof votesToKeep)[0]>();
     for (const vote of votesToKeep) {
       if (!votesByUser.has(vote.userId)) {
         votesByUser.set(vote.userId, vote);
       }
     }
 
-    const votesToKeepIds = Array.from(votesByUser.values()).map(v => v.id);
+    const votesToKeepIds = Array.from(votesByUser.values()).map((v) => v.id);
 
     // 5. Delete duplicate votes (keep only one per user)
     if (votesToKeepIds.length > 0) {
       await tx
         .delete(voteTable)
-        .where(and(
-          inArray(voteTable.postId, allPostIds),
-          not(inArray(voteTable.id, votesToKeepIds))
-        ));
+        .where(
+          and(
+            inArray(voteTable.postId, allPostIds),
+            not(inArray(voteTable.id, votesToKeepIds))
+          )
+        );
     }
 
     // 6. Update remaining votes to point to target post
@@ -177,14 +180,10 @@ export const mergePost = async (
 
     // 8. Handle tasks - for action_item posts, keep the target post's task
     // and delete tasks associated with source posts
-    await tx
-      .delete(taskTable)
-      .where(inArray(taskTable.postId, sourcePostIds));
+    await tx.delete(taskTable).where(inArray(taskTable.postId, sourcePostIds));
 
     // 9. Delete source posts (this will cascade delete any remaining votes/tasks)
-    await tx
-      .delete(postTable)
-      .where(inArray(postTable.id, sourcePostIds));
+    await tx.delete(postTable).where(inArray(postTable.id, sourcePostIds));
 
     return {
       mergedPost,

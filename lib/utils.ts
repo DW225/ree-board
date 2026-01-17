@@ -14,5 +14,10 @@ export function getEnumKeys<
   return Object.keys(enumVariable) as Array<T>;
 }
 
-export const fetcher = (...args: [RequestInfo, RequestInit?]) =>
-  fetch(...args).then((res) => res.json());
+export const fetcher = (args: [RequestInfo, RequestInit?] | RequestInfo) => {
+  // Handle both array keys (from SWR) and simple string keys
+  if (Array.isArray(args)) {
+    return fetch(args[0], args[1]).then((res) => res.json());
+  }
+  return fetch(args).then((res) => res.json());
+};

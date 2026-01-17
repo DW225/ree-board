@@ -4,7 +4,7 @@
  */
 export interface SessionPayload {
   userId: string;
-  kindeId: string;
+  supabaseId: string;
   expiresAt?: Date;
 }
 
@@ -14,6 +14,7 @@ export interface SessionPayload {
  */
 export interface VerifiedSession {
   isAuth: true;
-  userId: string;
-  kindeId: string;
+  userId: string; // Internal user ID (Nano ID)
+  supabaseId: string; // Supabase auth user ID
+  isGuest: boolean; // Whether user is a guest
 }

@@ -1,7 +1,7 @@
 import { taskTable } from "@/db/schema";
-import type { Task, NewTask } from "@/lib/types/task";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
+import type { NewTask, Task } from "@/lib/types/task";
 import type { User } from "@/lib/types/user";
 import { eq, sql } from "drizzle-orm";
 import { db } from "./client";

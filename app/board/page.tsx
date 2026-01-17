@@ -1,5 +1,3 @@
-import { findUserIdByKindeID } from "@/lib/db/user";
-import { retryWithBackoff } from "@/lib/utils/retryWithBackoff";
 import { verifySession } from "@/lib/dal";
 import { BoardListSkeleton } from "@/components/ui/skeletons";
 import type { Metadata } from "next";
@@ -22,18 +20,8 @@ export default async function Boards() {
   // Verify session using centralized DAL
   const session = await verifySession();
 
-  // Fetch only the userID which is needed for CreateBoardForm
-  // BoardListWrapper will fetch its own data
-  const userID = await retryWithBackoff(
-    async () => {
-      const id = await findUserIdByKindeID(session.kindeId);
-      if (!id) {
-        throw new Error("User not found");
-      }
-      return id;
-    },
-    { maxRetries: 3, initialDelay: 500 }
-  );
+  // Use userId directly from session (no need to fetch from DB)
+  const userID = session.userId;
 
   return (
     <div className="min-h-screen bg-slate-50">

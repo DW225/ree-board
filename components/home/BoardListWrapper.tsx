@@ -13,7 +13,7 @@ export default async function BoardListWrapper() {
 
   const boardList = await retryWithBackoff(
     async () => {
-      return await fetchBoards(session.kindeId);
+      return await fetchBoards(session.userId);
     },
     { maxRetries: 3, initialDelay: 500 }
   );
