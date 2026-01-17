@@ -27,12 +27,13 @@ interface MagicLinkCreatorProps {
 export default function MagicLinkCreator({
   boardId,
 }: Readonly<MagicLinkCreatorProps>) {
-  const { createLink } = useMagicLinks(boardId);
   const [role, setRole] = useState<Role.guest | Role.member>(Role.member);
   const [expirationHours, setExpirationHours] = useState<number>(24);
   const [isCreating, setIsCreating] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+
+  const { createLink } = useMagicLinks(boardId);
 
   const handleCreateLink = async () => {
     setIsCreating(true);

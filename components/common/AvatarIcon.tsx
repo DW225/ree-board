@@ -1,18 +1,20 @@
-"use client"
+"use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/hooks/useUser";
-import type { User } from "@/lib/types/user";
+import type { User, UserPublicInfo } from "@/lib/types/user";
 import { cn } from "@/lib/utils";
-import { md5 } from "@/lib/utils/md5";
 import type { ReactNode } from "react";
 import { forwardRef } from "react";
 
 interface AvatarIconProps {
   userID: User["id"];
   className?: string;
-  triggers?: (user: User | undefined, children: ReactNode) => ReactNode;
+  triggers?: (
+    user: UserPublicInfo | undefined,
+    children: ReactNode
+  ) => ReactNode;
 }
 
 // Helper function to generate initials from a name
@@ -29,7 +31,7 @@ const getInitials = (name: string | undefined): string => {
   } else {
     return (
       nameParts[0].charAt(0).toUpperCase() +
-      ((nameParts?.at(-1)?.charAt(0).toUpperCase()) ?? "")
+      (nameParts?.at(-1)?.charAt(0).toUpperCase() ?? "")
     );
   }
 };
@@ -77,9 +79,7 @@ export const AvatarIcon = forwardRef<HTMLDivElement, AvatarIconProps>(
         ref={ref}
       >
         <AvatarImage
-          src={`https://www.gravatar.com/avatar/${md5(
-            user?.email ?? ""
-          )}?d=404&s=36`}
+          src={`${user?.avatar_url}?d=404&s=36`}
           alt={user?.name ?? "Unknown User"}
           className="size-full rounded-[inherit] object-cover"
         />

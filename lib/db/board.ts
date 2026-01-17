@@ -4,23 +4,9 @@ import type { Board } from "@/lib/types/board";
 import type { User } from "@/lib/types/user";
 import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import invariant from "tiny-invariant";
 import { db } from "./client";
 import { addMember, checkMemberRole } from "./member";
-
-const prepareFetchBoardsByKindeId = db
-  .select({
-    id: boardTable.id,
-    title: boardTable.title,
-    state: boardTable.state,
-    creator: boardTable.creator,
-    updatedAt: boardTable.updatedAt,
-    createdAt: boardTable.createdAt,
-  })
-  .from(boardTable)
-  .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
-  .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-  .where(eq(userTable.kinde_id, sql.placeholder("kindeId")))
-  .prepare();
 
 const prepareFetchBoardsByUserId = db
   .select({
@@ -32,21 +18,13 @@ const prepareFetchBoardsByUserId = db
     createdAt: boardTable.createdAt,
   })
   .from(boardTable)
-  .where(eq(boardTable.creator, sql.placeholder("userId")))
+  .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
+  .where(eq(memberTable.userId, sql.placeholder("userId")))
   .prepare();
 
-export async function fetchBoards(
-  userId: User["id"] | User["kinde_id"],
-  useKindeId: boolean = true
-) {
-  if (userId === null) {
-    throw new Error("User ID is required");
-  }
-  if (useKindeId) {
-    return await prepareFetchBoardsByKindeId.execute({ kindeId: userId });
-  } else {
-    return await prepareFetchBoardsByUserId.execute({ userId });
-  }
+export async function fetchBoards(userId: User["id"]) {
+  invariant(userId, "User ID is required");
+  return await prepareFetchBoardsByUserId.execute({ userId });
 }
 
 export async function createBoard(newBoard: Board, userID: User["id"]) {
@@ -99,18 +77,18 @@ const prepareFetchBoardsWhereUserIsAdmin = db
   .innerJoin(userTable, eq(memberTable.userId, userTable.id))
   .where(
     and(
-      eq(userTable.kinde_id, sql.placeholder("kindeId")),
+      eq(userTable.id, sql.placeholder("userId")),
       eq(memberTable.role, Role.owner)
     )
   )
   .prepare();
 
 export async function fetchBoardsWhereUserIsAdmin(
-  kindeId: User["kinde_id"]
+  userId: User["id"]
 ): Promise<Board[]> {
-  if (!kindeId) {
-    throw new Error("Kinde ID is required");
+  if (!userId) {
+    throw new Error("User ID is required");
   }
 
-  return await prepareFetchBoardsWhereUserIsAdmin.execute({ kindeId });
+  return await prepareFetchBoardsWhereUserIsAdmin.execute({ userId });
 }

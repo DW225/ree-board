@@ -1,7 +1,7 @@
 "use server";
 
 import { Role } from "@/lib/constants/role";
-import { checkRoleByKindeID } from "@/lib/db/member";
+import { checkMemberRole } from "@/lib/db/member";
 import {
   createPost,
   deletePost,
@@ -32,19 +32,19 @@ async function rbacWithAuth<T>(
   // Verify session using centralized DAL
   const session = await verifySession();
 
-  const user = await checkRoleByKindeID(session.kindeId, boardId);
+  const role = await checkMemberRole(session.userId, boardId);
 
-  if (!user) {
-    console.warn("User not found");
+  if (role === null) {
+    console.warn("User not a member of this board");
     redirect("/");
   }
 
-  if (user.role === Role.guest) {
+  if (role === Role.guest) {
     console.warn("Access denied for guest role");
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
-  return action(user.userID);
+  return action(session.userId);
 }
 
 export const CreatePostAction = async (post: NewPost) =>
@@ -120,15 +120,18 @@ export const UpdatePostContentAction = async (
   );
 
 // Zod schema for merge post input validation
-const MergePostsSchema = z.object({
-  targetPostId: z.string().trim().min(1, "Target post ID is required"),
-  sourcePostIds: z.array(z.string()).min(1, "At least one source post is required"),
-  mergedContent: z.string().trim().min(1, "Merged content cannot be empty"),
-  boardId: z.string().min(1, "Board ID is required"),
-}).refine(
-  (data) => !data.sourcePostIds.includes(data.targetPostId),
-  { message: "Target post cannot be included in source posts" }
-);
+const MergePostsSchema = z
+  .object({
+    targetPostId: z.string().trim().min(1, "Target post ID is required"),
+    sourcePostIds: z
+      .array(z.string())
+      .min(1, "At least one source post is required"),
+    mergedContent: z.string().trim().min(1, "Merged content cannot be empty"),
+    boardId: z.string().min(1, "Board ID is required"),
+  })
+  .refine((data) => !data.sourcePostIds.includes(data.targetPostId), {
+    message: "Target post cannot be included in source posts",
+  });
 
 // Helper function to publish merge event to real-time channel
 const publishMergeEvent = async (
@@ -173,7 +176,10 @@ const getMergeErrorMessage = (error: unknown): string => {
   if (error.message.includes("board")) {
     return "Posts do not belong to the specified board.";
   }
-  if (error.message.includes("permission") || error.message.includes("access")) {
+  if (
+    error.message.includes("permission") ||
+    error.message.includes("access")
+  ) {
     return "You do not have permission to merge these posts.";
   }
 
@@ -200,8 +206,19 @@ export const MergePostsAction = async (
     }
 
     try {
-      const result = await mergePost(targetPostId, sourcePostIds, mergedContent, boardId);
-      await publishMergeEvent(boardId, userID, targetPostId, sourcePostIds, result);
+      const result = await mergePost(
+        targetPostId,
+        sourcePostIds,
+        mergedContent,
+        boardId
+      );
+      await publishMergeEvent(
+        boardId,
+        userID,
+        targetPostId,
+        sourcePostIds,
+        result
+      );
       return result;
     } catch (error) {
       // Enhanced error logging with context

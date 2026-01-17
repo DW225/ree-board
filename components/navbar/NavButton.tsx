@@ -6,6 +6,7 @@ type NavButtonProps = {
   children: ReactNode;
   ariaLabel: string;
   className?: string;
+  disabled?: boolean;
 };
 
 export default function NavButton({
@@ -13,10 +14,12 @@ export default function NavButton({
   children,
   ariaLabel,
   className = "",
+  disabled = false,
 }: Readonly<NavButtonProps>) {
   return (
     <Button
       onClick={onClick}
+      disabled={disabled}
       className={`px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
         className ?? ""
       }`}

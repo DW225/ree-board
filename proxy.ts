@@ -29,17 +29,17 @@ export async function proxy(request: NextRequest) {
   );
 
   // Update session (refresh cookies) and get user for all requests
-  const { response, user } = await updateSession(request);
+  const session = await updateSession(request);
 
   // For protected routes, check if user is authenticated
-  if (!isPublic && !user) {
+  if (!isPublic && !session) {
     // No user on protected route - redirect to sign-in
     const redirectUrl = new URL("/sign-in", request.url);
     redirectUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
-  return response;
+  return session;
 }
 
 export const config = {

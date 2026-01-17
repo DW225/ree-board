@@ -1,9 +1,9 @@
-import { createUser, deleteUser, getUserByKindeID } from "@/lib/db/user";
+import { createUser, deleteUser } from "@/lib/db/user";
 import { getKindeUser } from "@/lib/utils/kinde";
 import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
-import { NextResponse } from "next/server";
 import { nanoid } from "nanoid";
+import { NextResponse } from "next/server";
 
 // The Kinde issuer URL should already be in your `.env` file
 // from when you initially set up Kinde. This will fetch your
@@ -48,21 +48,22 @@ export async function POST(req: Request) {
       const userID = nanoid();
       await createUser({
         id: userID,
-        kinde_id: event.data.user.id,
+        // kinde_id: event.data.user.id,
         name: kindUser.username ?? `User_${userID}`,
         email:
           kindUser.preferred_email ?? `user_${event.data.user.id}@kinde.com`,
+        supabase_id: userID,
       });
       console.log(`Created new user ${event.data.user.id}`);
     };
 
     switch (event?.type) {
       case "user.authenticated": {
-        const user = await getUserByKindeID(event.data.user.id);
-        if (!user) {
-          await createNewUser();
-        }
-        break;
+        // const user = await getUserByKindeID(event.data.user.id);
+        // if (!user) {
+        //   await createNewUser();
+        // }
+        // break;
       }
       case "user.created":
         await createNewUser();

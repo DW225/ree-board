@@ -2,9 +2,9 @@
 
 import NavButton from "@/components/navbar/NavButton";
 import NavLink from "@/components/navbar/NavLink";
+import { LogoutButton } from "@/components/ui/logout";
 import { useToggle } from "@/hooks/useToggles";
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
-import { LogOut, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const MobileMenu = dynamic(() => import("@/components/navbar/MobileMenu"), {
@@ -37,15 +37,7 @@ export default function Navbar() {
               <NavLink href="/profile">Profile</NavLink>
 
               {/* Desktop Logout Button */}
-              <NavButton
-                ariaLabel="Logout"
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2"
-              >
-                <LogoutLink>
-                  <LogOut className="h-5 w-5 inline-block" />
-                  <span className="sr-only">Logout</span>
-                </LogoutLink>
-              </NavButton>
+              <LogoutButton className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2 disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
 
             {/* Mobile Menu Button */}

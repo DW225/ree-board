@@ -1,5 +1,5 @@
-import { findUserIdByKindeID } from "@/lib/db/user";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { getUserBySupabaseId } from "@/lib/db/user";
+import { createClient } from "@/lib/utils/supabase/server";
 import Ably from "ably";
 import { NextResponse } from "next/server";
 
@@ -10,26 +10,29 @@ export const revalidate = 0;
 
 export async function POST() {
   try {
-    const { getUser, isAuthenticated } = getKindeServerSession();
-    if (!(await isAuthenticated())) {
-      return NextResponse.redirect("/api/auth/login");
-    }
+    // Verify session (can't use verifySession() from DAL - redirect() doesn't work in API routes)
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-    const kindeUser = await getUser();
-
-    if (!kindeUser) {
-      console.error("Unable to fetch Kinde user");
+    if (error) {
+      console.error("Error getting user from Supabase:", error.message);
       return NextResponse.json(
-        { error: "Unable to fetch Kinde user" },
-        { status: 500 }
+        { error: "Auth service unavailable" },
+        { status: 503 }
       );
     }
 
-    const userId = await findUserIdByKindeID(kindeUser.id);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    }
 
-    if (!userId) {
-      console.error("Unable to find matching user in the database");
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    // Look up internal user
+    const internalUser = await getUserBySupabaseId(user.id);
+    if (!internalUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
 
     const ablyAPIKey = process.env.ABLY_API_KEY;
@@ -40,7 +43,7 @@ export async function POST() {
     const client = new Ably.Rest({ key: ablyAPIKey });
     const tokenRequestData = await client.auth.createTokenRequest({
       capability: { "*": ["subscribe"] },
-      clientId: userId,
+      clientId: internalUser.id,
     });
     return Response.json(tokenRequestData);
   } catch (error) {

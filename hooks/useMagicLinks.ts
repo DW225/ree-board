@@ -1,18 +1,20 @@
-import useSWR from 'swr';
-import { fetcher } from '@/lib/utils';
+import { MS_PER_HOUR } from "@/lib/constants/time";
 import type {
   CreateLinkRequest,
-  LinkWithCreator,
-  GetLinksResponse,
   CreateLinkResponse,
-  RevokeLinkResponse
-} from '@/lib/types/link';
-import { toast } from 'sonner';
-import { MS_PER_HOUR } from '@/lib/constants/time';
+  GetLinksResponse,
+  LinkWithCreator,
+  RevokeLinkResponse,
+} from "@/lib/types/link";
+import { fetcher } from "@/lib/utils";
+import { toast } from "sonner";
+import useSWR from "swr";
 
 /**
  * SWR hook for managing magic links for a board
  * Provides fetching, creating, and revoking functionality with optimistic updates
+ *
+ * Note: Authentication is handled via session cookies, no need for explicit tokens
  */
 export function useMagicLinks(boardId: string) {
   const { data, error, isLoading, mutate } = useSWR<GetLinksResponse>(
@@ -32,9 +34,9 @@ export function useMagicLinks(boardId: string) {
    */
   const formatExpirationDisplay = (hours: number): string => {
     if (hours === 0) {
-      return 'never';
+      return "never";
     }
-    return `${hours} hour${hours > 1 ? 's' : ''}`;
+    return `${hours} hour${hours > 1 ? "s" : ""}`;
   };
 
   /**
@@ -45,7 +47,7 @@ export function useMagicLinks(boardId: string) {
       // Generate optimistic link for immediate UI feedback
       const optimisticLink: LinkWithCreator = {
         id: Date.now(), // Temporary ID
-        token: 'creating...', // Placeholder token
+        token: "creating...", // Placeholder token
         role: linkData.role,
         boardId,
         createdAt: new Date(),
@@ -53,30 +55,32 @@ export function useMagicLinks(boardId: string) {
         expiresAt: linkData.expirationHours
           ? new Date(Date.now() + linkData.expirationHours * MS_PER_HOUR)
           : null,
-        creatorName: 'You',
+        creatorName: "You",
         isExpired: false,
-        expiresIn: formatExpirationDisplay(linkData.expirationHours)
+        expiresIn: formatExpirationDisplay(linkData.expirationHours),
       };
 
       // Optimistic update - show the new link immediately
       mutate(
         (currentData) => ({
           links: [...(currentData?.links || []), optimisticLink],
-          count: (currentData?.links.length || 0) + 1
+          count: (currentData?.links.length || 0) + 1,
         }),
         false // Don't revalidate immediately
       );
 
-      // Make API call
+      // Make API call (auth handled via session cookies)
       const response = await fetch(`/api/board/${boardId}/links`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(linkData)
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(linkData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create magic link');
+        throw new Error(errorData.error || "Failed to create magic link");
       }
 
       const result: CreateLinkResponse = await response.json();
@@ -89,7 +93,8 @@ export function useMagicLinks(boardId: string) {
       // Revert optimistic update on error
       mutate();
 
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create magic link';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create magic link";
       toast.error(errorMessage);
       throw error;
     }
@@ -103,22 +108,24 @@ export function useMagicLinks(boardId: string) {
       // Optimistic update - remove the link immediately
       mutate(
         (currentData) => ({
-          links: currentData?.links.filter(link => link.id !== linkId) || [],
-          count: Math.max((currentData?.links.length || 1) - 1, 0)
+          links: currentData?.links.filter((link) => link.id !== linkId) || [],
+          count: Math.max((currentData?.links.length || 1) - 1, 0),
         }),
         false // Don't revalidate immediately
       );
 
-      // Make API call
+      // Make API call (auth handled via session cookies)
       const response = await fetch(`/api/board/${boardId}/links`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ linkId })
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ linkId }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to revoke magic link');
+        throw new Error(errorData.error || "Failed to revoke magic link");
       }
 
       const result: RevokeLinkResponse = await response.json();
@@ -126,13 +133,14 @@ export function useMagicLinks(boardId: string) {
       // Revalidate to ensure consistency
       mutate();
 
-      toast.success('Magic link revoked successfully');
+      toast.success("Magic link revoked successfully");
       return result;
     } catch (error) {
       // Revert optimistic update on error
       mutate();
 
-      const errorMessage = error instanceof Error ? error.message : 'Failed to revoke magic link';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to revoke magic link";
       toast.error(errorMessage);
       throw error;
     }
@@ -149,7 +157,8 @@ export function useMagicLinks(boardId: string) {
    * Generates the full URL for a magic link token
    */
   const getLinkUrl = (token: string): string => {
-    const baseUrl = globalThis.window !== undefined ? globalThis.location.origin : '';
+    const baseUrl =
+      globalThis.window === undefined ? "" : globalThis.location.origin;
     return `${baseUrl}/invite/${token}`;
   };
 
@@ -160,9 +169,9 @@ export function useMagicLinks(boardId: string) {
     try {
       const linkUrl = getLinkUrl(token);
       await navigator.clipboard.writeText(linkUrl);
-      toast.success('Magic link copied to clipboard!');
+      toast.success("Magic link copied to clipboard!");
     } catch (error) {
-      toast.error('Failed to copy link to clipboard');
+      toast.error("Failed to copy link to clipboard");
       throw error;
     }
   };
@@ -171,15 +180,15 @@ export function useMagicLinks(boardId: string) {
    * Filters links by status
    */
   const getActiveLinks = (): LinkWithCreator[] => {
-    return data?.links.filter(link => !link.isExpired) || [];
+    return data?.links.filter((link) => !link.isExpired) || [];
   };
 
   const getExpiredLinks = (): LinkWithCreator[] => {
-    return data?.links.filter(link => link.isExpired) || [];
+    return data?.links.filter((link) => link.isExpired) || [];
   };
 
   const getLinksByRole = (role: number): LinkWithCreator[] => {
-    return data?.links.filter(link => link.role === role) || [];
+    return data?.links.filter((link) => link.role === role) || [];
   };
 
   return {
@@ -205,7 +214,7 @@ export function useMagicLinks(boardId: string) {
     getLinksByRole,
 
     // Raw mutate for advanced usage
-    mutate
+    mutate,
   };
 }
 

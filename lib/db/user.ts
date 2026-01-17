@@ -1,49 +1,16 @@
 import { userTable } from "@/db/schema";
 import type { NewUser, User } from "@/lib/types/user";
-import { and, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "./client";
 
-const prepareFindUserIdByKindeID = db
-  .select({ id: userTable.id })
-  .from(userTable)
-  .where(eq(userTable.kinde_id, sql.placeholder("kindeId")))
-  .limit(1)
-  .prepare();
-export async function findUserIdByKindeID(kindeId: string) {
-  const result = await prepareFindUserIdByKindeID.execute({ kindeId });
-  if (result.length > 0) {
-    return result[0].id;
-  } else {
-    console.error(`User with Kinde ID "${kindeId}" not found`);
-    return null;
-  }
-}
-
 export async function createUser(user: NewUser) {
-  await db.insert(userTable).values({
-    id: user.id,
-    kinde_id: user.kinde_id,
-    name: user.name,
-    email: user.email,
-  });
+  await db.insert(userTable).values(user);
 }
 
-const prepareGetUser = db
-  .select()
-  .from(userTable)
-  .where(eq(userTable.kinde_id, sql.placeholder("kindeId")))
-  .limit(1)
-  .prepare();
-
-export const getUserByKindeID = async (kindeId: User["kinde_id"]) => {
-  const result = await prepareGetUser.execute({ kindeId });
-  return result.length > 0 ? result[0] : undefined;
-};
-
-export const deleteUser = async (userID: User["id"] | User["kinde_id"]) => {
+export const deleteUser = async (userID: User["id"]) => {
   const result = await db
     .delete(userTable)
-    .where(or(eq(userTable.id, userID), eq(userTable.kinde_id, userID)))
+    .where(eq(userTable.id, userID))
     .returning({ deletedId: userTable.id });
   return result.length > 0 ? result[0] : "No user deleted";
 };
@@ -98,26 +65,6 @@ export const updateUserSupabaseId = async (
 };
 
 /**
- * Get all users that need to be migrated
- * Returns users with kinde_id but no supabase_id
- */
-export const getAllUsersToMigrate = async () => {
-  const result = await db
-    .select()
-    .from(userTable)
-    .where(
-      and(
-        isNotNull(userTable.kinde_id),
-        or(
-          isNull(userTable.supabase_id),
-          eq(userTable.supabase_id, "supabase_id")
-        )
-      )
-    );
-  return result;
-};
-
-/**
  * Create a guest user with temporary access
  * Used for anonymous users who want to try the app before signing up
  */
@@ -136,7 +83,6 @@ export const createGuestUser = async (data: {
       email: `guest_${data.id}@example.com`, // Placeholder email for guest users
       isGuest: true,
       guestExpiresAt: data.guestExpiresAt,
-      kinde_id: `guest_${data.id}`, // Placeholder for required field until kinde_id is deprecated
     })
     .returning();
 

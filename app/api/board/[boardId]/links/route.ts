@@ -2,48 +2,62 @@ import { hasRequiredRole, Role } from "@/lib/constants/role";
 import {
   createMagicLink,
   fetchLinksByBoardId,
-  revokeMagicLink
+  revokeMagicLink,
 } from "@/lib/db/link";
-import { checkRoleByKindeID } from "@/lib/db/member";
-import { getUserByKindeID } from "@/lib/db/user";
+import { checkMemberRole } from "@/lib/db/member";
+import { getUserBySupabaseId } from "@/lib/db/user";
 import {
   BoardIdParamsSchema,
   CreateLinkRequestSchema,
   RevokeLinkRequestSchema,
 } from "@/lib/types/link";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { createClient } from "@/lib/utils/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * RBAC helper for magic link API routes
+ * Note: Can't use verifySession() from DAL because redirect() doesn't work in API routes
  */
 async function checkBoardOwnership(boardId: string) {
-  const { getUser, isAuthenticated } = getKindeServerSession();
+  try {
+    // Get Supabase user from session cookie
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!(await isAuthenticated())) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+    }
+
+    // Look up internal user
+    const internalUser = await getUserBySupabaseId(user.id);
+    if (!internalUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
+
+    // Check board membership and role
+    const role = await checkMemberRole(internalUser.id, boardId);
+    if (role === null) {
+      // Not a member. Note that role=0 is valid (owner)
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    if (!hasRequiredRole(role, Role.owner)) {
+      return NextResponse.json(
+        { error: "Owner permissions required" },
+        { status: 403 }
+      );
+    }
+
+    return internalUser;
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return NextResponse.json(
+      { error: "Authentication error" },
+      { status: 401 }
+    );
   }
-
-  const kindeUser = await getUser();
-  if (!kindeUser?.id) {
-    return NextResponse.json({ error: "Invalid user session" }, { status: 401 });
-  }
-
-  const user = await checkRoleByKindeID(kindeUser.id, boardId);
-  if (!user) {
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
-  if (!hasRequiredRole(user.role, Role.owner)) {
-    return NextResponse.json({ error: "Owner permissions required" }, { status: 403 });
-  }
-
-  const fullUser = await getUserByKindeID(kindeUser.id);
-  if (!fullUser) {
-    return NextResponse.json({ error: "User data not found" }, { status: 500 });
-  }
-
-  return fullUser;
 }
 
 /**
@@ -70,14 +84,14 @@ export async function GET(
     const { boardId } = paramsResult.data;
 
     // Check ownership - redirects if not authenticated
-    const user = await checkBoardOwnership(boardId);
-    if (user instanceof NextResponse) return user; // Error response
+    const checkResult = await checkBoardOwnership(boardId);
+    if (checkResult instanceof NextResponse) return checkResult; // Error response
 
     const links = await fetchLinksByBoardId(boardId);
 
     return NextResponse.json({
       links,
-      count: links.length
+      count: links.length,
     });
   } catch (error) {
     console.error("Error fetching magic links:", error);
@@ -112,8 +126,8 @@ export async function POST(
     const { boardId } = paramsResult.data;
 
     // Check ownership - redirects if not authenticated
-    const user = await checkBoardOwnership(boardId);
-    if (user instanceof NextResponse) return user; // Error response
+    const checkResult = await checkBoardOwnership(boardId);
+    if (checkResult instanceof NextResponse) return checkResult; // Error response
 
     const body = await request.json();
     const bodyResult = CreateLinkRequestSchema.safeParse(body);
@@ -133,13 +147,13 @@ export async function POST(
     const newLink = await createMagicLink(
       boardId,
       role,
-      user.id,
+      checkResult.id,
       expirationHours // 0 means never expires
     );
 
     return NextResponse.json({
       link: newLink,
-      success: true
+      success: true,
     });
   } catch (error) {
     console.error("Error creating magic link:", error);
@@ -196,7 +210,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: "Magic link revoked successfully"
+      message: "Magic link revoked successfully",
     });
   } catch (error) {
     console.error("Error revoking magic link:", error);

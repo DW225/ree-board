@@ -85,32 +85,6 @@ export const checkMemberRole = async (
   return member ? member[0].role : null;
 };
 
-const prepareCheckRoleByKindeID = db
-  .select({
-    role: memberTable.role,
-    userID: userTable.id,
-  })
-  .from(memberTable)
-  .innerJoin(userTable, eq(memberTable.userId, userTable.id))
-  .where(
-    and(
-      eq(userTable.kinde_id, sql.placeholder("kindeId")),
-      eq(memberTable.boardId, sql.placeholder("boardId"))
-    )
-  )
-  .prepare();
-
-export const checkRoleByKindeID = async (
-  kindeID: User["kinde_id"],
-  boardId: Board["id"]
-) => {
-  const member = await prepareCheckRoleByKindeID.execute({
-    kindeId: kindeID,
-    boardId,
-  });
-  return member ? member[0] : null;
-};
-
 export const fetchMembersWithExclude = async (
   boardIds: Board["id"][],
   excludeBoardId: Board["id"]

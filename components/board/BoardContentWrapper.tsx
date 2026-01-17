@@ -2,7 +2,6 @@ import { Role } from "@/lib/constants/role";
 import { fetchMembersByBoardID } from "@/lib/db/member";
 import { fetchPostsByBoardID } from "@/lib/db/post";
 import { fetchTasks } from "@/lib/db/task";
-import { findUserIdByKindeID } from "@/lib/db/user";
 import { fetchUserVotedPost } from "@/lib/db/vote";
 import { verifySession } from "@/lib/dal";
 import { redirect } from "next/navigation";
@@ -76,16 +75,14 @@ export default async function BoardContentWrapper({
   // Verify session using centralized DAL
   const session = await verifySession();
 
-  const [userID, posts, members, actions] = await Promise.all([
-    findUserIdByKindeID(session.kindeId),
+  // Use userId directly from session
+  const userID = session.userId;
+
+  const [posts, members, actions] = await Promise.all([
     fetchPostsByBoardID(boardId),
     fetchMembersByBoardID(boardId),
     fetchTasks(boardId),
   ]);
-
-  if (!userID) {
-    throw new Error("User not found");
-  }
 
   const votedPosts = await fetchUserVotedPost(userID);
 

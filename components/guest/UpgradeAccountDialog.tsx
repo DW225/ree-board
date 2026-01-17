@@ -179,7 +179,7 @@ export function UpgradeAccountDialog({
               id="otp"
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) => setOtp(e.target.value.replaceAll(/\D/g, ""))}
               placeholder="123456"
               maxLength={6}
               required

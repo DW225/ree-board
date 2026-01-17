@@ -1,4 +1,4 @@
-import { voteTable, postTable } from "@/db/schema";
+import { postTable, voteTable } from "@/db/schema";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
