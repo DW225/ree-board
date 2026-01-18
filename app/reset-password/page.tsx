@@ -4,19 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/utils/supabase/client";
+import { PasswordSchema } from "@/lib/utils/validation/password";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { z } from "zod";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
-// Password validation regex - must contain lowercase, uppercase, digit, and symbol
-const PasswordSchema = z
-  .string()
-  .min(8, "Password must be at least 8 characters long")
-  .regex(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/,
-    "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one symbol"
-  );
+const RECOVERY_STALENESS_THRESHOLD = 10 * 60 * 1000; // 10 minutes
+const SUCCESS_REDIRECT_DELAY = 2000; // 2 seconds
+const SESSION_CHECK_TIMEOUT = 5000; // 5 seconds
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -25,50 +21,81 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [sessionValid, setSessionValid] = useState<boolean | null>(null);
+  const [recoveryTimestamp, setRecoveryTimestamp] = useState<number | null>(
+    null
+  );
   const sessionCheckedRef = useRef(false);
+  const supabaseRef = useRef(createClient());
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
+    const supabase = supabaseRef.current;
+
     // Listen for auth state changes to handle the recovery token from URL hash
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        // User clicked the reset link and has a valid recovery session
+      if (sessionCheckedRef.current) {
+        return;
+      }
+
+      if (event === "PASSWORD_RECOVERY") {
+        // Valid password recovery event - track timestamp and allow access
+        const timestamp = Date.now();
+        setRecoveryTimestamp(timestamp);
         setSessionValid(true);
         sessionCheckedRef.current = true;
-      } else if (event === "INITIAL_SESSION") {
-        // Check if there's already a session (e.g., user refreshed the page)
-        setSessionValid(!!session);
+        return;
+      }
+
+      if (event === "SIGNED_IN" && session) {
+        // User is already logged in - redirect to profile
+        toast.error(
+          "You are already logged in. Use your profile to change your password."
+        );
+        sessionCheckedRef.current = true;
+        router.push("/profile");
+        return;
+      }
+
+      if (event === "INITIAL_SESSION" && session) {
+        // For initial session, mark as invalid (not a fresh recovery)
+        // User should go through the password reset flow again
+        setSessionValid(false);
         sessionCheckedRef.current = true;
       }
     });
 
-    // Also check current session immediately
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      // Only set to false if we haven't already set to true from auth event
+    // Also check current session after a delay if no event fired
+    const timer = setTimeout(() => {
       if (!sessionCheckedRef.current) {
-        setSessionValid(!!session);
+        setSessionValid(false);
         sessionCheckedRef.current = true;
       }
-    };
-
-    // Small delay to allow auth state change to fire first
-    const timer = setTimeout(checkSession, 500);
+    }, SESSION_CHECK_TIMEOUT);
 
     return () => {
       subscription.unsubscribe();
       clearTimeout(timer);
     };
-  }, [supabase.auth]);
+  }, [router]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Check staleness of recovery event (10-minute window)
+    if (recoveryTimestamp) {
+      const eventAge = Date.now() - recoveryTimestamp;
+
+      if (eventAge > RECOVERY_STALENESS_THRESHOLD) {
+        setError(
+          "This password reset link has expired. Please request a new one."
+        );
+        setSessionValid(false);
+        return;
+      }
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -84,7 +111,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error } = await supabaseRef.current.auth.updateUser({
         password,
       });
 
@@ -99,7 +126,7 @@ export default function ResetPasswordPage() {
       // Redirect to board after a short delay
       setTimeout(() => {
         router.push("/board");
-      }, 2000);
+      }, SUCCESS_REDIRECT_DELAY);
     } catch (exception) {
       console.error("Unexpected error updating password:", exception);
       setError("An unexpected error occurred. Please try again.");
@@ -107,12 +134,18 @@ export default function ResetPasswordPage() {
     }
   };
 
+  const pageClasses =
+    "relative min-h-screen flex flex-col items-center justify-center bg-slate-100";
+  const cardWrapperClasses = "w-full max-w-md mx-auto p-8";
+  const cardClasses =
+    "bg-white border border-slate-200 rounded-lg p-8 shadow-sm";
+
   // Loading state while checking session
   if (sessionValid === null) {
     return (
-      <div className="relative min-h-screen flex flex-col items-center justify-center bg-slate-100">
-        <div className="w-full max-w-md mx-auto p-8">
-          <div className="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
+      <div className={pageClasses}>
+        <div className={cardWrapperClasses}>
+          <div className={cardClasses}>
             <p className="text-slate-600 text-center">Loading...</p>
           </div>
         </div>
@@ -123,9 +156,9 @@ export default function ResetPasswordPage() {
   // Invalid or expired reset link
   if (!sessionValid) {
     return (
-      <div className="relative min-h-screen flex flex-col items-center justify-center bg-slate-100">
-        <div className="w-full max-w-md mx-auto p-8">
-          <div className="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
+      <div className={pageClasses}>
+        <div className={cardWrapperClasses}>
+          <div className={cardClasses}>
             <h1 className="text-2xl font-bold text-slate-800 mb-4">
               Invalid or Expired Link
             </h1>
@@ -147,9 +180,9 @@ export default function ResetPasswordPage() {
   // Success state
   if (success) {
     return (
-      <div className="relative min-h-screen flex flex-col items-center justify-center bg-slate-100">
-        <div className="w-full max-w-md mx-auto p-8">
-          <div className="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
+      <div className={pageClasses}>
+        <div className={cardWrapperClasses}>
+          <div className={cardClasses}>
             <h1 className="text-2xl font-bold text-slate-800 mb-4">
               Password Updated!
             </h1>
@@ -170,9 +203,9 @@ export default function ResetPasswordPage() {
 
   // Password reset form
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-slate-100">
-      <div className="w-full max-w-md mx-auto p-8">
-        <div className="bg-white border border-slate-200 rounded-lg p-8 shadow-sm">
+    <div className={pageClasses}>
+      <div className={cardWrapperClasses}>
+        <div className={cardClasses}>
           <h1 className="text-2xl font-bold text-slate-800 mb-2">
             Set New Password
           </h1>
