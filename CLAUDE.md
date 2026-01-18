@@ -7,7 +7,7 @@ Project memory for Claude Code working on **ree-board** - A collaborative retros
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS
 - **Backend**: Next.js server actions with Drizzle ORM
 - **Database**: Turso SQLite (local: `file:test.db`, production: Turso Cloud)
-- **Auth**: Supabase Auth with RBAC (migrating from Kinde)
+- **Auth**: Supabase Auth with RBAC
 - **Real-time**: Ably for live collaboration
 - **State**: Preact Signals for reactive state
 - **UI**: Radix UI + Shadcn/ui components

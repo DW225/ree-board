@@ -4,9 +4,22 @@ import { eq } from "drizzle-orm";
 import { db } from "./client";
 
 export async function createUser(user: NewUser) {
-  await db.insert(userTable).values(user);
+  await db
+    .insert(userTable)
+    .values(user)
+    .onConflictDoNothing({ target: userTable.supabase_id });
 }
 
+/**
+ * Delete a user from the local database
+ *
+ * TODO: Consider adding Supabase Auth user deletion for complete cleanup
+ * Currently only deletes from local DB. For full GDPR compliance, should also
+ * call supabase.auth.admin.deleteUser(supabaseId) to remove from Supabase Auth.
+ * This would replace the Kinde webhook's user.deleted event functionality.
+ *
+ * @param userID - The local user ID to delete
+ */
 export const deleteUser = async (userID: User["id"]) => {
   const result = await db
     .delete(userTable)
@@ -98,7 +111,7 @@ export const createGuestUser = async (data: {
  * Used when a guest user claims their account with an email
  */
 export const convertGuestToUser = async (
-  supabaseId: string, // TODO: Change to use User["supabase_id"] after migration
+  supabaseId: User["supabase_id"],
   email: User["email"]
 ) => {
   await db
