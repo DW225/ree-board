@@ -16,7 +16,6 @@ export async function proxy(request: NextRequest) {
     "/sign-in",
     "/reset-password",
     "/invite",
-    "/api/kinde-webhook", // TODO: Remove after full Kinde migration
     "/api/auth/callback",
     "/api/auth/confirm",
   ];

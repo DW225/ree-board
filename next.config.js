@@ -11,10 +11,7 @@ const nextConfig = {
     // ppr: 'incremental',
     // Optimize package imports for packages not in the default list
     // Note: lucide-react is already optimized by default in Next.js 16
-    optimizePackageImports: [
-      "@atlaskit/pragmatic-drag-and-drop",
-      "@kinde-oss/kinde-auth-nextjs",
-    ],
+    optimizePackageImports: ["@atlaskit/pragmatic-drag-and-drop"],
   },
   images: {
     remotePatterns: [
@@ -46,16 +43,6 @@ const nextConfig = {
 
     // return the modified config
     return config;
-  },
-  env: {
-    KINDE_SITE_URL:
-      process.env.KINDE_SITE_URL ?? `https://${process.env.VERCEL_URL}`,
-    KINDE_POST_LOGOUT_REDIRECT_URL:
-      process.env.KINDE_POST_LOGOUT_REDIRECT_URL ??
-      `https://${process.env.VERCEL_URL}`,
-    KINDE_POST_LOGIN_REDIRECT_URL:
-      process.env.KINDE_POST_LOGIN_REDIRECT_URL ??
-      `https://${process.env.VERCEL_URL}/board`,
   },
 };
 

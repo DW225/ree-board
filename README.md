@@ -7,7 +7,7 @@ Ree-Board is a collaborative retro board application for teams, built with Next.
 ## Features
 
 - **Real-time Collaboration:** Updates are instantly reflected for all users via Ably.
-- **Authentication:** Secure login with Kinde.
+- **Authentication:** Secure login with Supabase Auth.
 - **Role-based Access:** Owner, member, and guest roles for boards.
 - **Board & Post Management:** Create, update, and delete boards and posts.
 - **Voting & Tasks:** Upvote posts, assign action items, and track task status.
@@ -18,7 +18,7 @@ Ree-Board is a collaborative retro board application for teams, built with Next.
 
 - **Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS, Shadcn/ui
 - **Backend:** Next.js API routes, Drizzle ORM, Turso (SQLite)
-- **Auth:** Kinde
+- **Auth:** Supabase Auth
 - **Realtime:** Ably
 - **Testing:** Jest, ts-jest
 - **Other:** Preact Signals, Lucide Icons
@@ -30,7 +30,7 @@ Ree-Board is a collaborative retro board application for teams, built with Next.
 - Node.js (v18+ recommended)
 - pnpm (or npm/yarn)
 - Turso account (for SQLite DB)
-- Kinde account (for authentication)
+- Supabase account (for authentication)
 - Ably account (for realtime)
 
 ### Setup
@@ -49,7 +49,7 @@ Ree-Board is a collaborative retro board application for teams, built with Next.
    ```
 
 3. **Configure environment variables:**
-   - Copy `.env.example` to `.env.local` and fill in your credentials for Turso, Kinde, Ably, and Sentry.
+   - Copy `.env.example` to `.env.local` and fill in your credentials for Turso, Supabase, Ably, and Sentry.
 
 4. **Run database migrations:**
    - **For local development:**

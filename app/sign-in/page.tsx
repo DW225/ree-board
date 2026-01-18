@@ -82,7 +82,7 @@ export default function SignInPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false,
+          shouldCreateUser: true, // Allow new users (default behavior, was false during migration)
           captchaToken: captchaToken ?? undefined,
         },
       });
