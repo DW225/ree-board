@@ -1,8 +1,17 @@
 import NavBar from "@/components/common/NavBar";
+import { ChangePasswordSection } from "@/components/profile/ChangePasswordSection";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/dal";
 import { md5 } from "@/lib/utils/md5";
 import type { Metadata } from "next";
 import Image from "next/image";
+import { User } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -13,36 +22,55 @@ export default async function ProfilePage() {
   // Verify session and get user using centralized DAL
   const user = await getCurrentUser();
 
+  // Determine display name with explicit logic instead of nested ternaries
+  let displayName = "User";
+  if (user?.user_metadata?.display_name) {
+    displayName = user.user_metadata.display_name;
+  } else if (user?.email) {
+    displayName = user.email.split("@")[0];
+  }
+
+  const avatarEmail = (user?.email ?? "").trim().toLowerCase();
+
   return (
     <div className="min-h-screen bg-gray-100">
       <NavBar />
-      <div className="container mx-auto p-4 flex">
-        <div className="flex-1">
-          <div className="bg-white shadow-md rounded-lg p-6 mb-4">
-            <h1 className="text-2xl font-bold mb-4">Profile</h1>
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-2">About</h2>
-              <div className="flex items-center mb-4">
-                <Image
-                  src={`https://www.gravatar.com/avatar/${md5(
-                    (user?.email ?? "").trim().toLowerCase()
-                  )}?d=mp&s=64`}
-                  alt="Profile"
-                  className="w-16 h-16 rounded-full mr-4"
-                  width={64}
-                  height={64}
-                />
+      <div className="container mx-auto p-4 max-w-4xl">
+        <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
+
+        <div className="space-y-6">
+          {/* Profile Information Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5 text-slate-600" />
                 <div>
-                  <p className="font-bold">
-                    {user?.user_metadata?.display_name ??
-                      user?.email?.split("@")[0] ??
-                      "User"}
-                  </p>
-                  <p className="text-gray-600">{user?.email}</p>
+                  <CardTitle>Profile Information</CardTitle>
+                  <CardDescription>Your account details</CardDescription>
                 </div>
               </div>
-            </div>
-          </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Image
+                  src={`https://www.gravatar.com/avatar/${md5(
+                    avatarEmail
+                  )}?d=mp&s=80`}
+                  alt="Profile"
+                  className="w-20 h-20 rounded-full"
+                  width={80}
+                  height={80}
+                />
+                <div>
+                  <p className="font-semibold text-lg">{displayName}</p>
+                  <p className="text-slate-600">{user?.email}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security Section */}
+          <ChangePasswordSection />
         </div>
       </div>
     </div>

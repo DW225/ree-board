@@ -46,11 +46,6 @@ export const getUserByUserID = async (userID: User["id"]) => {
 };
 
 /**
- * Migration Helper Functions
- * These functions support the Kinde to Supabase migration process
- */
-
-/**
  * Get user by Supabase ID
  * Used after migration to authenticate users with their Supabase account
  */
