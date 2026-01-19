@@ -1,123 +1,116 @@
 "use server";
 
-import { Role } from "@/lib/constants/role";
-import { checkMemberRole } from "@/lib/db/member";
+import { rbacWithAuth } from "@/lib/actions/actionWithAuth";
 import {
   createPost,
   deletePost,
+  mergePost,
   updatePostContent,
   updatePostType,
-  mergePost,
   type MergePostResult,
 } from "@/lib/db/post";
 import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
-import type { User } from "@/lib/types/user";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
-import { verifySession } from "@/lib/dal";
-import { redirect } from "next/navigation";
-import { NextResponse } from "next/server";
+import { logger } from "@/lib/utils/logger";
 import { z } from "zod";
 
-/**
- * Role-Based Access Control wrapper for Server Actions
- *
- * Verifies authentication and checks user role before executing action.
- * Only allows users with non-guest roles to perform mutations.
- */
-async function rbacWithAuth<T>(
-  boardId: Board["id"],
-  action: (userID: User["id"]) => Promise<T>
-) {
-  // Verify session using centralized DAL
-  const session = await verifySession();
-
-  const role = await checkMemberRole(session.userId, boardId);
-
-  if (role === null) {
-    console.warn("User not a member of this board");
-    redirect("/");
-  }
-
-  if (role === Role.guest) {
-    console.warn("Access denied for guest role");
-    return NextResponse.json({ error: "Access denied" }, { status: 403 });
-  }
-
-  return action(session.userId);
-}
-
 export const CreatePostAction = async (post: NewPost) =>
-  rbacWithAuth(post.boardId, (userID) =>
-    Promise.all([
+  rbacWithAuth(post.boardId, async (userId, role) => {
+    logger.logAction("CreatePostAction", { userId, boardId: post.boardId });
+
+    const results = await Promise.all([
       createPost(post),
       ablyClient(post.boardId).publish({
         name: EVENT_TYPE.POST.ADD,
         extras: {
           headers: {
-            user: userID,
+            user: userId,
           },
         },
         data: JSON.stringify(post),
       }),
-    ])
-  );
+    ]);
+
+    return results;
+  });
 
 export const DeletePostAction = async (id: Post["id"], boardId: Board["id"]) =>
-  rbacWithAuth(boardId, (userID) =>
-    Promise.all([
+  rbacWithAuth(boardId, async (userId) => {
+    logger.logAction("DeletePostAction", { userId, boardId, postId: id });
+
+    const results = await Promise.all([
       deletePost(id),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.DELETE,
         extras: {
           headers: {
-            user: userID,
+            user: userId,
           },
         },
         data: JSON.stringify({ id }),
       }),
-    ])
-  );
+    ]);
+
+    return results;
+  });
 
 export const UpdatePostTypeAction = async (
   id: Post["id"],
   boardId: Board["id"],
   newType: Post["type"]
 ) =>
-  rbacWithAuth(boardId, (userID) =>
-    Promise.all([
+  rbacWithAuth(boardId, async (userId) => {
+    logger.logAction("UpdatePostTypeAction", {
+      userId,
+      boardId,
+      postId: id,
+      newType,
+    });
+
+    const results = await Promise.all([
       updatePostType(id, newType),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPDATE_TYPE,
         extras: {
           headers: {
-            user: userID,
+            user: userId,
           },
         },
         data: JSON.stringify({ id, type: newType }),
       }),
-    ])
-  );
+    ]);
+
+    return results;
+  });
 
 export const UpdatePostContentAction = async (
   id: Post["id"],
   boardId: Board["id"],
   newContent: Post["content"]
 ) =>
-  rbacWithAuth(boardId, (userID) =>
-    Promise.all([
+  rbacWithAuth(boardId, async (userId) => {
+    logger.logAction("UpdatePostContentAction", {
+      userId,
+      boardId,
+      postId: id,
+    });
+
+    const results = await Promise.all([
       updatePostContent(id, newContent),
       ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPDATE_CONTENT,
         extras: {
           headers: {
-            user: userID,
+            user: userId,
           },
         },
         data: JSON.stringify({ id, content: newContent }),
       }),
-    ])
-  );
+    ]);
+
+    return results;
+  });
 
 // Zod schema for merge post input validation
 const MergePostsSchema = z
@@ -160,7 +153,11 @@ const publishMergeEvent = async (
     });
   } catch (realtimeError) {
     // Log real-time error but don't fail the merge operation
-    console.error("Failed to publish real-time merge event:", realtimeError);
+    logger.warn("Failed to publish real-time merge event", {
+      boardId,
+      targetPostId,
+      userId: userID,
+    }, realtimeError as Error);
   }
 };
 
@@ -191,8 +188,15 @@ export const MergePostsAction = async (
   sourcePostIds: Post["id"][],
   mergedContent: Post["content"],
   boardId: Board["id"]
-): Promise<MergePostResult | NextResponse> =>
-  rbacWithAuth(boardId, async (userID): Promise<MergePostResult> => {
+): Promise<MergePostResult> =>
+  rbacWithAuth(boardId, async (userId): Promise<MergePostResult> => {
+    logger.logAction("MergePostsAction", {
+      userId,
+      boardId,
+      targetPostId,
+      sourcePostCount: sourcePostIds.length,
+    });
+
     // Validate inputs using Zod schema
     const validationResult = MergePostsSchema.safeParse({
       targetPostId,
@@ -214,21 +218,18 @@ export const MergePostsAction = async (
       );
       await publishMergeEvent(
         boardId,
-        userID,
+        userId,
         targetPostId,
         sourcePostIds,
         result
       );
       return result;
     } catch (error) {
-      // Enhanced error logging with context
-      console.error("Error merging posts:", {
-        error: error instanceof Error ? error.message : String(error),
+      logger.logActionError("MergePostsAction", error as Error, {
+        userId,
+        boardId,
         targetPostId,
         sourcePostIds,
-        boardId,
-        userId: userID,
-        timestamp: new Date().toISOString(),
       });
 
       throw new Error(getMergeErrorMessage(error));

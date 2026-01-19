@@ -1,16 +1,16 @@
 "use server";
 
-import { createClient } from "@/lib/utils/supabase/server";
+import { userTable } from "@/db/schema";
+import { db } from "@/lib/db/client";
 import {
-  createGuestUser,
   convertGuestToUser,
+  createGuestUser,
   getUserBySupabaseId,
 } from "@/lib/db/user";
+import { createClient } from "@/lib/utils/supabase/server";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { db } from "@/lib/db/client";
-import { userTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 /**
  * Validation Schemas
@@ -28,7 +28,7 @@ const NameSchema = z
   .max(50, "Name must be less than 50 characters")
   .regex(
     /^[a-zA-Z0-9_\- ]+$/,
-    "Name can only contain letters, numbers, spaces, underscores, and hyphens"
+    "Name can only contain letters, numbers, spaces, underscores, and hyphens",
   )
   .refine((val) => val.trim().length > 0, {
     message: "Name cannot be only whitespace",
@@ -202,7 +202,7 @@ export async function upgradeGuestAccount(email: string): Promise<{
 export async function verifyGuestUpgradeOTP(
   email: string,
   otp: string,
-  name: string
+  name: string,
 ): Promise<{
   success: boolean;
   error?: string;

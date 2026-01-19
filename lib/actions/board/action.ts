@@ -14,6 +14,6 @@ export const createBoardAction = async (board: NewBoard, userId: User["id"]) =>
         updatedAt: new Date(),
         creator: userId,
       },
-      userId
-    )
+      userId,
+    ),
   );

@@ -10,7 +10,7 @@ import { actionWithAuth } from "../actionWithAuth";
 export const UpVotePostAction = async (
   postId: Post["id"],
   userId: User["id"],
-  boardId: Board["id"]
+  boardId: Board["id"],
 ) =>
   actionWithAuth(async () => {
     // Perform the upvote and get the updated count
@@ -24,11 +24,11 @@ export const UpVotePostAction = async (
           user: userId,
         },
       },
-      data: JSON.stringify({ 
-        id: postId, 
-        operation: 'upvote',
+      data: JSON.stringify({
+        id: postId,
+        operation: "upvote",
         userId: userId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }),
     });
 
@@ -38,7 +38,7 @@ export const UpVotePostAction = async (
 export const DownVotePostAction = async (
   postId: Post["id"],
   userId: User["id"],
-  boardId: Board["id"]
+  boardId: Board["id"],
 ) =>
   actionWithAuth(async () => {
     // Perform the downvote and get the updated count
@@ -52,11 +52,11 @@ export const DownVotePostAction = async (
           user: userId,
         },
       },
-      data: JSON.stringify({ 
-        id: postId, 
-        operation: 'downvote',
+      data: JSON.stringify({
+        id: postId,
+        operation: "downvote",
         userId: userId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }),
     });
 
