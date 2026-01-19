@@ -10,11 +10,12 @@ import invariant from "tiny-invariant";
  *
  * This function:
  * 1. Creates a Supabase client for middleware
- * 2. Refreshes the user session by calling getClaims()
+ * 2. Refreshes the user session by calling getUser()
  * 3. Updates cookies in both request and response
+ * 4. Redirects authenticated users away from /sign-in
  *
  * @param request - The incoming Next.js request
- * @returns NextResponse with updated cookies
+ * @returns NextResponse with updated cookies or redirect
  */
 export async function updateSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -22,7 +23,7 @@ export async function updateSession(request: NextRequest) {
 
   invariant(
     url && key,
-    "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in environment variables"
+    "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in environment variables",
   );
   let supabaseResponse = NextResponse.next({
     request,
@@ -37,25 +38,53 @@ export async function updateSession(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
+          request.cookies.set(name, value),
         );
         supabaseResponse = NextResponse.next({
           request,
         });
         cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
+          supabaseResponse.cookies.set(name, value, options),
         );
       },
     },
   });
 
   // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  // IMPORTANT: If you remove getClaims() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
-  await supabase.auth.getClaims();
+  // IMPORTANT: getUser() refreshes the session
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  // Special handling for sign-in page: redirect authenticated users to /board
+  if (pathname === "/sign-in" && user) {
+    // User is authenticated and trying to access sign-in page
+    // Check if there's a redirect parameter they were trying to reach
+    const redirectParam = request.nextUrl.searchParams.get("redirect");
+
+    // If redirect exists and is a safe internal path, use it; otherwise go to /board
+    const destination =
+      redirectParam?.startsWith("/") &&
+      !redirectParam.startsWith("//") &&
+      !redirectParam.startsWith("/\\")
+        ? redirectParam
+        : "/board";
+
+    const redirectUrl = new URL(destination, request.url);
+
+    // Create redirect response and copy cookies
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+
+    return redirectResponse;
+  }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:

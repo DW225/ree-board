@@ -30,7 +30,11 @@ export const deleteUser = async (userID: User["id"]) => {
 
 export const findUserByEmail = async (email: User["email"]) => {
   const result = await db
-    .select()
+    .select({
+      id: userTable.id,
+      name: userTable.name,
+      email: userTable.email,
+    })
     .from(userTable)
     .where(eq(userTable.email, email))
     .limit(1);

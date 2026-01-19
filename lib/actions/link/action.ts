@@ -1,15 +1,15 @@
 "use server";
 
+import { getAuthenticatedUser } from "@/lib/auth/getAuthenticatedUser";
+import { Role } from "@/lib/constants/role";
 import { findValidLinkByToken } from "@/lib/db/link";
 import {
   addMember,
   checkIfMemberExists,
   getBoardCountForUser,
 } from "@/lib/db/member";
-import { getAuthenticatedUser } from "@/lib/auth/getAuthenticatedUser";
-import { nanoid } from "nanoid";
 import type { MagicLinkUsageResult } from "@/lib/types/link";
-import { Role } from "@/lib/constants/role";
+import { nanoid } from "nanoid";
 import { z } from "zod";
 
 /**
@@ -32,7 +32,7 @@ export async function processMagicLinkAction(rawToken: string): Promise<{
     return {
       success: false,
       redirectUrl: "/invite/error?reason=invalid_token",
-      error: "Invalid token format"
+      error: "Invalid token format",
     };
   }
 
@@ -43,7 +43,7 @@ export async function processMagicLinkAction(rawToken: string): Promise<{
     return {
       success: false,
       redirectUrl: "/invite/error?reason=authentication_failed",
-      error: "Authentication failed"
+      error: "Authentication failed",
     };
   }
 
@@ -53,20 +53,20 @@ export async function processMagicLinkAction(rawToken: string): Promise<{
     return {
       success: false,
       redirectUrl: "/invite/error?reason=invalid_or_expired",
-      error: "Link not found or expired"
+      error: "Link not found or expired",
     };
   }
 
   // Check if user is already a member of the board
   const isAlreadyMember = await checkIfMemberExists(
     authResult.userId,
-    link.boardId
+    link.boardId,
   );
   if (isAlreadyMember) {
     // User is already a member - redirect directly to board
     return {
       success: true,
-      redirectUrl: `/board/${link.boardId}`
+      redirectUrl: `/board/${link.boardId}`,
     };
   }
 
@@ -78,7 +78,7 @@ export async function processMagicLinkAction(rawToken: string): Promise<{
       return {
         success: false,
         redirectUrl: "/invite/error?reason=guest_limit_reached",
-        error: "Guest limit reached"
+        error: "Guest limit reached",
       };
     }
   }
@@ -94,7 +94,7 @@ export async function processMagicLinkAction(rawToken: string): Promise<{
   // Return success with board URL
   return {
     success: true,
-    redirectUrl: `/board/${link.boardId}`
+    redirectUrl: `/board/${link.boardId}`,
   };
 }
 
@@ -105,7 +105,7 @@ const MagicLinkTokenSchema = z.string().min(1, "Magic link token is required");
  * Useful for previewing link information before joining
  */
 export async function validateMagicLinkAction(
-  rawToken: string
+  rawToken: string,
 ): Promise<MagicLinkUsageResult> {
   try {
     // Find the magic link
@@ -133,7 +133,7 @@ export async function validateMagicLinkAction(
     // Check if user is already a member
     const isAlreadyMember = await checkIfMemberExists(
       authResult.userId,
-      link.boardId
+      link.boardId,
     );
     if (isAlreadyMember) {
       return {
@@ -189,7 +189,7 @@ export async function getMagicLinkInfoAction(rawToken: string) {
     return {
       boardTitle: link.boardTitle,
       role: link.role,
-      isExpired: false // Since we use findValidLinkByToken, it's not expired
+      isExpired: false, // Since we use findValidLinkByToken, it's not expired
     };
   } catch (error) {
     console.error("Error getting magic link info:", error);
