@@ -10,25 +10,65 @@ export const metadata: Metadata = {
     default: "Ree Board - Collaborative Retrospective Board",
     template: "%s | Ree Board",
   },
-  description: "A modern, real-time retrospective board application for agile teams. Create boards, collaborate with your team, and improve your workflow.",
-  keywords: ["retrospective", "agile", "scrum", "team collaboration", "board", "retro"],
+  description:
+    "A modern, real-time retrospective board application for agile teams. Create boards, collaborate with your team, and improve your workflow.",
+  keywords: [
+    "retrospective",
+    "agile",
+    "scrum",
+    "team collaboration",
+    "board",
+    "retro",
+  ],
   authors: [{ name: "Ree Board Team" }],
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://ree-board.vercel.app",
+    url: "https://ree-board.tekdw.com/",
     title: "Ree Board - Collaborative Retrospective Board",
-    description: "A modern, real-time retrospective board application for agile teams",
+    description:
+      "A modern, real-time retrospective board application for agile teams",
     siteName: "Ree Board",
   },
   twitter: {
     card: "summary_large_image",
     title: "Ree Board - Collaborative Retrospective Board",
-    description: "A modern, real-time retrospective board application for agile teams",
+    description:
+      "A modern, real-time retrospective board application for agile teams",
   },
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+      {
+        url: "/favicon-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/favicon-48x48.png",
+        sizes: "48x48",
+        type: "image/png",
+      },
+      {
+        url: "/favicon.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon-192x192.png",
   },
 };
 
