@@ -8,14 +8,10 @@ import {
   getUserBySupabaseId,
 } from "@/lib/db/user";
 import { createClient } from "@/lib/utils/supabase/server";
+import { emailSchema } from "@/lib/utils/validation";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-
-/**
- * Validation Schemas
- */
-const EmailSchema = z.email("Please enter a valid email address");
 
 const OTPSchema = z
   .string()
@@ -135,7 +131,7 @@ export async function upgradeGuestAccount(email: string): Promise<{
 }> {
   try {
     // Validate email
-    const validatedEmail = EmailSchema.parse(email);
+    const validatedEmail = emailSchema.parse(email);
 
     const supabase = await createClient();
 
@@ -209,7 +205,7 @@ export async function verifyGuestUpgradeOTP(
 }> {
   try {
     // Validate inputs
-    const validatedEmail = EmailSchema.parse(email);
+    const validatedEmail = emailSchema.parse(email);
     const validatedOtp = OTPSchema.parse(otp);
     const validatedName = NameSchema.parse(name);
 

@@ -1,22 +1,21 @@
 import { fetchBoards } from "@/lib/db/board";
-import { verifySession } from "@/lib/dal";
-import { retryWithBackoff } from "@/lib/utils/retryWithBackoff";
 import BoardList from "./BoardList";
 import HomeProvider from "./HomeProvider";
+
+interface BoardListWrapperProps {
+  userId: string;
+}
 
 /**
  * Server component wrapper that fetches board data and provides it to the client-side BoardList.
  * This allows the board list to be streamed independently using Suspense.
  */
-export default async function BoardListWrapper() {
-  const session = await verifySession();
-
-  const boardList = await retryWithBackoff(
-    async () => {
-      return await fetchBoards(session.userId);
-    },
-    { maxRetries: 3, initialDelay: 500 }
-  );
+export default async function BoardListWrapper({
+  userId,
+}: Readonly<BoardListWrapperProps>) {
+  // Direct fetch without retry - faster initial load
+  // Errors will be caught by error boundary
+  const boardList = await fetchBoards(userId);
 
   return (
     <HomeProvider initialBoards={boardList}>

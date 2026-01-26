@@ -1,12 +1,12 @@
 import { boardTable, memberTable, userTable } from "@/db/schema";
 import { Role } from "@/lib/constants/role";
-import type { Board } from "@/lib/types/board";
+import type { Board, NewBoard } from "@/lib/types/board";
 import type { User } from "@/lib/types/user";
 import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import invariant from "tiny-invariant";
 import { db } from "./client";
-import { addMember, checkMemberRole } from "./member";
+import { checkMemberRole } from "./member";
 
 const prepareFetchBoardsByUserId = db
   .select({
@@ -16,6 +16,7 @@ const prepareFetchBoardsByUserId = db
     creator: boardTable.creator,
     updatedAt: boardTable.updatedAt,
     createdAt: boardTable.createdAt,
+    role: memberTable.role,
   })
   .from(boardTable)
   .innerJoin(memberTable, eq(boardTable.id, memberTable.boardId))
@@ -27,40 +28,76 @@ export async function fetchBoards(userId: User["id"]) {
   return await prepareFetchBoardsByUserId.execute({ userId });
 }
 
-export async function createBoard(newBoard: Board, userID: User["id"]) {
-  const board = await db
-    .insert(boardTable)
-    .values({
-      id: newBoard.id,
-      title: newBoard.title,
-      state: newBoard.state,
-      creator: userID,
-    })
-    .returning({ id: boardTable.id })
-    .execute();
-  if (board.length > 0) {
-    await addMember({
+export async function createBoard(newBoard: NewBoard, userID: User["id"]) {
+  return await db.transaction(async (tx) => {
+    const [board] = await tx
+      .insert(boardTable)
+      .values({
+        id: newBoard.id,
+        title: newBoard.title,
+        state: newBoard.state,
+        creator: userID,
+      })
+      .returning({ id: boardTable.id });
+
+    if (!board) {
+      throw new Error("Failed to create board");
+    }
+
+    await tx.insert(memberTable).values({
       id: nanoid(),
       userId: userID,
-      boardId: board[0].id,
+      boardId: board.id,
       role: Role.owner,
     });
-    return board[0].id;
-  } else {
-    throw new Error("Failed to create board");
-  }
+
+    return board.id;
+  });
 }
 
 export async function deleteBoard(boardId: Board["id"], userId: User["id"]) {
   const role = await checkMemberRole(userId, boardId);
 
-  if (role === Role.owner) {
-    return await db
-      .delete(boardTable)
+  if (role !== Role.owner) {
+    throw new Error("Insufficient permissions to delete board");
+  }
+
+  try {
+    await db.delete(boardTable).where(eq(boardTable.id, boardId)).execute();
+  } catch (error) {
+    console.error("Failed to delete board from database:", error);
+    throw new Error("Failed to delete board");
+  }
+
+  // Return void - server actions don't need to return the DB result object
+}
+
+export async function updateBoard(
+  boardId: Board["id"],
+  updates: Partial<Pick<Board, "title" | "state">>,
+  userId: User["id"],
+) {
+  const role = await checkMemberRole(userId, boardId);
+
+  if (role !== Role.owner) {
+    throw new Error("Insufficient permissions to update board");
+  }
+
+  try {
+    await db
+      .update(boardTable)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
       .where(eq(boardTable.id, boardId))
       .execute();
+  } catch (error) {
+    console.error("Failed to update board in database:", error);
+    throw new Error("Failed to update board");
   }
-  return new Error("Insufficient permissions to delete board");
+
+  // Return void - server actions don't need to return the DB result object
 }
 
 const prepareFetchBoardsWhereUserIsAdmin = db
@@ -78,13 +115,13 @@ const prepareFetchBoardsWhereUserIsAdmin = db
   .where(
     and(
       eq(userTable.id, sql.placeholder("userId")),
-      eq(memberTable.role, Role.owner)
-    )
+      eq(memberTable.role, Role.owner),
+    ),
   )
   .prepare();
 
 export async function fetchBoardsWhereUserIsAdmin(
-  userId: User["id"]
+  userId: User["id"],
 ): Promise<Board[]> {
   if (!userId) {
     throw new Error("User ID is required");
