@@ -1,9 +1,9 @@
-import type { Board } from "@/lib/types/board";
+import type { Board, BoardWithRole } from "@/lib/types/board";
 import type { SortDirection } from "@/lib/types/sort";
 import { computed, signal } from "@preact/signals-react";
 
 // Core data signal - single source of truth
-export const boardsSignal = signal<Board[]>([]);
+export const boardsSignal = signal<BoardWithRole[]>([]);
 
 // UI state signals
 export const boardSortCriteriaSignal = signal<{
@@ -66,12 +66,12 @@ export const sortedBoardsSignal = computed(() => {
 });
 
 // Initialization function
-export const initializeBoardSignals = (boards: Board[]) => {
+export const initializeBoardSignals = (boards: BoardWithRole[]) => {
   boardsSignal.value = boards;
 };
 
 // Action creators for board operations
-export const addBoard = (newBoard: Board) => {
+export const addBoard = (newBoard: BoardWithRole) => {
   boardsSignal.value = [...boardsSignal.value, newBoard];
 };
 
@@ -81,7 +81,7 @@ export const removeBoard = (boardId: Board["id"]) => {
   );
 };
 
-export const updateBoard = (updatedBoard: Board) => {
+export const updateBoard = (updatedBoard: BoardWithRole) => {
   boardsSignal.value = boardsSignal.value.map((board) =>
     board.id === updatedBoard.id ? updatedBoard : board
   );

@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: "View and manage all your retrospective boards",
 };
 
-const CreateBoardForm = dynamic(
-  () => import("@/components/home/CreateBoardForm")
+const CreateBoardModal = dynamic(
+  () => import("@/components/home/CreateBoardModal")
 );
 const BoardListWrapper = dynamic(
   () => import("@/components/home/BoardListWrapper")
@@ -28,9 +28,9 @@ export default async function Boards() {
       <div className="container mx-auto mt-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
         <div className="flex flex-wrap gap-4">
-          <CreateBoardForm userID={userID} />
+          <CreateBoardModal userID={userID} />
           <Suspense fallback={<BoardListSkeleton />}>
-            <BoardListWrapper />
+            <BoardListWrapper userId={userID} />
           </Suspense>
         </div>
       </div>
