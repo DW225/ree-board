@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/utils/supabase/middleware";
 
 /**
@@ -22,16 +22,20 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Check if this is a public path
-  const isPublic = publicPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + "/")
-  );
+  if (publicPaths.includes(pathname)) {
+    // For public paths no need to check authentication
+    return NextResponse.next();
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    console.debug("Middleware: Checking authentication for", pathname);
+  }
 
   // Update session (refresh cookies) and get user for all requests
   const session = await updateSession(request);
 
   // For protected routes, check if user is authenticated
-  if (!isPublic && !session) {
+  if (!session) {
     // No user on protected route - redirect to sign-in
     const redirectUrl = new URL("/sign-in", request.url);
     redirectUrl.searchParams.set("redirect", pathname);
@@ -49,7 +53,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files (images, etc.)
+     * - api/auth/confirm (handled separately)
+     * - invite, reset-password, sign-in (public routes)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)",
+    "/((?!monitoring|invite|reset-password|sign-in|api/auth/confirm|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)",
   ],
 };
