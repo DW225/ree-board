@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useSupabaseSession } from "@/hooks/useSupabaseSession";
 import { createClient } from "@/lib/utils/supabase/client";
 import { PasswordSchema } from "@/lib/utils/validation/password";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 
 const RECOVERY_STALENESS_THRESHOLD = 10 * 60 * 1000; // 10 minutes
 const SUCCESS_REDIRECT_DELAY = 2000; // 2 seconds
@@ -20,13 +20,13 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [sessionValid, setSessionValid] = useState<boolean | null>(null);
   const [recoveryTimestamp, setRecoveryTimestamp] = useState<number | null>(
-    null
+    null,
   );
   const sessionCheckedRef = useRef(false);
   const supabaseRef = useRef(createClient());
   const router = useRouter();
+  const { session } = useSupabaseSession();
 
   useEffect(() => {
     const supabase = supabaseRef.current;
@@ -39,37 +39,18 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      if (event === "PASSWORD_RECOVERY") {
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
         // Valid password recovery event - track timestamp and allow access
         const timestamp = Date.now();
         setRecoveryTimestamp(timestamp);
-        setSessionValid(true);
         sessionCheckedRef.current = true;
         return;
-      }
-
-      if (event === "SIGNED_IN" && session) {
-        // User is already logged in - redirect to profile
-        toast.error(
-          "You are already logged in. Use your profile to change your password."
-        );
-        sessionCheckedRef.current = true;
-        router.push("/profile");
-        return;
-      }
-
-      if (event === "INITIAL_SESSION" && session) {
-        // For initial session, mark as invalid (not a fresh recovery)
-        // User should go through the password reset flow again
-        setSessionValid(false);
-        sessionCheckedRef.current = true;
       }
     });
 
     // Also check current session after a delay if no event fired
     const timer = setTimeout(() => {
       if (!sessionCheckedRef.current) {
-        setSessionValid(false);
         sessionCheckedRef.current = true;
       }
     }, SESSION_CHECK_TIMEOUT);
@@ -90,9 +71,8 @@ export default function ResetPasswordPage() {
 
       if (eventAge > RECOVERY_STALENESS_THRESHOLD) {
         setError(
-          "This password reset link has expired. Please request a new one."
+          "This password reset link has expired. Please request a new one.",
         );
-        setSessionValid(false);
         return;
       }
     }
@@ -141,7 +121,7 @@ export default function ResetPasswordPage() {
     "bg-white border border-slate-200 rounded-lg p-8 shadow-sm";
 
   // Loading state while checking session
-  if (sessionValid === null) {
+  if (session === null) {
     return (
       <div className={pageClasses}>
         <div className={cardWrapperClasses}>
@@ -154,7 +134,7 @@ export default function ResetPasswordPage() {
   }
 
   // Invalid or expired reset link
-  if (!sessionValid) {
+  if (!session) {
     return (
       <div className={pageClasses}>
         <div className={cardWrapperClasses}>
