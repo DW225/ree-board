@@ -8,11 +8,9 @@ import { createClient } from "@/lib/utils/supabase/client";
 import { PasswordSchema } from "@/lib/utils/validation/password";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-const RECOVERY_STALENESS_THRESHOLD = 10 * 60 * 1000; // 10 minutes
 const SUCCESS_REDIRECT_DELAY = 2000; // 2 seconds
-const SESSION_CHECK_TIMEOUT = 5000; // 5 seconds
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -20,62 +18,14 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [recoveryTimestamp, setRecoveryTimestamp] = useState<number | null>(
-    null,
-  );
-  const sessionCheckedRef = useRef(false);
+
   const supabaseRef = useRef(createClient());
   const router = useRouter();
   const { session } = useSupabaseSession();
 
-  useEffect(() => {
-    const supabase = supabaseRef.current;
-
-    // Listen for auth state changes to handle the recovery token from URL hash
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (sessionCheckedRef.current) {
-        return;
-      }
-
-      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
-        // Valid password recovery event - track timestamp and allow access
-        const timestamp = Date.now();
-        setRecoveryTimestamp(timestamp);
-        sessionCheckedRef.current = true;
-        return;
-      }
-    });
-
-    // Also check current session after a delay if no event fired
-    const timer = setTimeout(() => {
-      if (!sessionCheckedRef.current) {
-        sessionCheckedRef.current = true;
-      }
-    }, SESSION_CHECK_TIMEOUT);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timer);
-    };
-  }, [router]);
-
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    // Check staleness of recovery event (10-minute window)
-    if (recoveryTimestamp) {
-      const eventAge = Date.now() - recoveryTimestamp;
-
-      if (eventAge > RECOVERY_STALENESS_THRESHOLD) {
-        setError(
-          "This password reset link has expired. Please request a new one.",
-        );
-        return;
-      }
-    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
