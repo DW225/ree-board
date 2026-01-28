@@ -18,7 +18,6 @@ import { toast } from "sonner";
 
 export function ChangePasswordSection() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,7 +26,6 @@ export function ChangePasswordSection() {
   const supabaseRef = useRef(createClient());
 
   function resetForm(): void {
-    setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
     setError("");
@@ -61,20 +59,11 @@ export function ChangePasswordSection() {
           return;
         }
 
-        const { error: signInError } = await supabaseRef.current.auth.signInWithPassword({
-          email: user.email,
-          password: currentPassword,
-        });
-
-        if (signInError) {
-          setError("Current password is incorrect");
-          return;
-        }
-
         // Update password
-        const { error: updateError } = await supabaseRef.current.auth.updateUser({
-          password: newPassword,
-        });
+        const { error: updateError } =
+          await supabaseRef.current.auth.updateUser({
+            password: newPassword,
+          });
 
         if (updateError) {
           setError(updateError.message);
@@ -136,19 +125,6 @@ export function ChangePasswordSection() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                autoComplete="current-password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-                disabled={isPending}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
               <Input
                 id="newPassword"
@@ -190,12 +166,7 @@ export function ChangePasswordSection() {
             <div className="flex gap-2">
               <Button
                 type="submit"
-                disabled={
-                  isPending ||
-                  !currentPassword ||
-                  !newPassword ||
-                  !confirmPassword
-                }
+                disabled={isPending || !newPassword || !confirmPassword}
               >
                 {isPending ? "Updating..." : "Update Password"}
               </Button>
