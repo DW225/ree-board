@@ -23,7 +23,7 @@
     "@libsql/client": "^0.17.0",
     "@marsidev/react-turnstile": "^1.4.1",
     "@next/env": "16.1.5",
-    "@preact/signals-react": "^3.6.1",
+    "@preact/signals-react": "^3.7.0",
     "@sentry/nextjs": "^10.38.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.90.1",
