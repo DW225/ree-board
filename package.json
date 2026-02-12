@@ -62,7 +62,7 @@
     "@next/bundle-analyzer": "16.1.6",
     "@tailwindcss/typography": "^0.5.19",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.2.0",
+    "@types/node": "^25.2.3",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
