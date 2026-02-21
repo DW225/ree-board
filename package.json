@@ -67,7 +67,7 @@
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
-    "@vercel/toolbar": "^0.2.1",
+    "@vercel/toolbar": "^0.2.2",
     "autoprefixer": "^10.4.24",
     "drizzle-kit": "^0.31.9",
     "esbuild": "^0.27.3",
