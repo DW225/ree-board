@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
-        specifier: ^1.7.7
-        version: 1.7.7
+        specifier: ^1.7.9
+        version: 1.7.9
       '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
         specifier: ^3.2.12
         version: 3.2.12(@types/react@19.2.14)(react@19.2.4)
@@ -232,8 +232,8 @@ packages:
     peerDependencies:
       react: ^18.2.0 || ^19.0.0
 
-  '@atlaskit/pragmatic-drag-and-drop@1.7.7':
-    resolution: {integrity: sha512-jX+68AoSTqO/fhCyJDTZ38Ey6/wyL2Iq+J/moanma0YyktpnoHxevjY1UNJHYp0NCburdQDZSL1ZFac1mO1osQ==}
+  '@atlaskit/pragmatic-drag-and-drop@1.7.9':
+    resolution: {integrity: sha512-m/bcw5flyjfcF/rdX4JeomtIBrWuDNOwcQieiywHv7zkfIRmUC34Q9ZLeNGVoz73UiGsRqxysMuw4tC7lSJ89g==}
 
   '@atlaskit/tokens@11.0.0':
     resolution: {integrity: sha512-uAej+DW3Oujh2sdEK7NqzQtKof0XQzfRx5cX9wBvag/rYQwAclYWLQ17LqNzJhwaF7SQykFnWKucsL3Y4Cmo3Q==}
@@ -418,10 +418,6 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
-
-  '@babel/runtime@7.28.4':
-    resolution: {integrity: sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==}
-    engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.28.6':
     resolution: {integrity: sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==}
@@ -6501,12 +6497,12 @@ snapshots:
 
   '@atlaskit/pragmatic-drag-and-drop-hitbox@1.1.0':
     dependencies:
-      '@atlaskit/pragmatic-drag-and-drop': 1.7.7
+      '@atlaskit/pragmatic-drag-and-drop': 1.7.9
       '@babel/runtime': 7.28.6
 
   '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@3.2.12(@types/react@19.2.14)(react@19.2.4)':
     dependencies:
-      '@atlaskit/pragmatic-drag-and-drop': 1.7.7
+      '@atlaskit/pragmatic-drag-and-drop': 1.7.9
       '@atlaskit/pragmatic-drag-and-drop-hitbox': 1.1.0
       '@atlaskit/tokens': 11.0.0(@types/react@19.2.14)(react@19.2.4)
       '@babel/runtime': 7.28.6
@@ -6516,9 +6512,9 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  '@atlaskit/pragmatic-drag-and-drop@1.7.7':
+  '@atlaskit/pragmatic-drag-and-drop@1.7.9':
     dependencies:
-      '@babel/runtime': 7.28.4
+      '@babel/runtime': 7.28.6
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
 
@@ -6767,8 +6763,6 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.0
       '@babel/helper-plugin-utils': 7.27.1
-
-  '@babel/runtime@7.28.4': {}
 
   '@babel/runtime@7.28.6': {}
 
