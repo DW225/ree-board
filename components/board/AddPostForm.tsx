@@ -15,6 +15,13 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+const PLACEHOLDER_BY_TYPE: Record<PostType, string> = {
+  [PostType.went_well]: "What went well this sprint?",
+  [PostType.to_improvement]: "What needs improvement?",
+  [PostType.to_discuss]: "What would you like to discuss?",
+  [PostType.action_item]: "Describe the action item...",
+} as const satisfies Record<PostType, string>;
+
 interface AddPostFormProps {
   userId: string;
   postType: PostType;
@@ -103,7 +110,7 @@ export default function AddPostForm({
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Enter a title for this card..."
+            placeholder={PLACEHOLDER_BY_TYPE[postType]}
             className="w-full p-2 border border-gray-300 rounded-sm focus:border-blue-400 bg-slate-50"
             rows={3}
           />
