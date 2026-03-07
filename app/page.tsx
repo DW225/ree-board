@@ -1,22 +1,41 @@
-import { Button } from "@/components/ui/button";
-import dynamic from "next/dynamic";
-import Link from "next/link";
+import AuthCard from "@/components/landing/AuthCard";
+import Image from "next/image";
 
-const GlowEffect = dynamic(() => import("@/components/landing/GlowEffect"));
-
-export default async function Home() {
+export default function Home() {
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-slate-100 overflow-hidden">
-      <GlowEffect />
-      <h1 className="text-9xl font-bold text-slate-800 mb-8 relative z-10">
-        Ree board
-      </h1>
-      <h2 className="text-2xl text-slate-600 mb-8 relative z-10">
-        Made retro a breeze with ReeBoard
-      </h2>
-      <Button className="bg-slate-600 text-white hover:bg-slate-700 transition-colors duration-200 relative z-10 h-14 w-22 text-lg">
-        <Link href="/board">Start retro</Link>
-      </Button>
-    </div>
+    <main className="flex flex-col lg:flex-row min-h-screen">
+      {/* Left panel */}
+      <div className="flex flex-col justify-between lg:w-[680px] shrink-0 px-16 py-20 bg-[linear-gradient(160deg,#E0E7FF_0%,#EDE9FE_100%)]">
+        {/* Logo */}
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/favicon.svg"
+            alt="ReeBoard logo"
+            width={32}
+            height={32}
+          />
+          <span className="text-[18px] font-bold text-[#1E293B]">ReeBoard</span>
+        </div>
+
+        {/* Headline + subheadline */}
+        <div className="flex flex-col gap-6">
+          <h1 className="text-[40px] font-extrabold text-[#1E293B] leading-tight tracking-tight max-w-[480px]">
+            Run retrospectives that actually move teams forward.
+          </h1>
+          <p className="text-base text-[#64748B] leading-[1.6] max-w-[440px]">
+            Structured retros. Real-time collaboration. Actionable outcomes.
+            Built for modern engineering teams.
+          </p>
+        </div>
+
+        {/* Spacer */}
+        <div />
+      </div>
+
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center bg-[#F8FAFC] px-6 lg:px-[72px] py-[60px]">
+        <AuthCard />
+      </div>
+    </main>
   );
 }
