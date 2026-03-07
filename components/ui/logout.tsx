@@ -12,7 +12,7 @@ interface LogoutButtonProps {
   onClick?: () => void;
 }
 
-export function LogoutButton({ className, onClick }: LogoutButtonProps) {
+export function LogoutButton({ className, onClick }: Readonly<LogoutButtonProps>) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
