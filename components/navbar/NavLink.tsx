@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,7 +17,7 @@ export default function NavLink({
   children,
   onClick,
   className,
-}: NavLinkProps) {
+}: Readonly<NavLinkProps>) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
@@ -24,8 +26,8 @@ export default function NavLink({
       href={href}
       className={cn(
         "relative px-3 py-2 text-sm font-medium transition-colors",
-        "text-muted-foreground hover:text-foreground",
-        isActive && "text-foreground",
+        "text-slate-500 hover:text-slate-900",
+        isActive && "text-indigo-600",
         "rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
         className,
       )}
@@ -33,7 +35,7 @@ export default function NavLink({
     >
       {children}
       {isActive && (
-        <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-foreground" />
+        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />
       )}
     </Link>
   );

@@ -3,7 +3,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import { Dialog as SheetPrimitive } from "radix-ui";
-import type { ComponentPropsWithoutRef, ComponentRef } from "react";
+import type { ComponentPropsWithoutRef, ComponentRef, HTMLAttributes } from "react";
 import { forwardRef } from "react";
 
 import { cn } from "@/lib/utils";
@@ -79,7 +79,7 @@ SheetContent.displayName = SheetPrimitive.Content.displayName;
 const SheetHeader = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+}: HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
       "flex flex-col space-y-2 text-center sm:text-left",
@@ -93,7 +93,7 @@ SheetHeader.displayName = "SheetHeader";
 const SheetFooter = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+}: HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
       "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
