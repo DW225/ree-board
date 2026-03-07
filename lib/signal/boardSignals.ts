@@ -10,7 +10,7 @@ export const boardSortCriteriaSignal = signal<{
   criterion: "title" | "createdAt" | "updatedAt";
   direction: SortDirection;
 }>({
-  criterion: "createdAt",
+  criterion: "updatedAt",
   direction: "desc",
 });
 
@@ -23,7 +23,29 @@ export const filteredBoardsSignal = computed(() => {
 
   if (!filter) return boards;
 
-  return boards.filter((board) => board.title.toLowerCase().includes(filter));
+    // Status filter
+    if (
+      statusFilter.length > 0 &&
+      !statusFilter.includes(board.state as BoardState)
+    ) {
+      return false;
+    }
+
+    // Date Created filter
+    if (dateFilter !== "allTime") {
+      const createdAt = new Date(board.createdAt).getTime();
+      const now = Date.now();
+      const DAY = 86_400_000;
+      const cutoffs: Record<Exclude<DateFilter, "allTime">, number> = {
+        thisWeek: now - 7 * DAY,
+        thisMonth: now - 30 * DAY,
+        last3Months: now - 90 * DAY,
+      };
+      if (createdAt < cutoffs[dateFilter]) return false;
+    }
+
+    return true;
+  });
 });
 
 export const sortedBoardsSignal = computed(() => {
@@ -77,31 +99,31 @@ export const addBoard = (newBoard: BoardWithRole) => {
 
 export const removeBoard = (boardId: Board["id"]) => {
   boardsSignal.value = boardsSignal.value.filter(
-    (board) => board.id !== boardId
+    (board) => board.id !== boardId,
   );
 };
 
 export const updateBoard = (updatedBoard: BoardWithRole) => {
   boardsSignal.value = boardsSignal.value.map((board) =>
-    board.id === updatedBoard.id ? updatedBoard : board
+    board.id === updatedBoard.id ? updatedBoard : board,
   );
 };
 
 export const updateBoardTitle = (
   boardId: Board["id"],
-  newTitle: Board["title"]
+  newTitle: Board["title"],
 ) => {
   boardsSignal.value = boardsSignal.value.map((board) =>
     board.id === boardId
       ? { ...board, title: newTitle, updatedAt: new Date() }
-      : board
+      : board,
   );
 };
 
 // Sorting and filtering operations
 export const sortBoards = (
   criterion: "title" | "createdAt" | "updatedAt",
-  direction?: SortDirection
+  direction?: SortDirection,
 ) => {
   boardSortCriteriaSignal.value = {
     criterion,
@@ -115,3 +137,9 @@ export const filterBoards = (filter: string) => {
 
 // Legacy compatibility (deprecated - use initializeBoardSignals instead)
 export const boardSignalInitial = initializeBoardSignals;
+
+// Controls the Create Board modal open state - set to true from anywhere to open the modal
+export const createBoardModalOpenSignal = signal(false);
+
+// Controls grid vs list view — layout preference, intentionally excluded from resetAllFilters
+export const boardViewModeSignal = signal<"grid" | "list">("grid");

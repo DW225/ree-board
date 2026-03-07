@@ -1,28 +1,45 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { createBoardAction } from "@/lib/actions/board/action";
 import { BoardState } from "@/lib/constants/board";
 import { Role } from "@/lib/constants/role";
-import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
+import {
+  addBoard,
+  createBoardModalOpenSignal,
+  removeBoard,
+} from "@/lib/signal/boardSignals";
 import type { NewBoard } from "@/lib/types/board";
-import { boardTitleSchema, emailSchema } from "@/lib/utils/validation";
-import { Loader2, Mail, Plus, X } from "lucide-react";
+import { boardTitleSchema } from "@/lib/utils/validation";
+import { useSignals } from "@preact/signals-react/runtime";
+import { Loader2, Lock, Users } from "lucide-react";
 import { nanoid } from "nanoid";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+
+type VisibilityOption = "team" | "private";
+type TemplateOption =
+  | "standard"
+  | "start-stop-continue"
+  | "4ls"
+  | "mad-sad-glad";
 
 interface CreateBoardModalProps {
   userID: string;
@@ -31,37 +48,34 @@ interface CreateBoardModalProps {
 export default function CreateBoardModal({
   userID,
 }: Readonly<CreateBoardModalProps>) {
-  const [open, setOpen] = useState(false);
+  useSignals();
+
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState<string>("");
-  const [emailInput, setEmailInput] = useState("");
-  const [emailError, setEmailError] = useState<string>("");
+  const [description, setDescription] = useState("");
+  const [template, setTemplate] = useState<TemplateOption>("standard");
+  const [visibility, setVisibility] = useState<VisibilityOption>("team");
   const [isPending, startTransition] = useTransition();
-  const [memberEmails, setMemberEmails] = useState<string[]>([]);
 
-  const addMemberEmail = () => {
-    const trimmed = emailInput.trim();
-    if (!trimmed) return;
+  const open = createBoardModalOpenSignal.value;
 
-    const validation = emailSchema.safeParse(trimmed);
-    if (!validation.success) {
-      setEmailError(validation.error.issues[0].message);
-      return;
+  // Reset form when modal is closed externally (e.g., via signal)
+  useEffect(() => {
+    if (!open) {
+      resetForm();
     }
+  }, [open]);
 
-    const normalized = validation.data;
-    if (memberEmails.includes(normalized)) {
-      setEmailError("Email already added");
-      return;
-    }
-
-    setMemberEmails((prev) => [...prev, normalized]);
-    setEmailInput("");
-    setEmailError("");
+  const resetForm = () => {
+    setTitle("");
+    setTitleError("");
+    setDescription("");
+    setTemplate("standard");
+    setVisibility("team");
   };
 
-  const removeMemberEmail = (email: string) => {
-    setMemberEmails(memberEmails.filter((e) => e !== email));
+  const setOpen = (v: boolean) => {
+    createBoardModalOpenSignal.value = v;
   };
 
   const validateTitle = (value: string): boolean => {
@@ -94,35 +108,23 @@ export default function CreateBoardModal({
       role: Role.owner,
     };
 
-    // Optimistically update the UI
     addBoard(newBoard);
 
     startTransition(async () => {
       try {
-        await createBoardAction(newBoard, memberEmails);
+        await createBoardAction(newBoard, []);
         toast.success("Board created successfully");
         setOpen(false);
-        setTitle("");
-        setMemberEmails([]);
-        setTitleError("");
       } catch (error) {
         console.error("Failed to create board:", error);
         toast.error("Failed to create board. Please try again.");
-        // Remove optimistic update on error
         removeBoard(newBoardId);
       }
     });
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (
-      e.key === "Enter" &&
-      !e.shiftKey &&
-      e.currentTarget.id === "member-email"
-    ) {
-      e.preventDefault();
-      addMemberEmail();
-    } else if (e.key === "Enter" && !e.shiftKey && !isPending && title.trim()) {
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey && !isPending && title.trim()) {
       e.preventDefault();
       handleSubmit();
     }
@@ -130,170 +132,170 @@ export default function CreateBoardModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="group relative w-72 h-44 rounded-lg
-                   bg-white hover:shadow-md
-                   border-2 border-dashed border-slate-300 hover:border-slate-400
-                   transition-all duration-200
-                   p-0"
-        >
-          <div className="flex flex-col items-center justify-center h-full gap-3">
-            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
-              <Plus className="h-5 w-5 text-white" />
-            </div>
-            <div className="text-center">
-              <p className="text-base font-medium text-slate-900">
-                Create new board
-              </p>
-              <p className="text-sm text-slate-500 mt-0.5">
-                Start a fresh retrospective
-              </p>
-            </div>
-          </div>
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="sm:max-w-[460px]">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-slate-900">
-            Create New Board
+      <DialogContent className="sm:max-w-[520px] p-0 gap-0 rounded-xl border border-[#E2E8F0] shadow-lg overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-5 border-b border-[#E2E8F0]">
+          <DialogTitle className="text-lg font-bold text-[#0F172A]">
+            Create Board
           </DialogTitle>
-          <DialogDescription className="text-slate-600">
-            Give your retrospective board a memorable name.
+          <DialogDescription className="text-sm text-[#64748B] leading-relaxed">
+            Set up a new retrospective board for your team.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 py-6">
-          {/* Board title input */}
-          <div className="grid gap-2.5">
+        {/* Body */}
+        <div className="flex flex-col gap-5 p-6">
+          {/* Board Name */}
+          <div className="flex flex-col gap-1.5">
             <Label
-              htmlFor="title"
-              className="text-sm font-medium text-slate-700"
+              htmlFor="board-name"
+              className="text-sm font-medium text-[#0F172A]"
             >
-              Board Title <span className="text-red-500">*</span>
+              Board Name <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="title"
-              placeholder="e.g., Sprint 42 Retrospective"
+              id="board-name"
+              placeholder="e.g. Sprint 42 Retro"
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
                 if (titleError) validateTitle(e.target.value);
               }}
               onBlur={() => title && validateTitle(title)}
-              onKeyDown={handleKeyDown}
-              className={`h-11 rounded-xl border-slate-300 focus:border-cyan-400 focus:ring-cyan-400
-                        ${titleError ? "border-red-400 focus:border-red-400 focus:ring-red-400" : ""}`}
+              onKeyDown={handleTitleKeyDown}
+              className={`rounded-lg border-slate-200 h-10 ${
+                titleError ? "border-red-400 focus-visible:ring-red-400" : ""
+              }`}
               autoFocus
             />
             {titleError && (
               <p className="text-sm text-red-600 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-red-600" />
+                <span className="w-1 h-1 rounded-full bg-red-600 shrink-0" />
                 {titleError}
               </p>
             )}
           </div>
 
-          {/* Member invitation section */}
-          <div className="grid gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200/60">
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-slate-500" />
-              <Label
-                htmlFor="member-email"
-                className="text-sm font-medium text-slate-700"
-              >
-                Invite Team Members{" "}
-                <span className="text-slate-400 font-normal">(Optional)</span>
-              </Label>
-            </div>
+          {/* Description */}
+          <div className="flex flex-col gap-1.5">
+            <Label
+              htmlFor="board-description"
+              className="text-sm font-medium text-[#0F172A]"
+            >
+              Description
+            </Label>
+            <Textarea
+              id="board-description"
+              placeholder="Briefly describe the purpose of this board (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              disabled
+              className="rounded-lg border-slate-200 resize-none text-sm opacity-60"
+              title="Coming soon"
+            />
+          </div>
 
-            <div className="flex gap-2">
-              <Input
-                id="member-email"
-                type="email"
-                placeholder="colleague@company.com"
-                value={emailInput}
-                onChange={(e) => {
-                  setEmailInput(e.target.value);
-                  if (emailError) setEmailError("");
-                }}
-                onKeyDown={handleKeyDown}
-                className={`h-10 flex-1 rounded-lg border-slate-300 bg-white
-                          ${emailError ? "border-red-400 focus:border-red-400 focus:ring-red-400" : ""}`}
-              />
-              <Button
+          {/* Template */}
+          <div className="flex flex-col gap-1.5">
+            <Label
+              htmlFor="board-template"
+              className="text-sm font-medium text-[#0F172A]"
+            >
+              Template
+            </Label>
+            <Select
+              value={template}
+              onValueChange={(v) => setTemplate(v as TemplateOption)}
+              disabled
+            >
+              <SelectTrigger
+                id="board-template"
+                className="rounded-lg border-slate-200 h-10 text-sm"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="standard">
+                  Standard (Went Well / To Improve / To Discuss / Action Items)
+                </SelectItem>
+                <SelectItem value="start-stop-continue">
+                  Start / Stop / Continue
+                </SelectItem>
+                <SelectItem value="4ls">4Ls</SelectItem>
+                <SelectItem value="mad-sad-glad">Mad / Sad / Glad</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Visibility */}
+          <div className="flex flex-col gap-1.5">
+            <Label className="text-sm font-medium text-[#0F172A]">
+              Visibility
+            </Label>
+            <div className="flex gap-3">
+              <button
                 type="button"
-                onClick={addMemberEmail}
-                variant="secondary"
-                size="sm"
-                className="h-10 px-4 rounded-lg font-medium"
-                disabled={!emailInput.trim()}
+                onClick={() => setVisibility("team")}
+                disabled={isPending}
+                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                  visibility === "team"
+                    ? "bg-[#0F172A] border-[#0F172A] text-white"
+                    : "bg-white border-[#E2E8F0] text-[#64748B] hover:bg-slate-50"
+                }`}
               >
-                Add
-              </Button>
+                <Users className="h-4 w-4 shrink-0" />
+                Team
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibility("private")}
+                disabled={isPending}
+                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                  visibility === "private"
+                    ? "bg-[#0F172A] border-[#0F172A] text-white"
+                    : "bg-white border-[#E2E8F0] text-[#64748B] hover:bg-slate-50"
+                }`}
+              >
+                <Lock className="h-4 w-4 shrink-0" />
+                Private
+              </button>
             </div>
-
-            {emailError && (
-              <p className="text-sm text-red-600 flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-red-600" />
-                {emailError}
-              </p>
-            )}
-
-            {memberEmails.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200">
-                {memberEmails.map((email) => (
-                  <Badge
-                    key={email}
-                    variant="secondary"
-                    className="pl-3 pr-1.5 py-1.5 rounded-lg bg-white border border-slate-300
-                             text-slate-700 font-medium shadow-sm
-                             hover:bg-slate-50 transition-colors group"
-                  >
-                    <span className="text-sm">{email}</span>
-                    <Button
-                      type="button"
-                      onClick={() => removeMemberEmail(email)}
-                      variant="ghost"
-                      size="icon"
-                      className="ml-1.5 h-5 w-5 p-0 hover:bg-slate-200 rounded"
-                    >
-                      <X className="h-3.5 w-3.5 text-slate-500" />
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isPending}
-            className="rounded-xl border-slate-300 hover:bg-slate-50"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isPending || !title.trim() || !!titleError}
-            className="bg-black hover:bg-slate-800"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              "Create Board"
-            )}
-          </Button>
-        </DialogFooter>
+        {/* Footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[#E2E8F0]">
+          <span className="text-xs text-[#94A3B8]">
+            Fields marked * are required
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isPending}
+              className="rounded-lg border-slate-200 hover:bg-slate-50 text-sm"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isPending || !title.trim() || !!titleError}
+              className="rounded-lg bg-[#0F172A] hover:bg-[#1e293b] text-white text-sm font-medium px-4"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Board"
+              )}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
