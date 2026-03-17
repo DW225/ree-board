@@ -29,7 +29,7 @@
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.2",
     "@vercel/speed-insights": "^2.0.0",
-    "ably": "^2.19.0",
+    "ably": "^2.20.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.3.1",
