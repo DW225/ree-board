@@ -1,9 +1,12 @@
-import DashboardSearch from "@/components/home/DashboardSearch";
 import { BoardListSkeleton } from "@/components/ui/skeletons";
 import { getCurrentUser, verifySession } from "@/lib/dal";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+
+const DashboardSearch = dynamic(
+  () => import("@/components/home/DashboardSearch"),
+);
 
 export const metadata: Metadata = {
   title: "Your Boards",
@@ -16,12 +19,6 @@ const CreateBoardModal = dynamic(
 const BoardListWrapper = dynamic(
   () => import("@/components/home/BoardListWrapper"),
 );
-
-function getTimeGreeting(hour: number): string {
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
-}
 
 export default async function Boards() {
   const [session, supabaseUser] = await Promise.all([
@@ -37,7 +34,7 @@ export default async function Boards() {
     supabaseUser.email?.split("@")[0] ??
     "";
   const firstName = fullName.split(" ")[0] || "there";
-  const greeting = `${getTimeGreeting(new Date().getHours())}, ${firstName}`;
+  const greeting = `Welcome back, ${firstName}`;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">

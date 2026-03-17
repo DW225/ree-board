@@ -1,4 +1,5 @@
 import { postTable, taskTable, voteTable } from "@/db/schema";
+import { Role } from "@/lib/constants/role";
 import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
 import { and, eq, inArray, not, sql } from "drizzle-orm";
@@ -31,37 +32,61 @@ export const fetchPostsByBoardID = async (boardId: Board["id"]) => {
   return await prepareFetchPostsByBoardID.execute({ boardId });
 };
 
-const prepareDeletePost = db
-  .delete(postTable)
-  .where(eq(postTable.id, sql.placeholder("postId")))
-  .prepare();
+export const deletePost = async (
+  postId: Post["id"],
+  boardId: Board["id"],
+  userId: string,
+  role: Role
+) => {
+  const condition =
+    role === Role.owner
+      ? and(eq(postTable.id, postId), eq(postTable.boardId, boardId))
+      : and(eq(postTable.id, postId), eq(postTable.boardId, boardId), eq(postTable.author, userId));
 
-export const deletePost = async (postId: Post["id"]) => {
-  await prepareDeletePost.execute({ postId });
+  await db.delete(postTable).where(condition).execute();
 };
 
-export const updatePostType = async (id: Post["id"], newType: Post["type"]) => {
+export const updatePostType = async (
+  id: Post["id"],
+  boardId: Board["id"],
+  newType: Post["type"],
+  userId: string,
+  role: Role
+) => {
+  const condition =
+    role === Role.owner
+      ? and(eq(postTable.id, id), eq(postTable.boardId, boardId))
+      : and(eq(postTable.id, id), eq(postTable.boardId, boardId), eq(postTable.author, userId));
+
   await db
     .update(postTable)
     .set({
       type: newType,
       updatedAt: new Date(),
     })
-    .where(eq(postTable.id, id))
+    .where(condition)
     .execute();
 };
 
 export const updatePostContent = async (
   id: Post["id"],
-  newContent: Post["content"]
+  boardId: Board["id"],
+  newContent: Post["content"],
+  userId: string,
+  role: Role
 ) => {
+  const condition =
+    role === Role.owner
+      ? and(eq(postTable.id, id), eq(postTable.boardId, boardId))
+      : and(eq(postTable.id, id), eq(postTable.boardId, boardId), eq(postTable.author, userId));
+
   await db
     .update(postTable)
     .set({
       content: newContent,
       updatedAt: new Date(),
     })
-    .where(eq(postTable.id, id))
+    .where(condition)
     .execute();
 };
 

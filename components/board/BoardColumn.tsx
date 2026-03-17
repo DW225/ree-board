@@ -4,7 +4,7 @@ import {
   DeletePostAction,
   UpdatePostContentAction,
 } from "@/lib/actions/post/action";
-import type { PostType } from "@/lib/constants/post";
+import { PostType } from "@/lib/constants/post";
 import {
   removePost,
   sortedPostsSignal,
@@ -32,6 +32,7 @@ interface BoardColumnProps {
   postType: PostType;
   viewOnly?: boolean;
   userId: string;
+  accentColor?: string;
 }
 
 interface AnimatedPost {
@@ -39,29 +40,37 @@ interface AnimatedPost {
   isRemoving: boolean;
 }
 
+const COLUMN_ACCENT_CLASS: Record<PostType, string> = {
+  [PostType.went_well]: "bg-emerald-500",
+  [PostType.to_improvement]: "bg-red-500",
+  [PostType.to_discuss]: "bg-amber-400",
+  [PostType.action_item]: "bg-violet-500",
+} as const satisfies Record<PostType, string>;
+
 export default function BoardColumn({
   boardId,
   title,
   postType,
   viewOnly = false,
   userId,
+  accentColor,
 }: Readonly<BoardColumnProps>) {
   useSignals();
   const columnRef = useRef<HTMLDivElement>(null);
   const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
   const filteredPosts = useComputed(() =>
-    sortedPostsSignal.value.filter((post) => post.type === postType)
+    sortedPostsSignal.value.filter((post) => post.type === postType),
   );
 
   const animatedPosts: Signal<AnimatedPost[]> = useComputed(() =>
     filteredPosts.value.map((post) => ({
       id: post.id,
       isRemoving: false,
-    }))
+    })),
   );
 
   const handlePostDelete = useCallback(
-    async (id: string) => {
+    async (id: Post["id"]) => {
       try {
         await DeletePostAction(id, boardId);
 
@@ -71,14 +80,14 @@ export default function BoardColumn({
         console.error("Failed to delete post:", error);
       }
     },
-    [boardId]
+    [boardId],
   );
 
   const handlePostUpdate = useCallback(
     async (
       id: Post["id"],
       originalContent: Post["content"],
-      newContent: Post["content"]
+      newContent: Post["content"],
     ) => {
       try {
         // Update the post content in the local state optimistically
@@ -94,7 +103,7 @@ export default function BoardColumn({
         updatePostContent(id, originalContent);
       }
     },
-    [boardId]
+    [boardId],
   );
 
   useEffect(() => {
@@ -111,9 +120,8 @@ export default function BoardColumn({
         if (isInitializing || isInitialized) return;
         isInitializing = true;
         try {
-          const { dropTargetForElements } = await import(
-            "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-          );
+          const { dropTargetForElements } =
+            await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
 
           cleanup = dropTargetForElements({
             element: columnEl,
@@ -180,6 +188,7 @@ export default function BoardColumn({
               viewOnly={viewOnly}
               onUpdate={handlePostUpdate}
               userId={userId}
+              accentColor={accentColor}
             />
           </div>
         );
@@ -191,22 +200,49 @@ export default function BoardColumn({
       handlePostUpdate,
       userId,
       handlePostDelete,
-    ]
+    ],
   );
+
+  // Use accentColor prop when provided; fall back to Tailwind class from the legacy map.
+  // Inline style is required here because Tailwind cannot safely purge arbitrary hex values
+  // that are only known at runtime (dynamic prop). The project ESLint config has no
+  // no-inline-styles rule — this pattern is intentional and lint-safe.
+  const accentStyle = accentColor
+    ? { backgroundColor: accentColor }
+    : undefined;
+  const accentClass = accentColor ? "" : COLUMN_ACCENT_CLASS[postType];
+  const postCount = filteredPosts.value.length;
 
   return (
     <div
-      className={`w-full flex flex-col ${
-        isDraggingOver ? "bg-sky-200" : "bg-slate-100"
-      } rounded-xl mx-2`}
+      className={`w-full flex flex-col bg-white rounded-xl border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden transition-colors duration-200 ${
+        isDraggingOver ? "ring-2 ring-blue-300 ring-offset-1" : ""
+      }`}
     >
-      <div className="rounded-t-lg p-2">
-        <h3 className="font-bold text-xl text-center mb-4">{title}</h3>
+      {/* Color-coded top accent bar */}
+      <div
+        className={`w-full h-1 rounded-t-xl flex-shrink-0 ${accentClass}`}
+        style={accentStyle}
+      />
+
+      {/* Column header */}
+      <div className="flex items-center justify-between px-3 pt-2.5 pb-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[#0F172A]">{title}</h3>
+          <span className="inline-flex items-center justify-center rounded-full bg-[#F1F5F9] px-1.5 py-0.5 text-xs font-medium text-[#64748B]">
+            {postCount}
+          </span>
+        </div>
+      </div>
+
+      {/* Cards area — also serves as the drop target */}
+      <div
+        ref={columnRef}
+        className="flex-grow overflow-y-auto flex flex-col gap-2 px-3 pb-3 pt-1"
+      >
         {!viewOnly && (
           <AddPostForm postType={postType} boardId={boardId} userId={userId} />
         )}
-      </div>
-      <div ref={columnRef} className="flex-grow overflow-y-auto p-3 space-y-3">
         {renderPosts}
       </div>
     </div>

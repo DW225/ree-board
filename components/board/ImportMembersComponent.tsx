@@ -295,20 +295,22 @@ export default function ImportMembersComponent({
               </div>
 
               <ScrollArea className="h-64 rounded-md border p-4">
-                {isLoading ? (
+                {isLoading && (
                   <div className="flex items-center justify-center h-32">
                     <div className="text-sm text-muted-foreground">
                       Loading members...
                     </div>
                   </div>
-                ) : boardMembers.length === 0 ? (
+                )}
+                {!isLoading && boardMembers.length === 0 && (
                   <div className="flex items-center justify-center h-32">
                     <div className="text-sm text-muted-foreground">
                       <Users className="mx-auto mb-2 size-8" />
                       No members found in this board
                     </div>
                   </div>
-                ) : (
+                )}
+                {!isLoading && boardMembers.length > 0 && (
                   <div className="space-y-2">
                     {boardMembers.map((member) => (
                       <div
@@ -342,7 +344,7 @@ export default function ImportMembersComponent({
               {selectedMembers.size > 0 && (
                 <div className="text-sm text-muted-foreground">
                   {selectedMembers.size} member
-                  {selectedMembers.size !== 1 ? "s" : ""} selected
+                  {selectedMembers.size === 1 ? "" : "s"} selected
                 </div>
               )}
             </div>

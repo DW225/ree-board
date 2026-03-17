@@ -1,6 +1,9 @@
+import { BoardState } from "@/lib/constants/board";
 import type { Board, BoardWithRole } from "@/lib/types/board";
 import type { SortDirection } from "@/lib/types/sort";
 import { computed, signal } from "@preact/signals-react";
+
+export type DateFilter = "thisWeek" | "thisMonth" | "last3Months" | "allTime";
 
 // Core data signal - single source of truth
 export const boardsSignal = signal<BoardWithRole[]>([]);
@@ -15,13 +18,21 @@ export const boardSortCriteriaSignal = signal<{
 });
 
 export const boardFilterSignal = signal<string>("");
+export const boardStatusFilterSignal = signal<BoardState[]>([]);
+export const boardDateFilterSignal = signal<DateFilter>("allTime");
 
 // Computed signals for derived state
 export const filteredBoardsSignal = computed(() => {
   const boards = boardsSignal.value;
-  const filter = boardFilterSignal.value.toLowerCase();
+  const textFilter = boardFilterSignal.value.toLowerCase();
+  const statusFilter = boardStatusFilterSignal.value;
+  const dateFilter = boardDateFilterSignal.value;
 
-  if (!filter) return boards;
+  return boards.filter((board) => {
+    // Text search
+    if (textFilter && !board.title.toLowerCase().includes(textFilter)) {
+      return false;
+    }
 
     // Status filter
     if (
@@ -133,6 +144,20 @@ export const sortBoards = (
 
 export const filterBoards = (filter: string) => {
   boardFilterSignal.value = filter;
+};
+
+export const setStatusFilter = (statuses: BoardState[]) => {
+  boardStatusFilterSignal.value = statuses;
+};
+
+export const setDateFilter = (date: DateFilter) => {
+  boardDateFilterSignal.value = date;
+};
+
+export const resetAllFilters = () => {
+  boardFilterSignal.value = "";
+  boardStatusFilterSignal.value = [];
+  boardDateFilterSignal.value = "allTime";
 };
 
 // Legacy compatibility (deprecated - use initializeBoardSignals instead)
