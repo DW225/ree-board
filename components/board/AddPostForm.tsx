@@ -11,8 +11,8 @@ import type { Post } from "@/lib/types/post";
 import type { NewTask } from "@/lib/types/task";
 import { Plus, X } from "lucide-react";
 import { nanoid } from "nanoid";
-import type { FormEvent } from "react";
-import { useState } from "react";
+import type { SubmitEvent } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 const PLACEHOLDER_BY_TYPE: Record<PostType, string> = {
@@ -36,99 +36,101 @@ export default function AddPostForm({
   const { openFormId, setOpenFormId } = useAddPostForm();
   const [content, setContent] = useState("");
   const [tempContent, setTempContent] = useState("");
-
+  const [isPending, startTransition] = useTransition();
   const formId = `${boardId}-${postType}`;
   const isAdding = openFormId === formId;
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 
-    const postId = nanoid();
-    try {
-      const newPost: Post = {
-        id: postId,
-        content,
-        type: postType,
-        author: userId,
-        boardId: boardId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        voteCount: 0,
-      };
-
-      addPost(newPost);
-      setTempContent(content);
-      setContent("");
-
-      await CreatePostAction(newPost);
-      if (postType === PostType.action_item) {
-        const newTask: NewTask = {
-          id: nanoid(),
-          postId,
-          boardId,
+    startTransition(async () => {
+      const postId = nanoid();
+      try {
+        const newPost: Post = {
+          id: postId,
+          content,
+          type: postType,
+          author: userId,
+          boardId: boardId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          voteCount: 0,
         };
-        try {
-          await authedCreateAction(newTask);
-          addPostTask(newTask);
-        } catch (error) {
-          removePost(postId);
-          throw error; // Re-throw to trigger the outer catch block
+
+        addPost(newPost);
+        setTempContent(content);
+        setContent("");
+
+        await CreatePostAction(newPost);
+        if (postType === PostType.action_item) {
+          const newTask: NewTask = {
+            id: nanoid(),
+            postId,
+            boardId,
+          };
+          try {
+            await authedCreateAction(newTask);
+            addPostTask(newTask);
+          } catch (error) {
+            removePost(postId);
+            throw error; // Re-throw to trigger the outer catch block
+          }
         }
+      } catch (error) {
+        toast.error("Failed to create a post. Please try again later.");
+        console.error("Failed to create a post");
+        if (process.env.NODE_ENV !== "production") {
+          console.error(error);
+        }
+        removePost(postId);
+        setContent(tempContent);
+        setTempContent("");
       }
-    } catch (error) {
-      toast.error("Failed to create a post. Please try again later.");
-      console.error("Failed to create a post");
-      if (process.env.NODE_ENV !== "production") {
-        console.error(error);
-      }
-      removePost(postId);
-      setContent(tempContent);
-      setTempContent("");
-    }
+    });
   };
 
   return (
-    <div
-      className={`transition-all duration-300 ease-in-out ${
-        isAdding ? "animate-fade-in-down" : "animate-fade-out-up"
-      }`}
-    >
+    <div className="transition-all duration-200 ease-in-out">
       {!isAdding ? (
         <button
           onClick={() => setOpenFormId(formId)}
-          className="flex items-center justify-center w-full p-2 my-2 text-gray-600 hover:bg-gray-200 rounded-md transition-colors duration-200 ease-in-out"
+          className="flex items-center gap-1.5 w-full px-3 py-2 rounded-md bg-[#F8FAFC] border border-[#CBD5E1] text-[#94A3B8] hover:text-[#64748B] hover:border-[#94A3B8] transition-colors duration-150 ease-in-out"
         >
-          <Plus className="h-5 w-5 mr-2" />
-          <span>Add a post</span>
+          <Plus className="h-3.5 w-3.5 flex-shrink-0" />
+          <span className="text-sm">Add a card</span>
         </button>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="mt-2 p-2 transition-all duration-200 ease-in-out"
+          className="flex flex-col gap-2 rounded-lg bg-white border border-[#6366F1]/20 p-3 shadow-sm"
         >
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={PLACEHOLDER_BY_TYPE[postType]}
-            className="w-full p-2 border border-gray-300 rounded-sm focus:border-blue-400 bg-slate-50"
+            disabled={isPending}
+            className="w-full resize-none border border-[#E2E8F0] rounded-md bg-[#F8FAFC] text-sm text-[#374151] placeholder:text-[#94A3B8] focus-visible:ring-1 focus-visible:ring-[#6366F1]"
             rows={3}
+            autoFocus
           />
-          <div className="mt-2 flex items-center">
+          <div className="flex items-center gap-2">
             <Button
               type="submit"
-              className="px-3 py-1.5 rounded-sm bg-blue-600 text-white"
-              variant="outline"
-              aria-labelledby="add post button"
+              disabled={isPending}
+              className="h-8 px-3 text-sm bg-[#6366F1] text-white hover:bg-[#4f46e5] rounded-md disabled:opacity-60"
+              aria-label="Add card"
             >
-              Add Card
+              {isPending ? "Adding…" : "Add Card"}
             </Button>
             <Button
+              type="button"
               onClick={() => setOpenFormId("")}
-              className="ml-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 ease-in-out"
               size="icon"
               variant="ghost"
-              aria-labelledby="close form button"
+              disabled={isPending}
+              className="h-8 w-8 text-[#94A3B8] hover:text-[#64748B]"
+              aria-label="Close form"
             >
               <X className="h-4 w-4" />
             </Button>

@@ -19,48 +19,41 @@ export const CreatePostAction = async (post: NewPost) =>
   rbacWithAuth(post.boardId, async (userId, role) => {
     logger.logAction("CreatePostAction", { userId, boardId: post.boardId });
 
-    const results = await Promise.all([
-      createPost(post),
-      ablyClient(post.boardId).publish({
+    const result = await createPost({ ...post, author: userId });
+    try {
+      await ablyClient(post.boardId).publish({
         name: EVENT_TYPE.POST.ADD,
-        extras: {
-          headers: {
-            user: userId,
-          },
-        },
-        data: JSON.stringify(post),
-      }),
-    ]);
-
-    return results;
+        extras: { headers: { user: userId } },
+        data: JSON.stringify({ ...post, author: userId }),
+      });
+    } catch (realtimeError) {
+      logger.warn("Failed to publish real-time create event", { boardId: post.boardId, userId }, realtimeError as Error);
+    }
+    return result;
   });
 
 export const DeletePostAction = async (id: Post["id"], boardId: Board["id"]) =>
-  rbacWithAuth(boardId, async (userId) => {
+  rbacWithAuth(boardId, async (userId, role) => {
     logger.logAction("DeletePostAction", { userId, boardId, postId: id });
 
-    const results = await Promise.all([
-      deletePost(id),
-      ablyClient(boardId).publish({
+    await deletePost(id, boardId, userId, role);
+    try {
+      await ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.DELETE,
-        extras: {
-          headers: {
-            user: userId,
-          },
-        },
+        extras: { headers: { user: userId } },
         data: JSON.stringify({ id }),
-      }),
-    ]);
-
-    return results;
+      });
+    } catch (realtimeError) {
+      logger.warn("Failed to publish real-time delete event", { boardId, userId }, realtimeError as Error);
+    }
   });
 
 export const UpdatePostTypeAction = async (
   id: Post["id"],
   boardId: Board["id"],
-  newType: Post["type"]
+  newType: Post["type"],
 ) =>
-  rbacWithAuth(boardId, async (userId) => {
+  rbacWithAuth(boardId, async (userId, role) => {
     logger.logAction("UpdatePostTypeAction", {
       userId,
       boardId,
@@ -68,48 +61,40 @@ export const UpdatePostTypeAction = async (
       newType,
     });
 
-    const results = await Promise.all([
-      updatePostType(id, newType),
-      ablyClient(boardId).publish({
+    await updatePostType(id, boardId, newType, userId, role);
+    try {
+      await ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPDATE_TYPE,
-        extras: {
-          headers: {
-            user: userId,
-          },
-        },
+        extras: { headers: { user: userId } },
         data: JSON.stringify({ id, type: newType }),
-      }),
-    ]);
-
-    return results;
+      });
+    } catch (realtimeError) {
+      logger.warn("Failed to publish real-time update-type event", { boardId, userId }, realtimeError as Error);
+    }
   });
 
 export const UpdatePostContentAction = async (
   id: Post["id"],
   boardId: Board["id"],
-  newContent: Post["content"]
+  newContent: Post["content"],
 ) =>
-  rbacWithAuth(boardId, async (userId) => {
+  rbacWithAuth(boardId, async (userId, role) => {
     logger.logAction("UpdatePostContentAction", {
       userId,
       boardId,
       postId: id,
     });
 
-    const results = await Promise.all([
-      updatePostContent(id, newContent),
-      ablyClient(boardId).publish({
+    await updatePostContent(id, boardId, newContent, userId, role);
+    try {
+      await ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPDATE_CONTENT,
-        extras: {
-          headers: {
-            user: userId,
-          },
-        },
+        extras: { headers: { user: userId } },
         data: JSON.stringify({ id, content: newContent }),
-      }),
-    ]);
-
-    return results;
+      });
+    } catch (realtimeError) {
+      logger.warn("Failed to publish real-time update-content event", { boardId, userId }, realtimeError as Error);
+    }
   });
 
 // Zod schema for merge post input validation
@@ -119,7 +104,11 @@ const MergePostsSchema = z
     sourcePostIds: z
       .array(z.string())
       .min(1, "At least one source post is required"),
-    mergedContent: z.string().trim().min(1, "Merged content cannot be empty"),
+    mergedContent: z
+      .string()
+      .trim()
+      .min(1, "Merged content cannot be empty")
+      .max(500),
     boardId: z.string().min(1, "Board ID is required"),
   })
   .refine((data) => !data.sourcePostIds.includes(data.targetPostId), {
@@ -132,7 +121,7 @@ const publishMergeEvent = async (
   userID: string,
   targetPostId: Post["id"],
   sourcePostIds: Post["id"][],
-  result: MergePostResult
+  result: MergePostResult,
 ): Promise<void> => {
   try {
     await ablyClient(boardId).publish({
@@ -153,11 +142,15 @@ const publishMergeEvent = async (
     });
   } catch (realtimeError) {
     // Log real-time error but don't fail the merge operation
-    logger.warn("Failed to publish real-time merge event", {
-      boardId,
-      targetPostId,
-      userId: userID,
-    }, realtimeError as Error);
+    logger.warn(
+      "Failed to publish real-time merge event",
+      {
+        boardId,
+        targetPostId,
+        userId: userID,
+      },
+      realtimeError as Error,
+    );
   }
 };
 
@@ -187,7 +180,7 @@ export const MergePostsAction = async (
   targetPostId: Post["id"],
   sourcePostIds: Post["id"][],
   mergedContent: Post["content"],
-  boardId: Board["id"]
+  boardId: Board["id"],
 ): Promise<MergePostResult> =>
   rbacWithAuth(boardId, async (userId): Promise<MergePostResult> => {
     logger.logAction("MergePostsAction", {
@@ -214,14 +207,14 @@ export const MergePostsAction = async (
         targetPostId,
         sourcePostIds,
         mergedContent,
-        boardId
+        boardId,
       );
       await publishMergeEvent(
         boardId,
         userId,
         targetPostId,
         sourcePostIds,
-        result
+        result,
       );
       return result;
     } catch (error) {
