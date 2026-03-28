@@ -25,7 +25,7 @@ import {
 import type { MemberSignal } from "@/lib/types/member";
 import { emailSchema } from "@/lib/utils/validation";
 import { useSignals } from "@preact/signals-react/runtime";
-import { Search, UserPlus } from "lucide-react";
+import { Search, Upload, UserPlus } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
 import type { ReactNode, SubmitEvent } from "react";
@@ -47,6 +47,10 @@ const MemberList = dynamic(() => import("@/components/board/MemberList"), {
     </div>
   ),
 });
+
+const ImportMembersComponent = dynamic(
+  () => import("@/components/board/ImportMembersComponent"),
+);
 
 export default function MemberManageModalComponent({
   boardId,
@@ -149,7 +153,7 @@ export default function MemberManageModalComponent({
         }}
       >
         <DialogTrigger className="cursor-pointer">{children}</DialogTrigger>
-        <DialogContent className="sm:max-w-md rounded-xl border-[#E2E8F0] p-0 gap-0 overflow-hidden">
+        <DialogContent className="sm:max-w-md rounded-xl border-[#E2E8F0] p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh]">
           <DialogDescription className="sr-only">
             Manage team members and their roles for this board.
           </DialogDescription>
@@ -166,7 +170,7 @@ export default function MemberManageModalComponent({
           </div>
 
           {/* Body */}
-          <div className="px-6 py-4 space-y-4">
+          <div className="px-6 py-4 space-y-4 flex-1 overflow-y-auto min-h-0">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94A3B8] pointer-events-none" />
@@ -228,6 +232,18 @@ export default function MemberManageModalComponent({
                     </p>
                   )}
                 </form>
+
+                {/* OR divider + Import from Other Boards */}
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-1 h-px bg-[#E2E8F0]" />
+                  <span className="text-xs text-[#94A3B8] font-medium">
+                    OR
+                  </span>
+                  <div className="flex-1 h-px bg-[#E2E8F0]" />
+                </div>
+                <ImportMembersComponent
+                  currentBoardId={boardId}
+                />
               </div>
             )}
           </div>

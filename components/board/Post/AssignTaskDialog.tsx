@@ -1,5 +1,6 @@
 "use client";
 
+import MemberList from "@/components/board/MemberList";
 import {
   Dialog,
   DialogContent,
@@ -8,34 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { membersSignal } from "@/lib/signal/memberSignals";
 import type { MemberSignal } from "@/lib/types/member";
-import type { User } from "@/lib/types/user";
-import { useSignals } from "@preact/signals-react/runtime";
-import { Check, Search, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-
-const AVATAR_COLORS = [
-  "#6366F1",
-  "#10B981",
-  "#F59E0B",
-  "#EC4899",
-  "#8B5CF6",
-  "#EF4444",
-  "#3B82F6",
-];
-
-function getAvatarColor(userId: User["id"]): string {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
-function getInitials(name: User["name"]): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
+import { Search, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface AssignTaskDialogProps {
   isOpen: boolean;
@@ -50,8 +25,6 @@ export function AssignTaskDialog({
   currentAssigneeId,
   onAssign,
 }: Readonly<AssignTaskDialogProps>) {
-  useSignals();
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMember, setSelectedMember] = useState<MemberSignal | null>(
     null,
@@ -68,20 +41,9 @@ export function AssignTaskDialog({
     }
   }, [isOpen, currentAssigneeId]);
 
-  const allMembers = membersSignal.value;
-  const filteredMembers = useMemo(() => {
-    if (!searchTerm) return allMembers;
-    const lower = searchTerm.toLowerCase();
-    return allMembers.filter(
-      (m) =>
-        m.username.toLowerCase().includes(lower) ||
-        m.email.toLowerCase().includes(lower),
-    );
-  }, [allMembers, searchTerm]);
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[520px] p-0 gap-0 rounded-xl border border-[#E2E8F0] shadow-lg overflow-hidden h-[480px] flex flex-col">
+      <DialogContent className="sm:max-w-[520px] p-0 gap-0 rounded-xl border border-[#E2E8F0] shadow-lg overflow-hidden h-[480px] flex flex-col [&>button:last-child]:hidden">
         <DialogDescription className="sr-only">
           Select a member to assign this action item to.
         </DialogDescription>
@@ -128,52 +90,17 @@ export function AssignTaskDialog({
           </span>
 
           {/* Member list */}
-          <div className="flex flex-col gap-1.5 overflow-y-auto flex-1">
-            {filteredMembers.map((member) => {
-              const isSelected = selectedMember?.userId === member.userId;
-              return (
-                <button
-                  key={member.id}
-                  type="button"
-                  onClick={() => setSelectedMember(isSelected ? null : member)}
-                  className={`flex items-center gap-3 h-[52px] px-3.5 rounded-lg w-full text-left transition-colors ${
-                    isSelected
-                      ? "bg-[#F8FAFC] border border-[#E2E8F0]"
-                      : "hover:bg-slate-50"
-                  }`}
-                >
-                  <div
-                    className="flex items-center justify-center w-8 h-8 rounded-full shrink-0"
-                    style={{ backgroundColor: getAvatarColor(member.userId) }}
-                    aria-hidden="true"
-                  >
-                    <span className="text-white text-xs font-bold">
-                      {getInitials(member.username)}
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                    <span className="text-sm font-medium text-[#0F172A] truncate">
-                      {member.username}
-                    </span>
-                    <span className="text-xs text-[#94A3B8] truncate">
-                      {member.email}
-                    </span>
-                  </div>
-                  {isSelected && (
-                    <Check
-                      className="w-[18px] h-[18px] text-[#6366F1] shrink-0"
-                      aria-hidden="true"
-                    />
-                  )}
-                </button>
-              );
-            })}
-            {filteredMembers.length === 0 && (
-              <div className="text-sm text-[#94A3B8] text-center py-4">
-                No members match your search.
-              </div>
-            )}
-          </div>
+          <MemberList
+            viewOnly={true}
+            searchTerm={searchTerm}
+            selectedUserId={selectedMember?.userId ?? null}
+            onSelect={(member) =>
+              setSelectedMember(
+                selectedMember?.userId === member.userId ? null : member,
+              )
+            }
+            className="flex-1"
+          />
         </div>
 
         {/* Footer */}

@@ -3,7 +3,10 @@ import { Role } from "@/lib/constants/role";
 import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
 import { and, eq, inArray, not, sql } from "drizzle-orm";
-import { db } from "./client";
+import { db, withDbRetry } from "./client";
+
+const UNAUTHORIZED_POST_MUTATION_ERROR =
+  "Post not found or you do not have permission to modify it";
 
 export const createPost = async (post: NewPost) => {
   const newPosts = await db
@@ -29,21 +32,34 @@ const prepareFetchPostsByBoardID = db
   .prepare();
 
 export const fetchPostsByBoardID = async (boardId: Board["id"]) => {
-  return await prepareFetchPostsByBoardID.execute({ boardId });
+  return await withDbRetry(() =>
+    prepareFetchPostsByBoardID.execute({ boardId }),
+  );
 };
 
 export const deletePost = async (
   postId: Post["id"],
   boardId: Board["id"],
   userId: string,
-  role: Role
+  role: Role,
 ) => {
   const condition =
     role === Role.owner
       ? and(eq(postTable.id, postId), eq(postTable.boardId, boardId))
-      : and(eq(postTable.id, postId), eq(postTable.boardId, boardId), eq(postTable.author, userId));
+      : and(
+          eq(postTable.id, postId),
+          eq(postTable.boardId, boardId),
+          eq(postTable.author, userId),
+        );
 
-  await db.delete(postTable).where(condition).execute();
+  const deletedPosts = await db
+    .delete(postTable)
+    .where(condition)
+    .returning({ id: postTable.id });
+
+  if (deletedPosts.length === 0) {
+    throw new Error(UNAUTHORIZED_POST_MUTATION_ERROR);
+  }
 };
 
 export const updatePostType = async (
@@ -51,21 +67,29 @@ export const updatePostType = async (
   boardId: Board["id"],
   newType: Post["type"],
   userId: string,
-  role: Role
+  role: Role,
 ) => {
   const condition =
     role === Role.owner
       ? and(eq(postTable.id, id), eq(postTable.boardId, boardId))
-      : and(eq(postTable.id, id), eq(postTable.boardId, boardId), eq(postTable.author, userId));
+      : and(
+          eq(postTable.id, id),
+          eq(postTable.boardId, boardId),
+          eq(postTable.author, userId),
+        );
 
-  await db
+  const updatedPosts = await db
     .update(postTable)
     .set({
       type: newType,
       updatedAt: new Date(),
     })
     .where(condition)
-    .execute();
+    .returning({ id: postTable.id });
+
+  if (updatedPosts.length === 0) {
+    throw new Error(UNAUTHORIZED_POST_MUTATION_ERROR);
+  }
 };
 
 export const updatePostContent = async (
@@ -73,21 +97,29 @@ export const updatePostContent = async (
   boardId: Board["id"],
   newContent: Post["content"],
   userId: string,
-  role: Role
+  role: Role,
 ) => {
   const condition =
     role === Role.owner
       ? and(eq(postTable.id, id), eq(postTable.boardId, boardId))
-      : and(eq(postTable.id, id), eq(postTable.boardId, boardId), eq(postTable.author, userId));
+      : and(
+          eq(postTable.id, id),
+          eq(postTable.boardId, boardId),
+          eq(postTable.author, userId),
+        );
 
-  await db
+  const updatedPosts = await db
     .update(postTable)
     .set({
       content: newContent,
       updatedAt: new Date(),
     })
     .where(condition)
-    .execute();
+    .returning({ id: postTable.id });
+
+  if (updatedPosts.length === 0) {
+    throw new Error(UNAUTHORIZED_POST_MUTATION_ERROR);
+  }
 };
 
 export interface MergePostResult {
@@ -110,7 +142,7 @@ export const mergePost = async (
   targetPostId: Post["id"],
   sourcePostIds: Post["id"][],
   mergedContent: Post["content"],
-  boardId: Board["id"]
+  boardId: Board["id"],
 ): Promise<MergePostResult> => {
   if (sourcePostIds.length === 0) {
     throw new Error("At least one source post is required for merging");
@@ -127,12 +159,12 @@ export const mergePost = async (
       .select()
       .from(postTable)
       .where(
-        and(inArray(postTable.id, allPostIds), eq(postTable.boardId, boardId))
+        and(inArray(postTable.id, allPostIds), eq(postTable.boardId, boardId)),
       );
 
     if (posts.length !== allPostIds.length) {
       throw new Error(
-        "One or more posts not found or don't belong to the specified board"
+        "One or more posts not found or don't belong to the specified board",
       );
     }
 
@@ -159,7 +191,7 @@ export const mergePost = async (
       .from(voteTable)
       .where(inArray(voteTable.postId, allPostIds))
       .orderBy(
-        sql`CASE WHEN ${voteTable.postId} = ${targetPostId} THEN 0 ELSE 1 END`
+        sql`CASE WHEN ${voteTable.postId} = ${targetPostId} THEN 0 ELSE 1 END`,
       );
 
     // 4. Create a map to keep only the first vote per user (prioritizing target post)
@@ -179,8 +211,8 @@ export const mergePost = async (
         .where(
           and(
             inArray(voteTable.postId, allPostIds),
-            not(inArray(voteTable.id, votesToKeepIds))
-          )
+            not(inArray(voteTable.id, votesToKeepIds)),
+          ),
         );
     }
 
