@@ -35,7 +35,6 @@ export default function AddPostForm({
 }: Readonly<AddPostFormProps>) {
   const { openFormId, setOpenFormId } = useAddPostForm();
   const [content, setContent] = useState("");
-  const [tempContent, setTempContent] = useState("");
   const [isPending, startTransition] = useTransition();
   const formId = `${boardId}-${postType}`;
   const isAdding = openFormId === formId;
@@ -44,12 +43,14 @@ export default function AddPostForm({
     e.preventDefault();
     if (!content.trim()) return;
 
+    const submittedContent = content;
+
     startTransition(async () => {
       const postId = nanoid();
       try {
         const newPost: Post = {
           id: postId,
-          content,
+          content: submittedContent,
           type: postType,
           author: userId,
           boardId: boardId,
@@ -59,7 +60,6 @@ export default function AddPostForm({
         };
 
         addPost(newPost);
-        setTempContent(content);
         setContent("");
 
         await CreatePostAction(newPost);
@@ -84,8 +84,7 @@ export default function AddPostForm({
           console.error(error);
         }
         removePost(postId);
-        setContent(tempContent);
-        setTempContent("");
+        setContent(submittedContent);
       }
     });
   };

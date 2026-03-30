@@ -29,12 +29,14 @@ export default async function ProfilePage() {
     fetchBoards(userId),
   ]);
 
+  const rawFullName = supabaseUser.user_metadata?.full_name;
   const fullName =
-    (supabaseUser.user_metadata?.full_name as string | undefined) ??
+    (typeof rawFullName === "string" ? rawFullName : undefined) ??
     supabaseUser.email?.split("@")[0] ??
     "User";
+  const rawDisplayName = supabaseUser.user_metadata?.display_name;
   const displayName =
-    (supabaseUser.user_metadata?.display_name as string | undefined) ??
+    (typeof rawDisplayName === "string" ? rawDisplayName : undefined) ??
     fullName;
   const email = supabaseUser.email ?? "";
 
@@ -55,7 +57,7 @@ export default async function ProfilePage() {
     <div className="min-h-screen bg-slate-50">
       <NavBar />
       <ProfileHero initials={initials} fullName={fullName} email={email} />
-      <div className="mx-auto flex max-w-[1200px] gap-8 px-12 py-8">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-12">
         <div className="flex flex-1 flex-col gap-5">
           <PersonalInfoCard
             fullName={fullName}
@@ -66,7 +68,7 @@ export default async function ProfilePage() {
           {/* <ConnectedAppsCard /> */}
           <DangerZoneCard userId={userId} />
         </div>
-        <div className="flex w-72 flex-shrink-0 flex-col gap-4">
+        <div className="flex w-full flex-shrink-0 flex-col gap-4 lg:w-72">
           <AccountStatsCard
             ownedBoardCount={ownedBoardCount}
             memberBoardCount={memberBoardCount}

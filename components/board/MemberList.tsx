@@ -2,15 +2,11 @@
 
 import { AvatarIcon } from "@/components/common/AvatarIcon";
 import { Role, roleDisplayName } from "@/lib/constants/role";
-import {
-  filterMembers,
-  filteredMembersSignal,
-} from "@/lib/signal/memberSignals";
+import { membersSignal } from "@/lib/signal/memberSignals";
 import type { MemberSignal } from "@/lib/types/member";
 import { cn } from "@/lib/utils";
 import { useSignals } from "@preact/signals-react/runtime";
 import { Check, UserMinus } from "lucide-react";
-import { useEffect } from "react";
 
 interface MemberListProps {
   viewOnly: boolean;
@@ -44,19 +40,12 @@ export default function MemberList({
 }: Readonly<MemberListProps>) {
   useSignals();
 
-  // Drive the global filteredMembersSignal via filterMembers whenever searchTerm changes
-  useEffect(() => {
-    filterMembers(searchTerm);
-  }, [searchTerm]);
-
-  // Clean up filter on unmount so other consumers start fresh
-  useEffect(() => {
-    return () => {
-      filterMembers("");
-    };
-  }, []);
-
-  const members = filteredMembersSignal.value;
+  const term = searchTerm.toLowerCase();
+  const members = membersSignal.value.filter((member) =>
+    !term ||
+    member.username.toLowerCase().includes(term) ||
+    member.email.toLowerCase().includes(term),
+  );
   const canRemove = !viewOnly && handleRemoveMember !== undefined;
   const isSelectionMode = onSelect !== undefined;
 

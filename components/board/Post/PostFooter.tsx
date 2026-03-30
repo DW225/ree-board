@@ -144,6 +144,8 @@ export const PostFooter = memo(function PostFooter({
             } ${viewOnly || isVoting ? "cursor-default pointer-events-none opacity-60" : ""}`}
             onClick={handleVote}
             disabled={viewOnly || isVoting}
+            aria-label={hasVoted(post.id) ? "Remove vote" : "Vote for this post"}
+            aria-pressed={hasVoted(post.id)}
           >
             <ThumbsUp className="h-3.5 w-3.5" />
             <span className="text-xs font-medium">{post.voteCount}</span>

@@ -12,7 +12,7 @@ export function PlanCard() {
           Upgrade for unlimited boards, advanced analytics, and priority
           support.
         </p>
-        {/* TODO: implement upgrade flow */}
+        {/* Upgrade flow not yet implemented */}
         <button
           disabled
           type="button"

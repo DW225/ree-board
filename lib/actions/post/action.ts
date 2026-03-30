@@ -1,6 +1,7 @@
 "use server";
 
 import { rbacWithAuth } from "@/lib/actions/actionWithAuth";
+import { PostType } from "@/lib/constants/post";
 import {
   createPost,
   deletePost,
@@ -19,6 +20,15 @@ export const CreatePostAction = async (post: NewPost) =>
   rbacWithAuth(post.boardId, async (userId, role) => {
     logger.logAction("CreatePostAction", { userId, boardId: post.boardId });
 
+    const validation = CreatePostSchema.safeParse({
+      boardId: post.boardId,
+      type: post.type,
+      content: post.content,
+    });
+    if (!validation.success) {
+      throw new Error(validation.error.issues[0].message);
+    }
+
     const result = await createPost({ ...post, author: userId });
     try {
       await ablyClient(post.boardId).publish({
@@ -35,6 +45,11 @@ export const CreatePostAction = async (post: NewPost) =>
 export const DeletePostAction = async (id: Post["id"], boardId: Board["id"]) =>
   rbacWithAuth(boardId, async (userId, role) => {
     logger.logAction("DeletePostAction", { userId, boardId, postId: id });
+
+    const validation = DeletePostSchema.safeParse({ id, boardId });
+    if (!validation.success) {
+      throw new Error(validation.error.issues[0].message);
+    }
 
     await deletePost(id, boardId, userId, role);
     try {
@@ -61,6 +76,11 @@ export const UpdatePostTypeAction = async (
       newType,
     });
 
+    const validation = UpdatePostTypeSchema.safeParse({ id, boardId, newType });
+    if (!validation.success) {
+      throw new Error(validation.error.issues[0].message);
+    }
+
     await updatePostType(id, boardId, newType, userId, role);
     try {
       await ablyClient(boardId).publish({
@@ -85,6 +105,11 @@ export const UpdatePostContentAction = async (
       postId: id,
     });
 
+    const validation = UpdatePostContentSchema.safeParse({ id, boardId, newContent });
+    if (!validation.success) {
+      throw new Error(validation.error.issues[0].message);
+    }
+
     await updatePostContent(id, boardId, newContent, userId, role);
     try {
       await ablyClient(boardId).publish({
@@ -96,6 +121,34 @@ export const UpdatePostContentAction = async (
       logger.warn("Failed to publish real-time update-content event", { boardId, userId }, realtimeError as Error);
     }
   });
+
+const PostIdSchema = z.string().trim().min(1);
+const BoardIdSchema = z.string().trim().min(1);
+const PostContentSchema = z.string().trim().min(1, "Content cannot be empty").max(500);
+const PostTypeSchema = z.enum(PostType);
+
+const CreatePostSchema = z.object({
+  boardId: BoardIdSchema,
+  type: PostTypeSchema,
+  content: PostContentSchema,
+});
+
+const DeletePostSchema = z.object({
+  id: PostIdSchema,
+  boardId: BoardIdSchema,
+});
+
+const UpdatePostTypeSchema = z.object({
+  id: PostIdSchema,
+  boardId: BoardIdSchema,
+  newType: PostTypeSchema,
+});
+
+const UpdatePostContentSchema = z.object({
+  id: PostIdSchema,
+  boardId: BoardIdSchema,
+  newContent: PostContentSchema,
+});
 
 // Zod schema for merge post input validation
 const MergePostsSchema = z

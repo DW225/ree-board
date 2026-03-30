@@ -121,7 +121,7 @@ export function MagicLinkForm({
       {/* Submit button */}
       <Button
         type="submit"
-        disabled={loading || (!isOtpStage && siteKey ? !captchaToken : false)}
+        disabled={loading || (!isOtpStage && siteKey ? !captchaToken : false) || (isOtpStage && otp.some((d) => !d))}
         className={GRADIENT_BTN}
       >
         {loading ? magicLinkLoadingLabel : magicLinkLabel}

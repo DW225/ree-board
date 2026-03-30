@@ -231,7 +231,8 @@ export default function MergePostDialog({
               <button
                 type="button"
                 onClick={() => setActiveTab("edit")}
-                className={`flex flex-1 items-center justify-center rounded-[4px] text-sm font-medium transition-all ${
+                disabled={isSubmitting}
+                className={`flex flex-1 items-center justify-center rounded-[4px] text-sm font-medium transition-all disabled:opacity-50 ${
                   activeTab === "edit"
                     ? "bg-white text-[#0F172A] shadow-sm"
                     : "text-[#94A3B8]"
@@ -242,7 +243,8 @@ export default function MergePostDialog({
               <button
                 type="button"
                 onClick={() => setActiveTab("preview")}
-                className={`flex flex-1 items-center justify-center rounded-[4px] text-sm font-medium transition-all ${
+                disabled={isSubmitting}
+                className={`flex flex-1 items-center justify-center rounded-[4px] text-sm font-medium transition-all disabled:opacity-50 ${
                   activeTab === "preview"
                     ? "bg-white text-[#0F172A] shadow-sm"
                     : "text-[#94A3B8]"
@@ -260,7 +262,8 @@ export default function MergePostDialog({
                   value={mergedContent}
                   onChange={(e) => setMergedContent(e.target.value)}
                   maxLength={500}
-                  className="rounded-lg border-[#6366F1] text-sm text-[#0F172A] leading-relaxed min-h-[100px] focus-visible:ring-[#6366F1]"
+                  disabled={isSubmitting}
+                  className="rounded-lg border-[#6366F1] text-sm text-[#0F172A] leading-relaxed min-h-[100px] focus-visible:ring-[#6366F1] disabled:opacity-50"
                 />
                 <p className="text-xs text-[#94A3B8] leading-relaxed">
                   Edit the merged content above before confirming. The original

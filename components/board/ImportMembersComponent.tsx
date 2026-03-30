@@ -294,6 +294,7 @@ export default function ImportMembersComponent({
             <Select
               value={selectedBoardId}
               onValueChange={setSelectedBoardId}
+              disabled={isLoading || isImporting}
             >
               <SelectTrigger className="w-full rounded-lg border-[#E2E8F0] bg-white text-sm focus:ring-1 focus:ring-[#0F172A]">
                 <SelectValue placeholder="Select a board..." />
@@ -319,7 +320,7 @@ export default function ImportMembersComponent({
                   <button
                     type="button"
                     onClick={handleSelectAll}
-                    disabled={isLoading}
+                    disabled={isLoading || isImporting}
                     className="text-[13px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors disabled:opacity-50"
                   >
                     {selectedMembers.size === boardMembers.length
@@ -352,7 +353,8 @@ export default function ImportMembersComponent({
                         type="button"
                         key={member.id}
                         onClick={() => handleMemberToggle(member.id)}
-                        className={`flex w-full items-center gap-3 rounded-lg border p-2.5 transition-colors text-left ${
+                        disabled={isImporting}
+                        className={`flex w-full items-center gap-3 rounded-lg border p-2.5 transition-colors text-left disabled:opacity-50 ${
                           isSelected
                             ? "border-[#6366F1] bg-[#FAFAFE]"
                             : "border-[#E2E8F0] hover:bg-[#F8FAFC]"

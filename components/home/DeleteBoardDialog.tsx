@@ -31,6 +31,7 @@ export default function DeleteBoardDialog({
   const isConfirmed = confirmName === board.title;
 
   const handleOpenChange = (nextOpen: boolean) => {
+    if (isPending) return;
     if (!nextOpen) setConfirmName("");
     onOpenChange(nextOpen);
   };
@@ -56,7 +57,11 @@ export default function DeleteBoardDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[520px] gap-0 p-0">
+      <DialogContent
+        className="sm:max-w-[520px] gap-0 p-0"
+        onInteractOutside={(e) => { if (isPending) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (isPending) e.preventDefault(); }}
+      >
         <DialogHeader className="flex flex-col gap-1 space-y-0 p-6 pb-5">
           <DialogTitle className="text-lg font-bold text-slate-900">
             Delete Board

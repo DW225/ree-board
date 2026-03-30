@@ -32,7 +32,7 @@ export function useOtpInput() {
       .getData("text")
       .replaceAll(/\D/g, "")
       .slice(0, 6);
-    const next = [...otp];
+    const next = [...EMPTY_OTP];
     digits.split("").forEach((d, i) => {
       next[i] = d;
     });

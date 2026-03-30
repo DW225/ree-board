@@ -118,6 +118,7 @@ export function PasswordForm({
               type="button"
               variant="link"
               onClick={onSwitchToSignIn}
+              disabled={loading}
               className="h-auto p-0 text-xs text-[#6366F1]"
             >
               Already have an account?
@@ -153,6 +154,7 @@ export function PasswordForm({
             variant="ghost"
             size="icon"
             onClick={onTogglePassword}
+            disabled={loading}
             aria-label={showPassword ? "Hide password" : "Show password"}
             aria-pressed={showPassword}
             className="h-auto w-auto p-0 text-[#94A3B8] hover:text-[#64748B] hover:bg-transparent shrink-0"

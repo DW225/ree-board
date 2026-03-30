@@ -425,7 +425,7 @@ export default function LinkButton({
             longer be able to join the board.
           </DialogDescription>
           <div className="p-6">
-            <DialogTitle className="text-base font-bold text-[`#0F172A`]">
+            <DialogTitle className="text-base font-bold text-[#0F172A]">
               Revoke Magic Link?
             </DialogTitle>
             <p className="text-sm text-[#64748B] mt-2 leading-relaxed">

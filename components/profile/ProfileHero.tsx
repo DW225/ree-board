@@ -9,10 +9,10 @@ interface Props {
 export function ProfileHero({ initials, fullName, email }: Readonly<Props>) {
   return (
     <div className="border-b border-slate-200 bg-white">
-      <div className="mx-auto max-w-[1200px] px-12 pt-8">
+      <div className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-6 lg:px-12">
         {/* Avatar + Name Row */}
-        <div className="flex items-end justify-between">
-          <div className="flex items-end gap-5">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end gap-5">
             <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500">
               <span className="text-3xl font-bold text-white">{initials}</span>
             </div>
@@ -20,7 +20,7 @@ export function ProfileHero({ initials, fullName, email }: Readonly<Props>) {
               <h1 className="text-[22px] font-bold text-slate-900">
                 {fullName}
               </h1>
-              <p className="text-sm text-slate-500">{email}</p>
+              <p className="max-w-xs truncate text-sm text-slate-500">{email}</p>
               <span className="inline-flex w-fit items-center rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
                 Member
               </span>

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/utils/supabase/client";
 import { Edit2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ export function PersonalInfoCard({
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [isPending, startTransition] = useTransition();
   const supabaseRef = useRef(createClient());
+  const router = useRouter();
 
   const handleSave = () => {
     startTransition(async () => {
@@ -36,6 +38,7 @@ export function PersonalInfoCard({
         }
         toast.success("Profile updated");
         setIsEditing(false);
+        router.refresh();
       } catch {
         toast.error("An unexpected error occurred");
       }
