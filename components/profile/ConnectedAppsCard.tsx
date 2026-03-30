@@ -1,4 +1,5 @@
 import { Puzzle } from "lucide-react";
+import type { ReactNode } from "react";
 
 function AppRow({
   icon,
@@ -6,7 +7,7 @@ function AppRow({
   description,
   connected,
 }: Readonly<{
-  icon: React.ReactNode;
+  icon: ReactNode;
   name: string;
   description: string;
   connected: boolean;

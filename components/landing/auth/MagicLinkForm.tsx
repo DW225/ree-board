@@ -3,7 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ArrowRight, Info, Mail } from "lucide-react";
-import type { RefObject, SubmitEvent } from "react";
+import type {
+  ClipboardEvent,
+  KeyboardEvent,
+  RefObject,
+  SubmitEvent,
+} from "react";
 import { GRADIENT_BTN } from "./constants";
 import { OtpInput } from "./OtpInput";
 
@@ -20,11 +25,8 @@ interface MagicLinkFormProps {
   onSubmit: (e: SubmitEvent) => void;
   onEmailChange: (value: string) => void;
   onOtpChange: (index: number, value: string) => void;
-  onOtpKeyDown: (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => void;
-  onOtpPaste: (e: React.ClipboardEvent) => void;
+  onOtpKeyDown: (index: number, e: KeyboardEvent<HTMLInputElement>) => void;
+  onOtpPaste: (e: ClipboardEvent) => void;
   onCaptchaSuccess: (token: string) => void;
   onCaptchaError: () => void;
   onCaptchaExpire: () => void;
@@ -121,7 +123,11 @@ export function MagicLinkForm({
       {/* Submit button */}
       <Button
         type="submit"
-        disabled={loading || (!isOtpStage && siteKey ? !captchaToken : false) || (isOtpStage && otp.some((d) => !d))}
+        disabled={
+          loading ||
+          (!isOtpStage && siteKey ? !captchaToken : false) ||
+          (isOtpStage && otp.some((d) => !d))
+        }
         className={GRADIENT_BTN}
       >
         {loading ? magicLinkLoadingLabel : magicLinkLabel}

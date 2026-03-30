@@ -16,6 +16,7 @@ import { mergePosts, rollbackMerge } from "@/lib/signal/postSignals";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import { GitMerge, Heart, Loader2, X } from "lucide-react";
+import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -156,7 +157,7 @@ export default function MergePostDialog({
   }, [mergedContent, targetPost.id, sourcePost.id, boardId, onClose]);
 
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
+    (e: KeyboardEvent) => {
       if (e.key === "Escape" && !isSubmitting) {
         onClose();
       }

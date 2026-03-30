@@ -1,16 +1,13 @@
 import { Label } from "@/components/ui/label";
-import type { RefObject } from "react";
+import type { ClipboardEvent, KeyboardEvent, RefObject } from "react";
 
 interface OtpInputProps {
   otp: string[];
   otpRefs: RefObject<(HTMLInputElement | null)[]>;
   loading: boolean;
   onOtpChange: (index: number, value: string) => void;
-  onOtpKeyDown: (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => void;
-  onOtpPaste: (e: React.ClipboardEvent) => void;
+  onOtpKeyDown: (index: number, e: KeyboardEvent<HTMLInputElement>) => void;
+  onOtpPaste: (e: ClipboardEvent) => void;
 }
 
 export function OtpInput({

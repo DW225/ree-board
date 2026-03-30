@@ -1,3 +1,4 @@
+import type { ClipboardEvent, KeyboardEvent } from "react";
 import { useRef, useState } from "react";
 import { EMPTY_OTP } from "./constants";
 
@@ -19,14 +20,14 @@ export function useOtpInput() {
 
   const handleOtpKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
+    e: KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
     }
   };
 
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
+  const handleOtpPaste = (e: ClipboardEvent) => {
     e.preventDefault();
     const digits = e.clipboardData
       .getData("text")

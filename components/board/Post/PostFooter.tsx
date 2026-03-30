@@ -16,6 +16,7 @@ import type { MemberSignal } from "@/lib/types/member";
 import type { Task } from "@/lib/types/task";
 import { useComputed } from "@preact/signals-react";
 import { ThumbsUp } from "lucide-react";
+import type { ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useVotedPosts } from "../PostProvider";
@@ -37,8 +38,8 @@ const TASK_STATE_BADGE_STYLES: Record<Task["state"], string> = {
 
 const renderAssigneeTooltip = (
   user: { name?: string } | undefined,
-  avatarContent: React.ReactNode,
-): React.ReactNode => (
+  avatarContent: ReactNode,
+): ReactNode => (
   <>
     <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
     <TooltipContent>
@@ -144,7 +145,9 @@ export const PostFooter = memo(function PostFooter({
             } ${viewOnly || isVoting ? "cursor-default pointer-events-none opacity-60" : ""}`}
             onClick={handleVote}
             disabled={viewOnly || isVoting}
-            aria-label={hasVoted(post.id) ? "Remove vote" : "Vote for this post"}
+            aria-label={
+              hasVoted(post.id) ? "Remove vote" : "Vote for this post"
+            }
             aria-pressed={hasVoted(post.id)}
           >
             <ThumbsUp className="h-3.5 w-3.5" />

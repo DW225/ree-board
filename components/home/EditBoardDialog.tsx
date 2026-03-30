@@ -15,6 +15,7 @@ import { updateBoardTitle } from "@/lib/signal/boardSignals";
 import type { Board } from "@/lib/types/board";
 import { boardTitleSchema } from "@/lib/utils/validation";
 import { Loader2, Lock, Users, X } from "lucide-react";
+import type { KeyboardEvent } from "react";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -91,7 +92,7 @@ export default function EditBoardDialog({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !isPending && title.trim()) {
       e.preventDefault();
       handleSubmit();
@@ -197,7 +198,11 @@ export default function EditBoardDialog({
             <Label className="text-sm font-medium text-[#0F172A]">
               Visibility
             </Label>
-            <fieldset aria-label="Board visibility" className="flex gap-3 opacity-50" disabled>
+            <fieldset
+              aria-label="Board visibility"
+              className="flex gap-3 opacity-50"
+              disabled
+            >
               <button
                 type="button"
                 onClick={() => setVisibility("team")}
@@ -227,7 +232,9 @@ export default function EditBoardDialog({
                 Private
               </button>
             </fieldset>
-            <p className="text-xs text-[#94A3B8]">Visibility settings coming soon</p>
+            <p className="text-xs text-[#94A3B8]">
+              Visibility settings coming soon
+            </p>
           </div>
         </div>
 

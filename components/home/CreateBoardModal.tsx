@@ -31,6 +31,7 @@ import { boardTitleSchema } from "@/lib/utils/validation";
 import { useSignals } from "@preact/signals-react/runtime";
 import { Loader2, Lock, Users } from "lucide-react";
 import { nanoid } from "nanoid";
+import type { KeyboardEvent } from "react";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -123,7 +124,7 @@ export default function CreateBoardModal({
     });
   };
 
-  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleTitleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey && !isPending && title.trim()) {
       e.preventDefault();
       handleSubmit();
