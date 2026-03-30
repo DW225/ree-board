@@ -103,7 +103,12 @@ export const PostFooter = memo(function PostFooter({
           </Badge>
           <TooltipProvider>
             <Tooltip>
-              {!viewOnly ? (
+              {viewOnly ? (
+                <AvatarIcon
+                  userID={post.task?.userId ?? ""}
+                  triggers={renderAssigneeTooltip}
+                />
+              ) : (
                 <>
                   <button
                     type="button"
@@ -123,11 +128,6 @@ export const PostFooter = memo(function PostFooter({
                     onAssign={handleAssign}
                   />
                 </>
-              ) : (
-                <AvatarIcon
-                  userID={post.task?.userId ?? ""}
-                  triggers={renderAssigneeTooltip}
-                />
               )}
             </Tooltip>
           </TooltipProvider>

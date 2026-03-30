@@ -25,7 +25,7 @@ import {
 import type { MemberSignal } from "@/lib/types/member";
 import { emailSchema } from "@/lib/utils/validation";
 import { useSignals } from "@preact/signals-react/runtime";
-import { Search, Upload, UserPlus } from "lucide-react";
+import { Search, UserPlus } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
 import type { ReactNode, SubmitEvent } from "react";

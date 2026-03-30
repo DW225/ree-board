@@ -288,7 +288,10 @@ export default function ImportMembersComponent({
         <div className="px-6 py-6 space-y-4">
           {/* Source Board Select */}
           <div className="space-y-1.5">
-            <label className="text-[13px] font-medium text-[#0F172A]">
+            <label
+              htmlFor="source-board-select"
+              className="text-[13px] font-medium text-[#0F172A]"
+            >
               Source Board
             </label>
             <Select
@@ -296,7 +299,10 @@ export default function ImportMembersComponent({
               onValueChange={setSelectedBoardId}
               disabled={isLoading || isImporting}
             >
-              <SelectTrigger className="w-full rounded-lg border-[#E2E8F0] bg-white text-sm focus:ring-1 focus:ring-[#0F172A]">
+              <SelectTrigger
+                id="source-board-select"
+                className="w-full rounded-lg border-[#E2E8F0] bg-white text-sm focus:ring-1 focus:ring-[#0F172A]"
+              >
                 <SelectValue placeholder="Select a board..." />
               </SelectTrigger>
               <SelectContent>
@@ -334,9 +340,7 @@ export default function ImportMembersComponent({
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {isLoading && (
                   <div className="flex items-center justify-center h-32">
-                    <p className="text-sm text-[#94A3B8]">
-                      Loading members...
-                    </p>
+                    <p className="text-sm text-[#94A3B8]">Loading members...</p>
                   </div>
                 )}
                 {!isLoading && boardMembers.length === 0 && (
