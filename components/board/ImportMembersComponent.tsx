@@ -247,6 +247,7 @@ export default function ImportMembersComponent({
   };
 
   const handleOpenChange = (open: boolean) => {
+    if (!open && isImporting) return;
     setIsOpen(open);
     if (!open) {
       setSelectedBoardId("");

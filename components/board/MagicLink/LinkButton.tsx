@@ -249,8 +249,9 @@ export default function LinkButton({
                                     <button
                                       type="button"
                                       onClick={() => setLinkToRevoke(link)}
+                                      disabled={link.token === "creating..."}
                                       aria-label="Revoke magic link"
-                                      className="group flex items-center justify-center w-8 h-8 rounded-lg border border-[#E2E8F0] bg-white hover:bg-red-50 hover:border-red-200 transition-colors"
+                                      className="group flex items-center justify-center w-8 h-8 rounded-lg border border-[#E2E8F0] bg-white hover:bg-red-50 hover:border-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                       <Trash2 className="w-3.5 h-3.5 text-[#64748B] group-hover:text-red-600 transition-colors" />
                                     </button>
@@ -258,7 +259,9 @@ export default function LinkButton({
                                 </div>
                                 <div className="flex items-center gap-2 rounded-md border border-[#E2E8F0] bg-white px-3 py-2">
                                   <code className="flex-1 text-[12px] font-mono text-[#475569] truncate select-all">
-                                    {getLinkUrl(link.token)}
+                                    {link.token === "creating..."
+                                      ? "Creating link..."
+                                      : getLinkUrl(link.token)}
                                   </code>
                                 </div>
                                 <p className="text-[11px] text-[#94A3B8]">

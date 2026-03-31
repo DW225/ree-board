@@ -68,17 +68,20 @@ export const PostHeader = memo(function PostHeader({
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null);
   const focusRef = useRef<HTMLElement>(null);
 
-  const handleEdit = useCallback(async () => {
+  const handleEdit = useCallback(async (): Promise<boolean> => {
     if (onUpdate) {
-      // Read the CURRENT content from the signal at submit time, not the stale closure value.
-      // This ensures that if a collaborator updated the post via real-time between when the
-      // dialog opened and when Save is clicked, the rollback will restore THEIR version.
-      const currentContent =
-        postsSignal.value.find((p) => p.id === post.id)?.content ??
-        post.content;
-      await onUpdate(post.id, currentContent, message);
+      try {
+        const currentContent =
+          postsSignal.value.find((p) => p.id === post.id)?.content ??
+          post.content;
+        await onUpdate(post.id, currentContent, message);
+      } catch (error) {
+        console.error("Error saving post:", error);
+        toast.error("Failed to save post");
+        return false;
+      }
     }
-    setIsEditing(false);
+    return true;
   }, [onUpdate, post.id, post.content, message]);
 
   const handleStatusChange = useCallback(
@@ -217,8 +220,10 @@ export const PostHeader = memo(function PostHeader({
               <Button
                 onClick={() => {
                   startTransition(async () => {
-                    await handleEdit();
-                    handleDialogItemOpenChange(false);
+                    const success = await handleEdit();
+                    if (success) {
+                      handleDialogItemOpenChange(false);
+                    }
                   });
                 }}
                 type="button"
