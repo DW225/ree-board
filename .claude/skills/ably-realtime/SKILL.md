@@ -129,8 +129,9 @@ useChannel(`board:${boardId}`, (message) => {
 
 ```typescript
 import { useConnectionStateListener } from "ably/react";
+import type { ReactNode } from "react";
 
-export function RealtimeProvider({ children }: { children: React.ReactNode }) {
+export function RealtimeProvider({ children }: { children: ReactNode }) {
   const [connectionState, setConnectionState] = useState<string>("initialized");
 
   useConnectionStateListener((stateChange) => {

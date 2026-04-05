@@ -7,12 +7,10 @@ import { ProfileSkeleton } from "@/components/ui/skeletons";
  */
 export default function ProfileLoading() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-slate-50">
       <NavBar />
-      <div className="container mx-auto p-4 flex">
-        <div className="flex-1">
-          <ProfileSkeleton />
-        </div>
+      <div className="mx-auto max-w-[1200px] px-12 py-8">
+        <ProfileSkeleton />
       </div>
     </div>
   );
