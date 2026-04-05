@@ -16,13 +16,14 @@ import EditBoardDialog from "./EditBoardDialog";
 import { formatCreatedDate, getAccentClass } from "./boardCardUtils";
 import { useBoardCardActions } from "./useBoardCardActions";
 
-interface BoardCardProps {
+interface BoardListItemProps {
   board: BoardWithRole;
   isOwner?: boolean;
 }
 
-const BoardCard: FC<BoardCardProps> = ({ board, isOwner = false }) => {
+const BoardListItem: FC<BoardListItemProps> = ({ board, isOwner = false }) => {
   const {
+    isDropdownOpen,
     setIsDropdownOpen,
     isEditDialogOpen,
     setIsEditDialogOpen,
@@ -35,22 +36,39 @@ const BoardCard: FC<BoardCardProps> = ({ board, isOwner = false }) => {
 
   return (
     <>
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={handleClick}
-        className="h-40 w-full flex flex-col overflow-hidden rounded-xl bg-white border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.08)] cursor-pointer transition-shadow duration-200 hover:shadow-md text-left p-0 appearance-none font-inherit"
+        onKeyDown={(e) => {
+          if (e.currentTarget !== e.target) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
+        className="flex h-14 w-full overflow-hidden rounded-xl bg-white border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.08)] cursor-pointer transition-shadow duration-200 hover:shadow-md text-left"
         aria-label={`Open board: ${board.title}`}
       >
-        {/* Accent bar */}
-        <div className={`h-1 w-full shrink-0 ${accentClass}`} />
+        {/* Accent stripe */}
+        <div className={`w-1 shrink-0 self-stretch ${accentClass}`} />
 
-        {/* Card body */}
-        <div className="flex flex-col flex-1 gap-1.5 px-4 pt-3 pb-3 min-h-0">
-          {/* Title + menu row */}
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="flex-1 text-[15px] font-semibold text-[#0F172A] leading-snug line-clamp-2">
+        {/* Content */}
+        <div className="flex flex-1 items-center gap-4 px-4 min-w-0">
+          <div className="flex flex-col flex-1 min-w-0">
+            <h2 className="text-[14px] font-semibold text-[#0F172A] leading-snug truncate">
               {board.title}
             </h2>
+            <p className="text-[11px] text-[#94A3B8]">
+              {formatCreatedDate(board.createdAt)}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[11px] text-[#64748B] bg-[#F1F5F9] rounded-full px-2 py-0.5 border border-[#E2E8F0]">
+              {board.role}
+            </span>
+
             {isOwner && (
               <DropdownMenu onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
@@ -94,23 +112,8 @@ const BoardCard: FC<BoardCardProps> = ({ board, isOwner = false }) => {
               </DropdownMenu>
             )}
           </div>
-
-          {/* Date */}
-          <p className="text-[12px] text-[#94A3B8]">
-            {formatCreatedDate(board.createdAt)}
-          </p>
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Footer */}
-          <div className="flex items-center justify-end">
-            <span className="text-[11px] text-[#64748B] bg-[#F1F5F9] rounded-full px-2 py-0.5 border border-[#E2E8F0]">
-              {board.role}
-            </span>
-          </div>
         </div>
-      </button>
+      </div>
 
       {isOwner && (
         <EditBoardDialog
@@ -132,4 +135,4 @@ const BoardCard: FC<BoardCardProps> = ({ board, isOwner = false }) => {
   );
 };
 
-export default BoardCard;
+export default BoardListItem;

@@ -3,18 +3,25 @@
 import { Role } from "@/lib/constants/role";
 import { createBoard, deleteBoard, updateBoard } from "@/lib/db/board";
 import { addMember } from "@/lib/db/member";
-import type { Board, NewBoard } from "@/lib/types/board";
-import { boardTitleSchema, emailListSchema } from "@/lib/utils/validation";
-import { actionWithAuth, rbacWithAuth } from "../actionWithAuth";
-import { nanoid } from "nanoid";
-import type { User } from "@/lib/types/user";
 import { findUserByEmail } from "@/lib/db/user";
+import type { Board, NewBoard } from "@/lib/types/board";
+import type { User } from "@/lib/types/user";
+import {
+  boardIdSchema,
+  boardTitleSchema,
+  emailListSchema,
+} from "@/lib/utils/validation";
+import { nanoid } from "nanoid";
+import { actionWithAuth, rbacWithAuth } from "../actionWithAuth";
 
 export const createBoardAction = async (
   board: NewBoard,
   membersEmails: User["email"][],
 ) =>
   actionWithAuth(async (userId) => {
+    // Validate client-supplied board ID format
+    boardIdSchema.parse(board.id);
+
     // Server-side validation
     const validatedTitle = boardTitleSchema.parse(board.title);
     const validatedEmails = emailListSchema.parse(membersEmails);
