@@ -1,54 +1,85 @@
 "use client";
 
 import { Role } from "@/lib/constants/role";
-import { sortedBoardsSignal } from "@/lib/signal/boardSignals";
+import {
+  boardViewModeSignal,
+  createBoardModalOpenSignal,
+  sortedBoardsSignal,
+} from "@/lib/signal/boardSignals";
 import type { BoardWithRole } from "@/lib/types/board";
 import { useSignals } from "@preact/signals-react/runtime";
+import { Plus } from "lucide-react";
 import BoardCard from "./BoardCard";
+import BoardListItem from "./BoardListItem";
+
+function NewBoardCard() {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        createBoardModalOpenSignal.value = true;
+      }}
+      className="h-40 w-full flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-[#CBD5E1] bg-white transition-colors hover:border-[#94A3B8] hover:shadow-sm"
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#6366F1]">
+        <Plus className="h-5 w-5 text-white" />
+      </div>
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[15px] font-semibold text-[#0F172A]">
+          Create new board
+        </span>
+        <span className="text-[12px] text-[#94A3B8]">
+          Start a fresh retrospective
+        </span>
+      </div>
+    </button>
+  );
+}
 
 export default function BoardList() {
   useSignals();
 
-  if (sortedBoardsSignal.value.length === 0) {
-    return (
-      <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-          <svg
-            className="w-8 h-8 text-slate-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-slate-900 mb-1">
-          No boards yet
-        </h3>
-        <p className="text-sm text-slate-500 max-w-sm">
-          Create your first retrospective board to get started with your team.
-        </p>
-      </div>
-    );
-  }
+  const boards = sortedBoardsSignal.value;
+
+  const viewMode = boardViewModeSignal.value;
 
   return (
-    <>
-      {sortedBoardsSignal.value.map((board: BoardWithRole) => {
-        // Check if current user has owner role for this board
-        const isOwner = board.role === Role.owner;
+    <div className="flex flex-col gap-3">
+      {/* Section header */}
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-semibold tracking-[1.5px] text-[#94A3B8]">
+          YOUR BOARDS
+        </span>
+        <span className="text-[13px] text-[#94A3B8]">
+          {boards.length} {boards.length === 1 ? "board" : "boards"}
+        </span>
+      </div>
 
-        return (
-          <div key={board.id} className="flex items-center justify-center">
-            <BoardCard board={board} isOwner={isOwner} />
-          </div>
-        );
-      })}
-    </>
+      {/* New board action — always above the grid/list */}
+      <NewBoardCard />
+
+      {/* Board items */}
+      {viewMode === "grid" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {boards.map((board: BoardWithRole) => (
+            <BoardCard
+              key={board.id}
+              board={board}
+              isOwner={board.role === Role.owner}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {boards.map((board: BoardWithRole) => (
+            <BoardListItem
+              key={board.id}
+              board={board}
+              isOwner={board.role === Role.owner}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

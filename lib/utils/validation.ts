@@ -4,6 +4,11 @@ import { z } from "zod";
  * Shared validation schemas for the application
  */
 
+// Board ID validation (NanoID format: 21 chars, alphanumeric + _ and -)
+export const boardIdSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9_-]{21}$/, "Invalid board ID format");
+
 // Board validation
 export const boardTitleSchema = z
   .string()
