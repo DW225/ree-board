@@ -130,7 +130,7 @@ describe("Auth Callback Route", () => {
 
       expect(response.status).toBe(307);
       const location = response.headers.get("location");
-      expect(location).toContain("/sign-in");
+      expect(location).toContain("http://localhost:3000/?error=auth_callback_error");
       expect(location).toContain("error=");
     });
   });

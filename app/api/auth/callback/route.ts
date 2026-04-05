@@ -47,8 +47,8 @@ export async function GET(request: Request) {
     }
   }
 
-  // If there's an error or no valid params, redirect to sign-in with error
+  // If there's an error or no valid params, redirect to landing with error
   return NextResponse.redirect(
-    new URL("/sign-in?error=auth_callback_error", requestUrl.origin)
+    new URL("/?error=auth_callback_error", requestUrl.origin)
   );
 }

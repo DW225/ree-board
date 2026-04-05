@@ -21,5 +21,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  redirect("/sign-in?error=invalid_link");
+  redirect("/?error=invalid_link");
 }
