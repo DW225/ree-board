@@ -20,19 +20,6 @@
   }
 }
 
-.glow-effect {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: radial-gradient(circle 250px at var(--mouse-x) var(--mouse-y),
-      rgba(16, 154, 200, 0.1),
-      transparent 80%);
-  z-index: 1;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
