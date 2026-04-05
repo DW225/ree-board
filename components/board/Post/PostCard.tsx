@@ -6,7 +6,6 @@ import {
   DownVotePostAction,
   UpVotePostAction,
 } from "@/lib/actions/vote/action";
-import { PostType } from "@/lib/constants/post";
 import type { EnrichedPost } from "@/lib/signal/postSignals";
 import {
   decrementPostVoteCount,
@@ -28,13 +27,6 @@ const MergePostDialog = dynamic(() => import("../MergePostDialog"), {
   ssr: false,
 });
 
-const cardTypes: Record<Post["type"], string> = {
-  [PostType.went_well]: "bg-green-100",
-  [PostType.to_improvement]: "bg-red-100",
-  [PostType.to_discuss]: "bg-yellow-100",
-  [PostType.action_item]: "bg-purple-100",
-} as const satisfies Record<Post["type"], string>;
-
 interface PostCardProps {
   post: EnrichedPost;
   viewOnly?: boolean;
@@ -42,9 +34,10 @@ interface PostCardProps {
   onUpdate: (
     id: Post["id"],
     originalContent: Post["content"],
-    newContent: Post["content"]
+    newContent: Post["content"],
   ) => void;
   userId: User["id"];
+  accentColor?: string;
 }
 
 function PostCard({
@@ -53,6 +46,7 @@ function PostCard({
   onDelete,
   onUpdate,
   userId,
+  accentColor,
 }: Readonly<PostCardProps>) {
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
@@ -64,11 +58,12 @@ function PostCard({
 
   const { isAnonymous } = useAnonymousMode();
   const { addVotedPost, removeVotedPost, hasVoted } = useVotedPosts();
+  const [isVoting, setIsVoting] = useState<boolean>(false);
 
   const ref = useRef<HTMLDivElement>(null);
 
   const handleVote = useCallback(async () => {
-    if (viewOnly) return;
+    if (viewOnly || isVoting) return;
     const isVoted = hasVoted(post.id);
     const voteAction = isVoted ? DownVotePostAction : UpVotePostAction;
     const voteCountAction = isVoted
@@ -76,6 +71,7 @@ function PostCard({
       : incrementPostVoteCount;
     const votedPostAction = isVoted ? removeVotedPost : addVotedPost;
 
+    setIsVoting(true);
     try {
       // Optimistic update first for immediate UI feedback
       voteCountAction(post.id);
@@ -95,9 +91,12 @@ function PostCard({
 
       revertVoteCountAction(post.id);
       revertVotedPostAction(post.id);
+    } finally {
+      setIsVoting(false);
     }
   }, [
     viewOnly,
+    isVoting,
     hasVoted,
     post.id,
     userId,
@@ -111,18 +110,20 @@ function PostCard({
       const postCardEl = ref.current;
       invariant(postCardEl, "postCardEl is null");
 
+      let cancelled = false;
       let cleanupDrag: (() => void) | undefined;
       let cleanupDrop: (() => void) | undefined;
       let isInitializing = false;
       let isInitialized = false;
 
-      const initializeDragAndDrop = async () => {
-        if (isInitializing || isInitialized) return;
+      const initializeDragAndDrop = async (): Promise<boolean> => {
+        if (isInitializing || isInitialized) return isInitialized;
         isInitializing = true;
         try {
-          const { draggable, dropTargetForElements } = await import(
-            "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-          );
+          const { draggable, dropTargetForElements } =
+            await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
+
+          if (cancelled) return false;
 
           // Make the post draggable
           cleanupDrag = draggable({
@@ -165,19 +166,23 @@ function PostCard({
           }
 
           isInitialized = true;
+          return true;
         } catch (error) {
           console.error("Failed to initialize drag and drop:", error);
+          return false;
         } finally {
           isInitializing = false;
         }
       };
 
-      const handleInteraction = () => {
-        if (!isInitialized && !isInitializing) {
-          initializeDragAndDrop();
-          postCardEl.removeEventListener("mouseenter", handleInteraction);
-          postCardEl.removeEventListener("touchstart", handleInteraction);
-        }
+      const handleInteraction = async () => {
+        if (isInitialized || isInitializing) return;
+
+        const didInitialize = await initializeDragAndDrop();
+        if (!didInitialize) return;
+
+        postCardEl.removeEventListener("mouseenter", handleInteraction);
+        postCardEl.removeEventListener("touchstart", handleInteraction);
       };
 
       postCardEl.addEventListener("mouseenter", handleInteraction, {
@@ -188,6 +193,7 @@ function PostCard({
       });
 
       return () => {
+        cancelled = true;
         postCardEl.removeEventListener("mouseenter", handleInteraction);
         postCardEl.removeEventListener("touchstart", handleInteraction);
         cleanupDrag?.();
@@ -206,24 +212,30 @@ function PostCard({
       {/* Drop indicator for merge functionality */}
       {!viewOnly && isDropTarget && <DropIndicator edge="top" gap="8px" />}
       <Card
-        className={`w-full ${cardTypes[post.type]} ${
-          isDragging ? "opacity-50" : ""
-        } relative`}
+        className={`w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg shadow-none ${
+          accentColor ? "border-l-4" : ""
+        } ${isDragging ? "opacity-50" : ""} relative`}
+        style={accentColor ? { borderLeftColor: accentColor } : undefined}
         ref={ref}
       >
         {!viewOnly && onDelete && (
           <PostHeader post={post} onDelete={onDelete} onUpdate={onUpdate} />
         )}
-        <CardContent className="px-3 py-1">
+        <CardContent className="px-3 pb-2 pt-0">
           <div
             className={`${
               isAnonymous ? "blur-sm select-none" : "select-text"
-            } prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0`}
+            } prose prose-sm break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 text-[#374151]`}
           >
             <MarkdownRender content={post.content} />
           </div>
         </CardContent>
-        <PostFooter post={post} viewOnly={viewOnly} handleVote={handleVote} />
+        <PostFooter
+          post={post}
+          viewOnly={viewOnly}
+          handleVote={handleVote}
+          isVoting={isVoting}
+        />
       </Card>
 
       {/* Merge Dialog */}

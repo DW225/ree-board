@@ -5,7 +5,7 @@ import type { User } from "@/lib/types/user";
 import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import invariant from "tiny-invariant";
-import { db } from "./client";
+import { db, withDbRetry } from "./client";
 import { checkMemberRole } from "./member";
 
 const prepareFetchBoardsByUserId = db
@@ -25,7 +25,9 @@ const prepareFetchBoardsByUserId = db
 
 export async function fetchBoards(userId: User["id"]) {
   invariant(userId, "User ID is required");
-  return await prepareFetchBoardsByUserId.execute({ userId });
+  return await withDbRetry(() =>
+    prepareFetchBoardsByUserId.execute({ userId }),
+  );
 }
 
 export async function createBoard(newBoard: NewBoard, userID: User["id"]) {
@@ -127,5 +129,7 @@ export async function fetchBoardsWhereUserIsAdmin(
     throw new Error("User ID is required");
   }
 
-  return await prepareFetchBoardsWhereUserIsAdmin.execute({ userId });
+  return await withDbRetry(() =>
+    prepareFetchBoardsWhereUserIsAdmin.execute({ userId }),
+  );
 }

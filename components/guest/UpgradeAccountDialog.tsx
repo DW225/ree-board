@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { upgradeGuestAccount, verifyGuestUpgradeOTP } from "@/lib/actions/guest/action";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,10 +9,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import {
+  upgradeGuestAccount,
+  verifyGuestUpgradeOTP,
+} from "@/lib/actions/guest/action";
 import { Loader2 } from "lucide-react";
+import type { SubmitEvent } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface UpgradeAccountDialogProps {
   open: boolean;
@@ -47,7 +51,7 @@ export function UpgradeAccountDialog({
     onOpenChange(newOpen);
   };
 
-  const handleSendOTP = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -85,7 +89,7 @@ export function UpgradeAccountDialog({
     return null;
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
+  const handleVerifyOTP = async (e: SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
