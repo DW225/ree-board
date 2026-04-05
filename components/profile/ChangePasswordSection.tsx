@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/utils/supabase/client";
 import { PasswordSchema } from "@/lib/utils/validation/password";
 import { ChevronDown, ChevronUp, Lock } from "lucide-react";
+import type { SubmitEvent } from "react";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -31,7 +32,7 @@ export function ChangePasswordSection() {
     setError("");
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setError("");
 
