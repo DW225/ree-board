@@ -7,6 +7,7 @@ import { createClient } from "@/lib/utils/supabase/client";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { SubmitEvent } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 type AuthMode = "password" | "otp" | "forgot-password";
@@ -32,7 +33,7 @@ export default function SignInPage() {
     setCaptchaToken(null);
   };
 
-  const handlePasswordSignIn = async (e: React.FormEvent) => {
+  const handlePasswordSignIn = async (e: SubmitEvent) => {
     e.preventDefault();
 
     if (siteKey && !captchaToken) {
@@ -67,7 +68,7 @@ export default function SignInPage() {
     }
   };
 
-  const handleSendOTP = async (e: React.FormEvent) => {
+  const handleSendOTP = async (e: SubmitEvent) => {
     e.preventDefault();
 
     if (siteKey && !captchaToken) {
@@ -102,7 +103,7 @@ export default function SignInPage() {
     }
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
+  const handleVerifyOTP = async (e: SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -127,7 +128,7 @@ export default function SignInPage() {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: SubmitEvent) => {
     e.preventDefault();
 
     if (siteKey && !captchaToken) {
@@ -188,7 +189,7 @@ export default function SignInPage() {
           return "Send Reset Link";
       }
     },
-    []
+    [],
   );
 
   const getFormSubmitHandler = (mode: AuthMode) => {
