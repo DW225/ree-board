@@ -27,7 +27,7 @@
     "@preact/signals-react": "^3.9.1",
     "@sentry/nextjs": "^10.45.0",
     "@supabase/ssr": "^0.9.0",
-    "@supabase/supabase-js": "^2.99.2",
+    "@supabase/supabase-js": "^2.102.1",
     "@vercel/speed-insights": "^2.0.0",
     "ably": "^2.20.0",
     "class-variance-authority": "^0.7.1",
