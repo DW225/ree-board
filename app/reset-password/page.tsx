@@ -8,6 +8,7 @@ import { createClient } from "@/lib/utils/supabase/client";
 import { PasswordSchema } from "@/lib/utils/validation/password";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { SubmitEvent } from "react";
 import { useRef, useState } from "react";
 
 const SUCCESS_REDIRECT_DELAY = 2000; // 2 seconds
@@ -23,7 +24,7 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const { session } = useSupabaseSession();
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: SubmitEvent) => {
     e.preventDefault();
     setError("");
 

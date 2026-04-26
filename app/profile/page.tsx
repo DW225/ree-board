@@ -1,17 +1,16 @@
 import NavBar from "@/components/common/NavBar";
-import { ChangePasswordSection } from "@/components/profile/ChangePasswordSection";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { getCurrentUser } from "@/lib/dal";
-import { md5 } from "@/lib/utils/md5";
+import { AccountStatsCard } from "@/components/profile/AccountStatsCard";
+// import { ConnectedAppsCard } from "@/components/profile/ConnectedAppsCard"; // TODO: enable when OIDC is supported
+import { DangerZoneCard } from "@/components/profile/DangerZoneCard";
+import { PersonalInfoCard } from "@/components/profile/PersonalInfoCard";
+import { PlanCard } from "@/components/profile/PlanCard";
+import { ProfileHero } from "@/components/profile/ProfileHero";
+import { SecurityCard } from "@/components/profile/SecurityCard";
+import { Role } from "@/lib/constants/role";
+import { getCurrentUser, verifySession } from "@/lib/dal";
+import { fetchBoards } from "@/lib/db/board";
+import { getUserByUserID } from "@/lib/db/user";
 import type { Metadata } from "next";
-import Image from "next/image";
-import { User } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -19,58 +18,63 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  // Verify session and get user using centralized DAL
-  const user = await getCurrentUser();
+  const [session, supabaseUser] = await Promise.all([
+    verifySession(),
+    getCurrentUser(),
+  ]);
+  const { userId } = session;
 
-  // Determine display name with explicit logic instead of nested ternaries
-  let displayName = "User";
-  if (user?.user_metadata?.display_name) {
-    displayName = user.user_metadata.display_name;
-  } else if (user?.email) {
-    displayName = user.email.split("@")[0];
-  }
+  const [internalUser, boards] = await Promise.all([
+    getUserByUserID(userId),
+    fetchBoards(userId),
+  ]);
 
-  const avatarEmail = (user?.email ?? "").trim().toLowerCase();
+  const rawFullName = supabaseUser.user_metadata?.full_name;
+  const fullName =
+    (typeof rawFullName === "string" ? rawFullName : undefined) ??
+    supabaseUser.email?.split("@")[0] ??
+    "User";
+  const rawDisplayName = supabaseUser.user_metadata?.display_name;
+  const displayName =
+    (typeof rawDisplayName === "string" ? rawDisplayName : undefined) ??
+    fullName;
+  const email = supabaseUser.email ?? "";
+
+  const initials =
+    fullName
+      .split(" ")
+      .map((n: string) => n[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || email.slice(0, 2).toUpperCase();
+
+  const ownedBoardCount = boards.filter((b) => b.role === Role.owner).length;
+  const memberBoardCount = boards.length - ownedBoardCount;
+  const memberSince = internalUser?.createdAt ?? null;
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-slate-50">
       <NavBar />
-      <div className="container mx-auto p-4 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
-
-        <div className="space-y-6">
-          {/* Profile Information Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <User className="h-5 w-5 text-slate-600" />
-                <div>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>Your account details</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Image
-                  src={`https://www.gravatar.com/avatar/${md5(
-                    avatarEmail
-                  )}?d=mp&s=80`}
-                  alt="Profile"
-                  className="w-20 h-20 rounded-full"
-                  width={80}
-                  height={80}
-                />
-                <div>
-                  <p className="font-semibold text-lg">{displayName}</p>
-                  <p className="text-slate-600">{user?.email}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Security Section */}
-          <ChangePasswordSection />
+      <ProfileHero initials={initials} fullName={fullName} email={email} />
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-12">
+        <div className="flex flex-1 flex-col gap-5">
+          <PersonalInfoCard
+            fullName={fullName}
+            displayName={displayName}
+            email={email}
+          />
+          <SecurityCard />
+          {/* <ConnectedAppsCard /> */}
+          <DangerZoneCard userId={userId} />
+        </div>
+        <div className="flex w-full flex-shrink-0 flex-col gap-4 lg:w-72">
+          <AccountStatsCard
+            ownedBoardCount={ownedBoardCount}
+            memberBoardCount={memberBoardCount}
+            memberSince={memberSince}
+          />
+          <PlanCard />
         </div>
       </div>
     </div>
