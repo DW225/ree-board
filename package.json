@@ -23,7 +23,7 @@
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.2.12",
     "@libsql/client": "^0.17.2",
     "@marsidev/react-turnstile": "^1.5.1",
-    "@next/env": "16.2.1",
+    "@next/env": "16.2.4",
     "@preact/signals-react": "^3.9.1",
     "@sentry/nextjs": "^10.50.0",
     "@supabase/ssr": "^0.9.0",
