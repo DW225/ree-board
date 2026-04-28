@@ -24,8 +24,8 @@ importers:
         specifier: 16.2.4
         version: 16.2.4
       '@preact/signals-react':
-        specifier: ^3.9.1
-        version: 3.9.1(react@19.2.4)
+        specifier: ^3.10.0
+        version: 3.10.0(react@19.2.4)
       '@sentry/nextjs':
         specifier: ^10.50.0
         version: 10.50.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.94.0(esbuild@0.28.0))
@@ -1757,11 +1757,11 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@preact/signals-core@1.14.0':
-    resolution: {integrity: sha512-AowtCcCU/33lFlh1zRFf/u+12rfrhtNakj7UpaGEsmMwUKpKWMVvcktOGcwBBNiB4lWrZWc01LhiyyzVklJyaQ==}
+  '@preact/signals-core@1.14.1':
+    resolution: {integrity: sha512-vxPpfXqrwUe9lpjqfYNjAF/0RF/eFGeLgdJzdmIIZjpOnTmGmAB4BjWone562mJGMRP4frU6iZ6ei3PDsu52Ng==}
 
-  '@preact/signals-react@3.9.1':
-    resolution: {integrity: sha512-4bj3wUfXrYOqDDs6sX2Y5GBC8jgSa8ah8ZJHN2A+23ej+TdPDrtwVJ0e1cEhwemyOZ7Q7NHbilPRhtd5zVpaBA==}
+  '@preact/signals-react@3.10.0':
+    resolution: {integrity: sha512-Uxu6lidNVr9z27b/6DbCin86ekzHiJDrLXZii82aXSzvyMXYMr7l0Bab1cKbfWdbkxq13e7kS7paix3pjKBTLA==}
     peerDependencies:
       react: ^16.14.0 || 17.x || 18.x || 19.x
 
@@ -8127,11 +8127,11 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@preact/signals-core@1.14.0': {}
+  '@preact/signals-core@1.14.1': {}
 
-  '@preact/signals-react@3.9.1(react@19.2.4)':
+  '@preact/signals-react@3.10.0(react@19.2.4)':
     dependencies:
-      '@preact/signals-core': 1.14.0
+      '@preact/signals-core': 1.14.1
       react: 19.2.4
       use-sync-external-store: 1.6.0(react@19.2.4)
 
