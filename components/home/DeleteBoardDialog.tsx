@@ -1,20 +1,18 @@
 "use client";
 
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { deleteBoardAction } from "@/lib/actions/board/action";
 import { addBoard, removeBoard } from "@/lib/signal/boardSignals";
 import type { BoardWithRole } from "@/lib/types/board";
-import { Loader2 } from "lucide-react";
-import { useTransition } from "react";
+import { Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface DeleteBoardDialogProps {
@@ -29,61 +27,116 @@ export default function DeleteBoardDialog({
   onOpenChange,
 }: Readonly<DeleteBoardDialogProps>) {
   const [isPending, startTransition] = useTransition();
+  const [confirmName, setConfirmName] = useState("");
+  const isConfirmed = confirmName === board.title;
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (isPending) return;
+    if (!nextOpen) setConfirmName("");
+    onOpenChange(nextOpen);
+  };
 
   const handleDelete = () => {
+    if (!isConfirmed) return;
+
     const boardSnapshot = { ...board };
 
     startTransition(async () => {
       try {
-        // Optimistic update
         removeBoard(board.id);
-
-        // Server action
         await deleteBoardAction(board.id);
-
         toast.success("Board deleted successfully");
-        onOpenChange(false);
+        handleOpenChange(false);
       } catch (error) {
         console.error("Failed to delete board:", error);
         toast.error("Failed to delete board. Please try again.");
-
-        // Rollback on error
         addBoard(boardSnapshot);
       }
     });
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="sm:max-w-[420px]">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl font-semibold text-slate-900">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="sm:max-w-[520px] gap-0 p-0"
+        onInteractOutside={(e) => { if (isPending) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (isPending) e.preventDefault(); }}
+      >
+        <DialogHeader className="flex flex-col gap-1 space-y-0 p-6 pb-5">
+          <DialogTitle className="text-lg font-bold text-slate-900">
             Delete Board
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-slate-600">
-            Are you sure you want to delete <strong>"{board.title}"</strong>?
-            This action cannot be undone and all associated data will be
-            permanently removed.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          </DialogTitle>
+          <p className="text-sm text-slate-500">
+            This action is permanent and cannot be undone.
+          </p>
+        </DialogHeader>
+
+        <div className="h-px bg-slate-200" />
+
+        <div className="flex flex-col gap-4 px-6 py-5">
+          {/* Warning banner */}
+          <div className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+            <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-semibold text-red-800">
+                You are about to delete this board
+              </p>
+              <p className="text-[13px] text-red-600">
+                All posts, votes, and member data associated with this board
+                will be permanently deleted. This cannot be recovered.
+              </p>
+            </div>
+          </div>
+
+          {/* Confirmation input */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="confirm-board-name"
+              className="text-[13px] font-medium text-gray-700"
+            >
+              To confirm, type the board name below:
+            </label>
+            <Input
+              id="confirm-board-name"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder="Enter board name..."
+              disabled={isPending}
+              className="h-10 rounded-lg border-slate-200"
+            />
+          </div>
+        </div>
+
+        <div className="h-px bg-slate-200" />
+
+        <div className="flex items-center justify-end gap-3 px-6 py-4">
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            disabled={isPending}
+            className="h-10 rounded-lg border-slate-200 px-4 text-slate-700"
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleDelete}
-            disabled={isPending}
-            className="bg-red-600 hover:bg-red-700"
+            disabled={isPending || !isConfirmed}
+            className="h-10 rounded-lg bg-red-600 px-4 hover:bg-red-700"
           >
             {isPending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Deleting...
               </>
             ) : (
-              "Delete"
+              <>
+                <Trash2 className="h-4 w-4" />
+                Delete Board
+              </>
             )}
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

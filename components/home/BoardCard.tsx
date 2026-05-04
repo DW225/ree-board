@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { BoardWithRole } from "@/lib/types/board";
-import { Edit3, MoreVertical, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Edit3, MoreHorizontal, Trash2 } from "lucide-react";
 import type { FC } from "react";
-import { useState } from "react";
 import DeleteBoardDialog from "./DeleteBoardDialog";
 import EditBoardDialog from "./EditBoardDialog";
+import { formatCreatedDate, getAccentClass } from "./boardCardUtils";
+import { useBoardCardActions } from "./useBoardCardActions";
 
 interface BoardCardProps {
   board: BoardWithRole;
@@ -23,138 +22,112 @@ interface BoardCardProps {
 }
 
 const BoardCard: FC<BoardCardProps> = ({ board, isOwner = false }) => {
-  const router = useRouter();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const {
+    setIsDropdownOpen,
+    isEditDialogOpen,
+    setIsEditDialogOpen,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    handleClick,
+  } = useBoardCardActions(board.id);
 
-  const handleClick = () => {
-    if (!isDropdownOpen) {
-      router.push(`/board/${board.id}`);
-    }
-  };
-
-  const formatDate = (date?: Date | string) => {
-    if (!date) return null;
-
-    // Handle both Date objects and string dates from server responses
-    const normalizedDate = date instanceof Date ? date : new Date(date);
-
-    // Check if date is valid
-    if (Number.isNaN(normalizedDate.getTime())) return null;
-
-    const now = new Date();
-    const diff = now.getTime() - normalizedDate.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days}d ago`;
-    if (days < 30) return `${Math.floor(days / 7)}w ago`;
-    return normalizedDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
+  const accentClass = getAccentClass(board.id);
 
   return (
     <>
-      <Card
+      <button
+        type="button"
         onClick={handleClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleClick();
-          }
-        }}
-        className="group relative rounded-lg transition-all duration-200
-                   bg-white hover:shadow-md
-                   w-72 h-44 flex flex-col cursor-pointer
-                   border border-slate-200 hover:border-slate-300"
+        className="h-40 w-full flex flex-col overflow-hidden rounded-xl bg-white border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.08)] cursor-pointer transition-shadow duration-200 hover:shadow-md text-left p-0 appearance-none font-inherit"
         aria-label={`Open board: ${board.title}`}
       >
-        {/* Action menu - top right (owner only) */}
-        {isOwner && (
-          <div className="absolute top-3 right-3 z-10">
-            <DropdownMenu onOpenChange={setIsDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded opacity-100
-                            transition-opacity duration-150
-                            hover:bg-slate-100"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical className="h-4 w-4 text-slate-600" />
-                  <span className="sr-only">Board actions</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-40"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditDialogOpen(true);
-                  }}
-                  className="cursor-pointer"
-                >
-                  <Edit3 className="mr-2 h-4 w-4" />
-                  <span>Edit</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsDeleteDialogOpen(true);
-                  }}
-                  className="cursor-pointer text-red-600 focus:text-red-600"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
+        {/* Accent bar */}
+        <div className={`h-1 w-full shrink-0 ${accentClass}`} />
 
-        {/* Content */}
-        <div className="flex flex-col justify-between h-full p-6 relative z-0">
-          {/* Title */}
-          <div className="flex-1 flex items-center justify-center">
-            <h2 className="text-lg font-medium text-center text-slate-900 leading-tight line-clamp-2">
+        {/* Card body */}
+        <div className="flex flex-col flex-1 gap-1.5 px-4 pt-3 pb-3 min-h-0">
+          {/* Title + menu row */}
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="flex-1 text-[15px] font-semibold text-[#0F172A] leading-snug line-clamp-2">
               {board.title}
             </h2>
+            {isOwner && (
+              <DropdownMenu onOpenChange={setIsDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 shrink-0 rounded text-[#94A3B8] hover:text-slate-500 hover:bg-slate-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Board actions</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-40"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditDialogOpen(true);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Edit3 className="mr-2 h-4 w-4" />
+                    <span>Edit</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDeleteDialogOpen(true);
+                    }}
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Delete</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
-          {/* Metadata footer */}
-          {board.updatedAt && (
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span>{formatDate(board.updatedAt)}</span>
-            </div>
-          )}
+          {/* Date */}
+          <p className="text-[12px] text-[#94A3B8]">
+            {formatCreatedDate(board.createdAt)}
+          </p>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Footer */}
+          <div className="flex items-center justify-end">
+            <span className="text-[11px] text-[#64748B] bg-[#F1F5F9] rounded-full px-2 py-0.5 border border-[#E2E8F0]">
+              {board.role}
+            </span>
+          </div>
         </div>
-      </Card>
+      </button>
 
-      {/* Edit Dialog */}
-      <EditBoardDialog
-        boardId={board.id}
-        currentTitle={board.title}
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-      />
+      {isOwner && (
+        <EditBoardDialog
+          boardId={board.id}
+          currentTitle={board.title}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+        />
+      )}
 
-      {/* Delete Dialog */}
-      <DeleteBoardDialog
-        board={board}
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      />
+      {isOwner && (
+        <DeleteBoardDialog
+          board={board}
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+        />
+      )}
     </>
   );
 };

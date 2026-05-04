@@ -1,8 +1,12 @@
-import { verifySession } from "@/lib/dal";
 import { BoardListSkeleton } from "@/components/ui/skeletons";
+import { getCurrentUser, verifySession } from "@/lib/dal";
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
+
+const DashboardSearch = dynamic(
+  () => import("@/components/home/DashboardSearch"),
+);
 
 export const metadata: Metadata = {
   title: "Your Boards",
@@ -10,30 +14,38 @@ export const metadata: Metadata = {
 };
 
 const CreateBoardModal = dynamic(
-  () => import("@/components/home/CreateBoardModal")
+  () => import("@/components/home/CreateBoardModal"),
 );
 const BoardListWrapper = dynamic(
-  () => import("@/components/home/BoardListWrapper")
+  () => import("@/components/home/BoardListWrapper"),
 );
 
 export default async function Boards() {
-  // Verify session using centralized DAL
-  const session = await verifySession();
+  const [session, supabaseUser] = await Promise.all([
+    verifySession(),
+    getCurrentUser(),
+  ]);
 
-  // Use userId directly from session (no need to fetch from DB)
   const userID = session.userId;
 
+  const fullName =
+    (supabaseUser.user_metadata?.full_name as string | undefined) ??
+    (supabaseUser.user_metadata?.name as string | undefined) ??
+    supabaseUser.email?.split("@")[0] ??
+    "";
+  const firstName = fullName.split(" ")[0] || "there";
+  const greeting = `Welcome back, ${firstName}`;
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto mt-8 px-4">
-        <h1 className="text-3xl font-bold mb-6">Your Boards</h1>
-        <div className="flex flex-wrap gap-4">
-          <CreateBoardModal userID={userID} />
-          <Suspense fallback={<BoardListSkeleton />}>
-            <BoardListWrapper userId={userID} />
-          </Suspense>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC]">
+      <main className="flex flex-col gap-6 px-12 py-10">
+        <h1 className="text-[28px] font-bold text-[#0F172A]">{greeting}</h1>
+        <DashboardSearch />
+        <Suspense fallback={<BoardListSkeleton />}>
+          <BoardListWrapper userId={userID} />
+        </Suspense>
+      </main>
+      <CreateBoardModal userID={userID} />
     </div>
   );
 }

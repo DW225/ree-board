@@ -17,7 +17,7 @@ import { Role, roleOptions } from "@/lib/constants/role";
 import { EXPIRATION_OPTIONS, isValidMagicLinkRole } from "@/lib/types/link";
 import { getRoleDisplayName, magicLinkRoleOptions } from "@/lib/utils/role";
 import { Check, Clock, Copy, Link } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface MagicLinkCreatorProps {
@@ -32,6 +32,13 @@ export default function MagicLinkCreator({
   const [isCreating, setIsCreating] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const { createLink } = useMagicLinks(boardId);
 
@@ -63,7 +70,8 @@ export default function MagicLinkCreator({
         toast.success("Link copied to clipboard!");
 
         // Reset copy status after 2 seconds
-        setTimeout(() => setIsCopied(false), 2000);
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(() => setIsCopied(false), 2000);
       } catch {
         toast.error("Failed to copy link to clipboard");
       }
