@@ -31,10 +31,10 @@ importers:
         version: 10.50.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.94.0(esbuild@0.28.0))
       '@supabase/ssr':
         specifier: ^0.9.0
-        version: 0.9.0(@supabase/supabase-js@2.104.1)
+        version: 0.9.0(@supabase/supabase-js@2.105.3)
       '@supabase/supabase-js':
-        specifier: ^2.104.1
-        version: 2.104.1
+        specifier: ^2.105.3
+        version: 2.105.3
       '@vercel/speed-insights':
         specifier: ^2.0.0
         version: 2.0.0(next@16.2.4(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
@@ -2771,23 +2771,23 @@ packages:
   '@statsig/js-client@3.31.2':
     resolution: {integrity: sha512-uEIt2Zg0NTgIhg4jaMQYtdttrTDgQRtlk4E8N6cNBcq2i/Igea1DzVYD7RyEV9oiq3InHDOfuuP+p+w5oO+qeA==}
 
-  '@supabase/auth-js@2.104.1':
-    resolution: {integrity: sha512-pqFnDKekq1isqlqnzqzyJ3mzmho+o+FjfVTqhKY3PFlwj2anx3OPznO1kbo1ZEwD8zg1r4EAFf/7pplLyX0ocQ==}
+  '@supabase/auth-js@2.105.3':
+    resolution: {integrity: sha512-hMFuzP++mjRfe0/BUq4/e82CXIDgyjUgg0khLN8waol/gzoM1t2iGmhfJSGvQHQ1dr3XqWpP6ThAw4bLHMot5Q==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/functions-js@2.104.1':
-    resolution: {integrity: sha512-JjAH4JN9rZzxh4plQnILPrQZXAG6ccoRS6z9hQAGmXpRSwJA+7CWbsDV2R82I8MROlGDsjqj1Ot/cWpTfdf6xg==}
+  '@supabase/functions-js@2.105.3':
+    resolution: {integrity: sha512-KyutUwLLUZ9fRXsiFACL6lq7akBVHFl0fnqQnrxjbsPco8jeb4EyirQuvr52QCLnikzjMRC0uxAHOSM54aDrZA==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/phoenix@0.4.0':
-    resolution: {integrity: sha512-RHSx8bHS02xwfHdAbX5Lpbo6PXbgyf7lTaXTlwtFDPwOIw64NnVRwFAXGojHhjtVYI+PEPNSWwkL90f4agN3bw==}
+  '@supabase/phoenix@0.4.1':
+    resolution: {integrity: sha512-hWGJkDAfWUNY8k0C080u3sGNFd2ncl9erhKgP7hnGkgJWEfT5Pd/SXal4QmWXBECVlZrannMAc9sBaaRyWpiUA==}
 
-  '@supabase/postgrest-js@2.104.1':
-    resolution: {integrity: sha512-RqlLpvgXsjcc27fLyHNGm3zN0KDWXbkdTdaFtaEdX83RsTEqH7BAmshH7zoUMml5lL04naUeRjS3B81O6jZcJw==}
+  '@supabase/postgrest-js@2.105.3':
+    resolution: {integrity: sha512-jFVYRHcri0ZMcTzKpQ2r2wWOB8/rPsbj92kxmCmVJUiRrdgiMtuYlkS06Fhs8UJZhEOL0UpGhh06XDwh8JwtBQ==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/realtime-js@2.104.1':
-    resolution: {integrity: sha512-dVJHhFB2ErBd0/2qE9G8CedCrGoAtBfL9Q4zbSMXO7b1Cpld916ljSiX21mURUqijPf1WoPQG4Bp/averUzk/g==}
+  '@supabase/realtime-js@2.105.3':
+    resolution: {integrity: sha512-L+qPiJlq1RKh3QD2fORGCFo2RKDKlvG9mjvPtUEQJ2tMixrx70VIV6j8BdWzQkbc1Nao6mvTWajyDhX3TFgljw==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/ssr@0.9.0':
@@ -2795,12 +2795,12 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': ^2.97.0
 
-  '@supabase/storage-js@2.104.1':
-    resolution: {integrity: sha512-2bQaLbkRshctkUVuqamwYZDEd+0cGSc9DY9sjh92DcA5hu1F/1AP8p6gxGr76sgdK9Ngi0rh+2Kdh+uC4hcnGA==}
+  '@supabase/storage-js@2.105.3':
+    resolution: {integrity: sha512-M7oPCCcHim/FsR6rKIs10Nd9mW051N2SQvA27jiVLa7oQMFFb7faX5dCQRV4GS5QeFsBcV5J/fWl4Ppoaw8cBQ==}
     engines: {node: '>=20.0.0'}
 
-  '@supabase/supabase-js@2.104.1':
-    resolution: {integrity: sha512-E0H/CtVmaGjiAy+ieZ5ZB/1EqxXcGdaFaAc23AE5zaYfz6NtCNDcmaEdoGPYMPFH5pE6drGG6e3ljPmkFoGVxQ==}
+  '@supabase/supabase-js@2.105.3':
+    resolution: {integrity: sha512-5Dm9+I61LAWwjw+0zcqXhSmTxUJaYHBPyHwMCIBH4TBUNwDn2pYUIsi6oUu0I5r9HtLtaFl7w4wa+DV9gRsbDg==}
     engines: {node: '>=20.0.0'}
 
   '@swc/helpers@0.5.15':
@@ -4335,8 +4335,8 @@ packages:
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
-  fast-uri@3.1.1:
-    resolution: {integrity: sha512-h2r7rcm6Ee/J8o0LD5djLuFVcfbZxhvho4vvsbeV0aMvXjUgqv4YpxpkEx0d68l6+IleVfLAdVEfhR7QNMkGHQ==}
+  fast-uri@3.1.2:
+    resolution: {integrity: sha512-rVjf7ArG3LTk+FS6Yw81V1DLuZl1bRbNrev6Tmd/9RaroeeRRJhAt7jg/6YFxbvAQXUCavSoZhPPj6oOx+5KjQ==}
 
   fastest-stable-stringify@2.0.2:
     resolution: {integrity: sha512-bijHueCGd0LqqNK9b5oCMHc0MluJAx0cwqASgbWMvkO01lCYgIhacVRLcaDz3QnyYIRNJRDwMb41VuT6pHJ91Q==}
@@ -7560,7 +7560,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 30.3.0
       '@jest/types': 30.3.0
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
       jest-mock: 30.3.0
 
   '@jest/expect-utils@30.0.4':
@@ -7582,7 +7582,7 @@ snapshots:
     dependencies:
       '@jest/types': 30.3.0
       '@sinonjs/fake-timers': 15.3.2
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
       jest-message-util: 30.3.0
       jest-mock: 30.3.0
       jest-util: 30.3.0
@@ -9186,23 +9186,23 @@ snapshots:
     dependencies:
       '@statsig/client-core': 3.31.2
 
-  '@supabase/auth-js@2.104.1':
+  '@supabase/auth-js@2.105.3':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/functions-js@2.104.1':
+  '@supabase/functions-js@2.105.3':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/phoenix@0.4.0': {}
+  '@supabase/phoenix@0.4.1': {}
 
-  '@supabase/postgrest-js@2.104.1':
+  '@supabase/postgrest-js@2.105.3':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/realtime-js@2.104.1':
+  '@supabase/realtime-js@2.105.3':
     dependencies:
-      '@supabase/phoenix': 0.4.0
+      '@supabase/phoenix': 0.4.1
       '@types/ws': 8.18.1
       tslib: 2.8.1
       ws: 8.20.0
@@ -9210,23 +9210,23 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/ssr@0.9.0(@supabase/supabase-js@2.104.1)':
+  '@supabase/ssr@0.9.0(@supabase/supabase-js@2.105.3)':
     dependencies:
-      '@supabase/supabase-js': 2.104.1
+      '@supabase/supabase-js': 2.105.3
       cookie: 1.1.1
 
-  '@supabase/storage-js@2.104.1':
+  '@supabase/storage-js@2.105.3':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
 
-  '@supabase/supabase-js@2.104.1':
+  '@supabase/supabase-js@2.105.3':
     dependencies:
-      '@supabase/auth-js': 2.104.1
-      '@supabase/functions-js': 2.104.1
-      '@supabase/postgrest-js': 2.104.1
-      '@supabase/realtime-js': 2.104.1
-      '@supabase/storage-js': 2.104.1
+      '@supabase/auth-js': 2.105.3
+      '@supabase/functions-js': 2.105.3
+      '@supabase/postgrest-js': 2.105.3
+      '@supabase/realtime-js': 2.105.3
+      '@supabase/storage-js': 2.105.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -9345,7 +9345,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
 
   '@types/debug@4.1.12':
     dependencies:
@@ -9386,7 +9386,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
 
   '@types/md5@2.3.6': {}
 
@@ -9398,7 +9398,7 @@ snapshots:
 
   '@types/mysql@2.15.27':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
 
   '@types/node@25.5.0':
     dependencies:
@@ -9417,7 +9417,7 @@ snapshots:
 
   '@types/pg@8.15.6':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
       pg-protocol: 1.13.0
       pg-types: 2.2.0
 
@@ -9437,7 +9437,7 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
 
   '@types/unist@2.0.11': {}
 
@@ -9888,7 +9888,7 @@ snapshots:
   ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.1.1
+      fast-uri: 3.1.2
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -10988,7 +10988,7 @@ snapshots:
 
   fast-uri@3.1.0: {}
 
-  fast-uri@3.1.1: {}
+  fast-uri@3.1.2: {}
 
   fastest-stable-stringify@2.0.2: {}
 
@@ -11571,7 +11571,7 @@ snapshots:
       '@jest/expect': 30.3.0
       '@jest/test-result': 30.3.0
       '@jest/types': 30.3.0
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.7.2(babel-plugin-macros@3.1.0)
@@ -11705,7 +11705,7 @@ snapshots:
       '@jest/environment': 30.3.0
       '@jest/fake-timers': 30.3.0
       '@jest/types': 30.3.0
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
       jest-mock: 30.3.0
       jest-util: 30.3.0
       jest-validate: 30.3.0
@@ -11777,7 +11777,7 @@ snapshots:
   jest-mock@30.3.0:
     dependencies:
       '@jest/types': 30.3.0
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
       jest-util: 30.3.0
 
   jest-pnp-resolver@1.2.3(jest-resolve@30.3.0):
@@ -11930,7 +11930,7 @@ snapshots:
 
   jest-worker@30.3.0:
     dependencies:
-      '@types/node': 25.6.0
+      '@types/node': 25.5.0
       '@ungap/structured-clone': 1.3.0
       jest-util: 30.3.0
       merge-stream: 2.0.0
