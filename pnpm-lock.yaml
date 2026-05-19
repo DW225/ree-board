@@ -124,8 +124,8 @@ importers:
         specifier: ^0.0.3
         version: 0.0.3(tailwind-merge@2.6.1)
       '@next/bundle-analyzer':
-        specifier: 16.2.4
-        version: 16.2.4
+        specifier: 16.2.6
+        version: 16.2.6
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.5.1))
@@ -1475,8 +1475,8 @@ packages:
   '@neon-rs/load@0.0.4':
     resolution: {integrity: sha512-kTPhdZyTQxB+2wpiRcFWrDcejc4JI6tkPuS7UZCG4l6Zvc5kU/gGQ/ozvHTh1XR5tS+UlfAfGuPajjzQjCiHCw==}
 
-  '@next/bundle-analyzer@16.2.4':
-    resolution: {integrity: sha512-EAA9xTDv0P1IiUcZaASJJPkNDjRvL7OMTha6XN8MBzALYGfn7I52Mn7vRiyjVfNrtUPi2qiacY+eFVXe3lKCXA==}
+  '@next/bundle-analyzer@16.2.6':
+    resolution: {integrity: sha512-amPkVtHCTJAdBwyhhl5+qztHk24O4JlASgrWqh15AmnYi74apfZR46NGC0u4pM6BMAU1mYld4WdzD3cRBP3dOA==}
 
   '@next/env@15.5.4':
     resolution: {integrity: sha512-27SQhYp5QryzIT5uO8hq99C69eLQ7qkzkDPsk3N+GuS2XgOgoYEeOav7Pf8Tn4drECOVDsDg8oj+/DVy8qQL2A==}
@@ -2946,6 +2946,9 @@ packages:
   '@types/node@25.8.0':
     resolution: {integrity: sha512-TCFSk8IZh+iLX1xtksoBVtdmgL+1IX0fC9BeU4QqFSuNdN/K+HUlhqOzEmSYYpZUVsLYcPqc9KX+60iDuninSQ==}
 
+  '@types/node@25.9.0':
+    resolution: {integrity: sha512-AOQwYUNolgy3VosiRqXrACUXTN8nJUtPl7FJXMqZVyxiiCLhQuG3jXKvCS1ALr+Y2OmZhzzLVlYPEqJaiqkaJQ==}
+
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
 
@@ -4025,8 +4028,8 @@ packages:
   end-of-stream@1.4.5:
     resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==}
 
-  enhanced-resolve@5.21.3:
-    resolution: {integrity: sha512-QyL119InA+XXEkNLNTPCXPugSvOfhwv0JOlGNzvxs0hZaiHLNvXSpudUWsOlsXGWJh8G6ckCScEkVHfX3kw/2Q==}
+  enhanced-resolve@5.21.4:
+    resolution: {integrity: sha512-wE4fDO8OjJhrPFH69HUQStq5oKvGRTNXEyW+k5C/pUQLASSsTu7obd2V3GvCDgPcY9AWjhJ4jz9Kh7iRvrxhJg==}
     engines: {node: '>=10.13.0'}
 
   env-paths@3.0.0:
@@ -6640,8 +6643,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.20.0:
-    resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
+  ws@8.20.1:
+    resolution: {integrity: sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -7778,7 +7781,7 @@ snapshots:
   '@libsql/isomorphic-ws@0.1.5':
     dependencies:
       '@types/ws': 8.18.1
-      ws: 8.20.0
+      ws: 8.20.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -7818,7 +7821,7 @@ snapshots:
 
   '@neon-rs/load@0.0.4': {}
 
-  '@next/bundle-analyzer@16.2.4':
+  '@next/bundle-analyzer@16.2.6':
     dependencies:
       webpack-bundle-analyzer: 4.10.1
     transitivePeerDependencies:
@@ -9395,6 +9398,10 @@ snapshots:
     dependencies:
       undici-types: 7.24.6
 
+  '@types/node@25.9.0':
+    dependencies:
+      undici-types: 7.24.6
+
   '@types/parse-json@4.0.2':
     optional: true
 
@@ -10423,7 +10430,7 @@ snapshots:
     dependencies:
       once: 1.4.0
 
-  enhanced-resolve@5.21.3:
+  enhanced-resolve@5.21.4:
     dependencies:
       graceful-fs: 4.2.11
       tapable: 2.3.3
@@ -11900,7 +11907,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.8.0
+      '@types/node': 25.9.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -13886,7 +13893,7 @@ snapshots:
       acorn-import-attributes: 1.9.5(acorn@8.16.0)
       browserslist: 4.28.2
       chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.21.3
+      enhanced-resolve: 5.21.4
       es-module-lexer: 1.7.0
       eslint-scope: 5.1.1
       events: 3.3.0
@@ -13997,7 +14004,7 @@ snapshots:
 
   ws@8.19.0: {}
 
-  ws@8.20.0: {}
+  ws@8.20.1: {}
 
   xtend@4.0.2: {}
 
