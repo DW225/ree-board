@@ -9,10 +9,11 @@ import { useSignals } from "@preact/signals-react/runtime";
 export function AvatarStack() {
   useSignals();
   const memberCount = useComputed(() => memberSignal.value.length);
+  const visibleMembers = useComputed(() => memberSignal.value.slice(0, 5));
 
   return (
     <div className="flex -space-x-3 hover:-space-x-1 transition-all duration-200 cursor-pointer">
-      {useComputed(() => memberSignal.value.slice(0, 5)).value.map((member) => (
+      {visibleMembers.value.map((member) => (
         <AvatarIcon key={member.id} userID={member.userId} />
       ))}
       {memberCount.value > 5 && (

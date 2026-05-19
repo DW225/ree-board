@@ -1,17 +1,18 @@
 "use client";
 
-import NavButton from "@/components/navbar/NavButton";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/utils/supabase/client";
 import { Loader2, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-type LogoutButtonProps = {
+interface LogoutButtonProps {
   className?: string;
-};
+  onClick?: () => void;
+}
 
-export function LogoutButton({ className }: Readonly<LogoutButtonProps>) {
+export function LogoutButton({ className, onClick }: Readonly<LogoutButtonProps>) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -24,23 +25,25 @@ export function LogoutButton({ className }: Readonly<LogoutButtonProps>) {
         toast.error("Error signing out. Please try again.");
         return;
       }
+      onClick?.();
       router.push("/");
     });
   };
 
   return (
-    <NavButton
+    <Button
       onClick={logout}
       disabled={isPending}
-      ariaLabel={isPending ? "Signing out..." : "Logout"}
+      variant="ghost"
       className={className}
+      aria-label={isPending ? "Signing out..." : "Logout"}
     >
       {isPending ? (
-        <Loader2 className="h-5 w-5 inline-block animate-spin" />
+        <Loader2 className="h-5 w-5 animate-spin" />
       ) : (
-        <LogOut className="h-5 w-5 inline-block" />
+        <LogOut className="h-5 w-5" />
       )}
-      <span className="sr-only">{isPending ? "Signing out..." : "Logout"}</span>
-    </NavButton>
+      <span className="ml-2">{isPending ? "Signing out..." : "Logout"}</span>
+    </Button>
   );
 }

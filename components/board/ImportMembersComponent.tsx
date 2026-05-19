@@ -1,19 +1,13 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -29,7 +23,7 @@ import {
 import { Role } from "@/lib/constants/role";
 import { addMember } from "@/lib/signal/memberSignals";
 import type { Board } from "@/lib/types/board";
-import { Upload, Users } from "lucide-react";
+import { Check, Upload, Users } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -49,6 +43,56 @@ interface BoardMember {
   boardTitle: string;
 }
 
+const AVATAR_COLORS = [
+  "#6366F1",
+  "#EC4899",
+  "#F59E0B",
+  "#10B981",
+  "#8B5CF6",
+  "#EF4444",
+  "#3B82F6",
+  "#14B8A6",
+];
+
+function getAvatarColor(index: number) {
+  return AVATAR_COLORS[index % AVATAR_COLORS.length];
+}
+
+function getInitials(name: string) {
+  return name
+    .split(/[\s_]+/)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function getRoleBadgeStyle(role: Role) {
+  switch (role) {
+    case Role.owner:
+      return "bg-[#F0FDF4] text-[#16A34A]";
+    case Role.member:
+      return "bg-[#EEF2FF] text-[#6366F1]";
+    case Role.guest:
+      return "bg-[#F1F5F9] text-[#475569]";
+    default:
+      return "bg-[#F1F5F9] text-[#475569]";
+  }
+}
+
+function getRoleLabel(role: Role) {
+  switch (role) {
+    case Role.owner:
+      return "owner";
+    case Role.member:
+      return "member";
+    case Role.guest:
+      return "guest";
+    default:
+      return "unknown";
+  }
+}
+
 export default function ImportMembersComponent({
   currentBoardId,
   onImportComplete,
@@ -58,17 +102,15 @@ export default function ImportMembersComponent({
   const [selectedBoardId, setSelectedBoardId] = useState<string>("");
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
-  // Load available boards when dialog opens
   const loadAvailableBoards = useCallback(async () => {
     try {
       setIsLoading(true);
       const boards = await getBoardsWhereUserIsAdminAction();
-      // Filter out the current board
       const filteredBoards = boards
         ? boards.filter((board) => board.id !== currentBoardId)
         : [];
@@ -94,14 +136,12 @@ export default function ImportMembersComponent({
       setIsLoading(true);
       const members = await getMembersFromBoardWithExclusionAction(
         selectedBoardId,
-        currentBoardId
+        currentBoardId,
       );
 
-      // Check if members is an array before setting state
       if (Array.isArray(members)) {
         setBoardMembers(members);
       } else {
-        // Handle error response
         console.error("Failed to load members:", members);
         toast.error("Failed to load board members");
         setBoardMembers([]);
@@ -117,7 +157,6 @@ export default function ImportMembersComponent({
     }
   }, [selectedBoardId, currentBoardId]);
 
-  // Load members when board is selected
   useEffect(() => {
     if (selectedBoardId) {
       loadBoardMembers();
@@ -166,14 +205,12 @@ export default function ImportMembersComponent({
 
       const result = await bulkImportMembersAction(
         currentBoardId,
-        membersToImport
+        membersToImport,
       );
 
-      // Check if result is a NextResponse (error case)
       if (result && typeof result === "object" && "imported" in result) {
-        // Update the local state with imported members
         const importedMembers = boardMembers.filter((member) =>
-          selectedMembers.has(member.id)
+          selectedMembers.has(member.id),
         );
 
         for (const member of importedMembers) {
@@ -189,10 +226,9 @@ export default function ImportMembersComponent({
 
         toast.success(
           `Successfully imported ${result.imported} members` +
-            (result.skipped > 0 ? ` (${result.skipped} already existed)` : "")
+            (result.skipped > 0 ? ` (${result.skipped} already existed)` : ""),
         );
 
-        // Reset state
         setSelectedMembers(new Set());
         setSelectedBoardId("");
         setBoardMembers([]);
@@ -210,58 +246,65 @@ export default function ImportMembersComponent({
     }
   };
 
-  const getRoleLabel = (role: Role) => {
-    switch (role) {
-      case Role.owner:
-        return "Owner";
-      case Role.member:
-        return "Member";
-      case Role.guest:
-        return "Guest";
-      default:
-        return "Unknown";
-    }
-  };
-
-  const getRoleBadgeVariant = (role: Role) => {
-    switch (role) {
-      case Role.owner:
-        return "default";
-      case Role.member:
-        return "secondary";
-      case Role.guest:
-        return "outline";
-      default:
-        return "outline";
+  const handleOpenChange = (open: boolean) => {
+    if (!open && isImporting) return;
+    setIsOpen(open);
+    if (!open) {
+      setSelectedBoardId("");
+      setBoardMembers([]);
+      setSelectedMembers(new Set());
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Upload className="mr-2 size-4" />
+        <button
+          type="button"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#E2E8F0] px-4 py-2.5 text-sm font-medium text-[#0F172A] transition-colors hover:bg-[#F8FAFC]"
+        >
+          <Upload className="size-3.5" />
           Import from Other Boards
-        </Button>
+        </button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Import Members from Other Boards</DialogTitle>
-          <DialogDescription>
-            Select members from boards where you are an admin to import them to
-            this board.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-[520px] rounded-xl border-[#E2E8F0] p-0 gap-0 overflow-hidden shadow-[0_4px_16px_rgba(15,23,42,0.15),0_1px_3px_rgba(15,23,42,0.05)]">
+        <DialogDescription className="sr-only">
+          Select members from boards where you are an admin to import them here.
+        </DialogDescription>
 
-        <div className="grid gap-4">
-          {/* Board Selection */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="board-select" className="text-right">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-5 space-y-1.5">
+          <DialogTitle className="text-lg font-bold text-[#0F172A]">
+            Import Members
+          </DialogTitle>
+          <p className="text-sm text-[#64748B] leading-relaxed">
+            Select members from boards where you are an admin to import them
+            here.
+          </p>
+        </div>
+
+        <div className="h-px bg-[#E2E8F0]" />
+
+        {/* Body */}
+        <div className="px-6 py-6 space-y-4">
+          {/* Source Board Select */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="source-board-select"
+              className="text-[13px] font-medium text-[#0F172A]"
+            >
               Source Board
-            </Label>
-            <Select value={selectedBoardId} onValueChange={setSelectedBoardId}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select a board to import from" />
+            </label>
+            <Select
+              value={selectedBoardId}
+              onValueChange={setSelectedBoardId}
+              disabled={isLoading || isImporting}
+            >
+              <SelectTrigger
+                id="source-board-select"
+                className="w-full rounded-lg border-[#E2E8F0] bg-white text-sm focus:ring-1 focus:ring-[#0F172A]"
+              >
+                <SelectValue placeholder="Select a board..." />
               </SelectTrigger>
               <SelectContent>
                 {availableBoards.map((board) => (
@@ -273,95 +316,130 @@ export default function ImportMembersComponent({
             </Select>
           </div>
 
-          {/* Members List */}
+          {/* Members Header */}
           {selectedBoardId && (
-            <div className="space-y-4">
+            <>
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
-                  Members ({boardMembers.length})
-                </Label>
+                <span className="text-[13px] font-semibold text-[#0F172A]">
+                  {boardMembers.length} members available
+                </span>
                 {boardMembers.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={handleSelectAll}
-                    disabled={isLoading}
+                    disabled={isLoading || isImporting}
+                    className="text-[13px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors disabled:opacity-50"
                   >
                     {selectedMembers.size === boardMembers.length
-                      ? "Deselect All"
-                      : "Select All"}
-                  </Button>
+                      ? "Deselect all"
+                      : "Select all"}
+                  </button>
                 )}
               </div>
 
-              <ScrollArea className="h-64 rounded-md border p-4">
-                {isLoading ? (
+              {/* Member Rows */}
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {isLoading && (
                   <div className="flex items-center justify-center h-32">
-                    <div className="text-sm text-muted-foreground">
-                      Loading members...
-                    </div>
+                    <p className="text-sm text-[#94A3B8]">Loading members...</p>
                   </div>
-                ) : boardMembers.length === 0 ? (
-                  <div className="flex items-center justify-center h-32">
-                    <div className="text-sm text-muted-foreground">
-                      <Users className="mx-auto mb-2 size-8" />
-                      No members found in this board
-                    </div>
+                )}
+                {!isLoading && boardMembers.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-32 text-[#94A3B8]">
+                    <Users className="size-8 mb-2" />
+                    <p className="text-sm">No members found in this board</p>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    {boardMembers.map((member) => (
-                      <div
+                )}
+                {!isLoading &&
+                  boardMembers.map((member, index) => {
+                    const isSelected = selectedMembers.has(member.id);
+                    return (
+                      <button
+                        type="button"
                         key={member.id}
-                        className="flex items-center space-x-3 rounded-md p-2 hover:bg-muted"
+                        onClick={() => handleMemberToggle(member.id)}
+                        disabled={isImporting}
+                        className={`flex w-full items-center gap-3 rounded-lg border p-2.5 transition-colors text-left disabled:opacity-50 ${
+                          isSelected
+                            ? "border-[#6366F1] bg-[#FAFAFE]"
+                            : "border-[#E2E8F0] hover:bg-[#F8FAFC]"
+                        }`}
                       >
-                        <Checkbox
-                          id={member.id}
-                          checked={selectedMembers.has(member.id)}
-                          onCheckedChange={() => handleMemberToggle(member.id)}
-                        />
+                        {/* Checkbox */}
+                        <div
+                          className={`flex size-[18px] shrink-0 items-center justify-center rounded ${
+                            isSelected
+                              ? "bg-[#6366F1]"
+                              : "border-[1.5px] border-[#CBD5E1]"
+                          }`}
+                        >
+                          {isSelected && (
+                            <Check className="size-3 text-white" />
+                          )}
+                        </div>
+
+                        {/* Avatar */}
+                        <div
+                          className="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                          style={{
+                            backgroundColor: getAvatarColor(index),
+                          }}
+                        >
+                          {getInitials(member.username)}
+                        </div>
+
+                        {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium">
-                              {member.username}
-                            </p>
-                            <Badge variant={getRoleBadgeVariant(member.role)}>
-                              {getRoleLabel(member.role)}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-sm font-medium text-[#0F172A] truncate">
+                            {member.username}
+                          </p>
+                          <p className="text-xs text-[#94A3B8] truncate">
                             {member.email}
                           </p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
 
-              {selectedMembers.size > 0 && (
-                <div className="text-sm text-muted-foreground">
-                  {selectedMembers.size} member
-                  {selectedMembers.size !== 1 ? "s" : ""} selected
-                </div>
+                        {/* Role Badge */}
+                        <span
+                          className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-medium ${getRoleBadgeStyle(member.role)}`}
+                        >
+                          {getRoleLabel(member.role)}
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+
+              {/* Selection count */}
+              {boardMembers.length > 0 && (
+                <p className="text-xs text-[#94A3B8]">
+                  {selectedMembers.size} of {boardMembers.length} selected
+                </p>
               )}
-            </div>
+            </>
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+        <div className="h-px bg-[#E2E8F0]" />
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 px-6 py-4">
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            className="rounded-lg border-[#E2E8F0] text-sm font-medium text-[#374151]"
+          >
             Cancel
           </Button>
           <Button
             onClick={handleImport}
             disabled={selectedMembers.size === 0 || isImporting}
+            className="rounded-lg bg-[#0F172A] text-sm font-medium text-white hover:bg-[#1E293B] disabled:opacity-50"
           >
             {isImporting
               ? "Importing..."
-              : `Import ${selectedMembers.size} Members`}
+              : `Import ${selectedMembers.size} Member${selectedMembers.size !== 1 ? "s" : ""}`}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

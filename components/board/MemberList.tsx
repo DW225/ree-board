@@ -1,133 +1,147 @@
 "use client";
 
 import { AvatarIcon } from "@/components/common/AvatarIcon";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Role } from "@/lib/constants/role";
-import { memberSignal } from "@/lib/signal/memberSignals";
-import type { Member, MemberSignal } from "@/lib/types/member";
-import { getEnumKeys } from "@/lib/utils";
-import { useSignal, useSignals } from "@preact/signals-react/runtime";
-import { Trash2 } from "lucide-react";
-import { useState } from "react";
-import { useDebounce } from "react-use";
+import { Role, roleDisplayName } from "@/lib/constants/role";
+import { membersSignal } from "@/lib/signal/memberSignals";
+import type { MemberSignal } from "@/lib/types/member";
+import { cn } from "@/lib/utils";
+import { useSignals } from "@preact/signals-react/runtime";
+import { Check, UserMinus } from "lucide-react";
 
 interface MemberListProps {
   viewOnly: boolean;
+  searchTerm: string;
   handleRemoveMember?: (member: MemberSignal) => void;
-  handleRoleChange?: (
-    memberToUpdate: MemberSignal,
-    newRole: Member["role"]
-  ) => void;
   onAssign?: (member: MemberSignal) => void;
+  className?: string;
+  selectedUserId?: string | null;
+  onSelect?: (member: MemberSignal) => void;
 }
 
-const roles = {
-  Guest: Role.guest,
-  Member: Role.member,
-  Owner: Role.owner,
-} as const satisfies Record<string, Role>;
-
-const roleToKeyMap = {
-  [Role.guest]: "Guest",
-  [Role.member]: "Member",
-  [Role.owner]: "Owner",
-} as const satisfies Record<Role, keyof typeof roles>;
+function getRoleBadgeStyles(role: Role): string {
+  switch (role) {
+    case Role.owner:
+      return "bg-[#0F172A] text-white";
+    case Role.guest:
+      return "bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0]";
+    default: // member
+      return "bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE]";
+  }
+}
 
 export default function MemberList({
   viewOnly,
+  searchTerm,
   handleRemoveMember,
-  handleRoleChange,
   onAssign,
+  className,
+  selectedUserId,
+  onSelect,
 }: Readonly<MemberListProps>) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const filteredMembers = useSignal<MemberSignal[]>([]);
-
   useSignals();
 
-  useDebounce(
-    () => {
-      const currentMembers = memberSignal.value;
-      if (searchTerm) {
-        filteredMembers.value = currentMembers.filter(
-          (member) =>
-            member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            member.email.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      } else {
-        filteredMembers.value = currentMembers;
-      }
-    },
-    200,
-    [searchTerm, memberSignal.value]
+  const term = searchTerm.toLowerCase();
+  const members = membersSignal.value.filter((member) =>
+    !term ||
+    member.username.toLowerCase().includes(term) ||
+    member.email.toLowerCase().includes(term),
   );
+  const canRemove = !viewOnly && handleRemoveMember !== undefined;
+  const isSelectionMode = onSelect !== undefined;
+
+  if (members.length === 0) {
+    return (
+      <div className={cn("overflow-y-auto", className)}>
+        <div className="rounded-lg border border-[#E2E8F0] px-4 py-6 text-center text-sm text-slate-400">
+          {searchTerm ? "No members match your search." : "No members yet."}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <Input
-        type="text"
-        placeholder="Search members..."
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-        }}
-      />
-      <ScrollArea className="h-[50vh]">
-        {filteredMembers.value.map((member) => (
-          <div key={member.id} className="flex items-center space-x-4 mb-4">
-            <AvatarIcon userID={member.userId} />
-            <div className="flex-grow">
-              <p className="text-sm font-medium">{member.username}</p>
-              <p className="text-sm text-gray-500">{member.email}</p>
-            </div>
-            {!viewOnly && handleRoleChange && handleRemoveMember && (
-              <div className="flex justify-end">
-                <Select
-                  value={roleToKeyMap[member.role]}
-                  onValueChange={(value: keyof typeof roles) =>
-                    handleRoleChange(member, roles[value])
-                  }
-                >
-                  <SelectTrigger className="w-[110px]">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getEnumKeys(roles).map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveMember(member)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+    <div className={cn("overflow-y-auto", className)}>
+      <div className="rounded-lg border border-[#E2E8F0] overflow-hidden">
+        {members.map((member, index) => {
+          const isLast = index === members.length - 1;
+          const isOwner = member.role === Role.owner;
+          const isSelected = selectedUserId === member.userId;
+
+          const rowContent = (
+            <>
+              <div className="flex items-center gap-3 min-w-0 overflow-hidden">
+                <AvatarIcon userID={member.userId} className="shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[#0F172A] truncate">
+                    {member.username}
+                  </p>
+                  <p className="text-xs text-[#64748B] truncate">
+                    {member.email}
+                  </p>
+                </div>
               </div>
-            )}
-            {onAssign && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAssign(member)}
-              >
-                Assign
-              </Button>
-            )}
-          </div>
-        ))}
-      </ScrollArea>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <span
+                  className={cn(
+                    "text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap",
+                    getRoleBadgeStyles(member.role),
+                  )}
+                >
+                  {roleDisplayName[member.role]}
+                </span>
+
+                {!isSelectionMode && canRemove && !isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMember?.(member)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-[#E2E8F0] bg-white text-xs font-medium text-[#EF4444] hover:bg-red-50 transition-colors"
+                  >
+                    <UserMinus className="size-3.5" />
+                    Remove
+                  </button>
+                )}
+
+                {!isSelectionMode && onAssign && (
+                  <button
+                    type="button"
+                    onClick={() => onAssign(member)}
+                    className="px-3 py-1.5 rounded-md border border-[#E2E8F0] bg-white text-xs font-medium text-[#0F172A] hover:bg-slate-50 transition-colors"
+                  >
+                    Assign
+                  </button>
+                )}
+
+                {isSelectionMode && isSelected && (
+                  <Check className="w-[18px] h-[18px] text-[#6366F1] shrink-0" />
+                )}
+              </div>
+            </>
+          );
+
+          return (
+            <div key={member.id}>
+              {isSelectionMode ? (
+                <button
+                  type="button"
+                  onClick={() => onSelect(member)}
+                  className={cn(
+                    "flex items-center justify-between gap-2 px-4 py-3 w-full text-left transition-colors",
+                    isSelected ? "bg-[#F8FAFC]" : "hover:bg-slate-50",
+                  )}
+                >
+                  {rowContent}
+                </button>
+              ) : (
+                <div className="flex items-center justify-between gap-2 px-4 py-3">
+                  {rowContent}
+                </div>
+              )}
+              {!isLast && <div className="h-px bg-[#E2E8F0]" />}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
