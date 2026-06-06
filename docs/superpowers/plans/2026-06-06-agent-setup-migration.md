@@ -237,6 +237,8 @@ Expected: commit succeeds.
 ### Task 2: Migrate Skills To Codex-Compatible Repo Skills
 
 **Files:**
+- Modify: `AGENTS.md`
+- Modify: `CLAUDE.md`
 - Create: `.agents/skills/README.md`
 - Create: `.agents/skills/ably-realtime/SKILL.md`
 - Create: `.agents/skills/drizzle-patterns/SKILL.md`
@@ -289,7 +291,7 @@ These repo-scoped skills provide reusable ree-board domain guidance for Codex an
 Run:
 
 ```bash
-grep -RIn "Claude\\|claude" .agents/skills
+grep -RIn "Claude\\|claude\\|CLAUDE" .agents/skills
 ```
 
 For each match, replace platform-specific wording with agent-neutral wording. Examples:
@@ -301,12 +303,31 @@ Skills are in `.agents/skills/` and agents should use them when the task matches
 Expected after edits:
 
 ```bash
-grep -RIn "Claude\\|claude" .agents/skills
+grep -RIn "Claude\\|claude\\|CLAUDE" .agents/skills
 ```
 
 prints no output.
 
-- [ ] **Step 4: Verify skill frontmatter**
+- [ ] **Step 4: Normalize stale copied examples**
+
+Run:
+
+```bash
+grep -RInE '"went_well"|'\'went_well\''|"to_improve"|'\'to_improve\''|"action_items"|'\'action_items\''|post:create|post:update|post:delete|post:move|post:vote|member:join|processPostUpdate|Kinde|kinde|mockKinde|getKinde|model: sonnet|model: opus|BoardMessageSchema|message\.data\.timestamp|Always Include Timestamp' .agents/skills
+```
+
+Expected: no output.
+
+When matches appear, update the examples to current repo primitives:
+
+- Use `PostType.went_well`, `PostType.to_improvement`, `PostType.to_discuss`, and `PostType.action_item`.
+- Use `EVENT_TYPE.*` constants from `lib/utils/ably`.
+- Use `processPostMessage` from `lib/realtime/messageProcessors`.
+- Use `verifySession` from `lib/dal`.
+- Use `Role.*` from `lib/constants/role`.
+- Include timestamps only for payload schemas that require staleness filtering.
+
+- [ ] **Step 5: Verify skill frontmatter**
 
 Run:
 
@@ -316,12 +337,18 @@ find .agents/skills -name SKILL.md -maxdepth 3 -print -exec sed -n '1,8p' {} \;
 
 Expected: each `SKILL.md` has YAML frontmatter with `name` and `description`.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Refresh instruction references now shared skills exist**
+
+Update `AGENTS.md` so the Skills section points directly to `.agents/skills`.
+
+Update `CLAUDE.md` so `.claude/skills/` is described as a legacy compatibility copy and `.agents/skills/` is preferred for shared skill updates.
+
+- [ ] **Step 7: Commit**
 
 Run:
 
 ```bash
-git add .agents/skills
+git add AGENTS.md CLAUDE.md .agents/skills docs/superpowers/plans/2026-06-06-agent-setup-migration.md
 git commit -m "docs: migrate repo skills for codex"
 ```
 
@@ -795,7 +822,8 @@ Expected final line:
 Run:
 
 ```bash
-grep -RIn "Claude\\|claude" .agents/skills
+grep -RIn "Claude\\|claude\\|CLAUDE" .agents/skills
+grep -RInE '"went_well"|'\'went_well\''|"to_improve"|'\'to_improve\''|"action_items"|'\'action_items\''|post:create|post:update|post:delete|post:move|post:vote|member:join|processPostUpdate|Kinde|kinde|mockKinde|getKinde|model: sonnet|model: opus|BoardMessageSchema|message\.data\.timestamp|Always Include Timestamp' .agents/skills
 ```
 
 Expected: no output.

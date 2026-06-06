@@ -69,7 +69,7 @@ ree-board is a collaborative retrospective board application.
 
 ## Skills
 
-Use repo skills when work matches their descriptions. During migration, legacy copies remain in `.claude/skills`; after Task 2, shared skills live in `.agents/skills`.
+Use repo skills from `.agents/skills` when work matches their descriptions:
 
 - `nextjs-app-router`
 - `drizzle-patterns`
