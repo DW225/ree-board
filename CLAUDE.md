@@ -8,7 +8,7 @@ Claude-specific setup remains in `.claude/`:
 
 - `.claude/settings.json`: Claude Code hook configuration.
 - `.claude/hooks/`: Claude Code hook scripts configured by `.claude/settings.json`; after hook migration, these delegate to shared scripts in `scripts/agent-hooks/`.
-- `.claude/skills/`: legacy Claude skill copies kept during migration.
+- `.claude/skills/`: legacy Claude skill copies kept during migration; shared skill updates should happen in `.agents/skills/` first.
 - `.claude/agents/`: legacy Claude reviewer prompts kept during migration.
 
-Prefer `.agents/skills/` for new shared skill content after that directory exists; until then, keep Claude-specific skill updates in `.claude/skills/`.
+Prefer `.agents/skills/` for new or updated shared skill content.
