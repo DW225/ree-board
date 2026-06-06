@@ -41,7 +41,6 @@ What should change:
 
 - Create `AGENTS.md`: agent-neutral project instructions loaded by Codex and readable by other agents.
 - Modify `CLAUDE.md`: make it a Claude compatibility entrypoint that points to `AGENTS.md` and `.agents/skills`, while retaining Claude-specific notes only where useful.
-- Create `GEMINI.md`: thin adapter for agents that look for Gemini-style guidance; it points to `AGENTS.md`.
 - Create `.agents/skills/README.md`: agent-neutral skill catalog.
 - Create `.agents/skills/ably-realtime/SKILL.md`: migrated Ably skill.
 - Create `.agents/skills/drizzle-patterns/SKILL.md`: migrated Drizzle skill.
@@ -58,7 +57,7 @@ What should change:
 - Create `.codex/hooks.json`: Codex lifecycle hook wiring for `apply_patch`, `Edit`, and `Write`.
 - Create `.codex/agents/security-reviewer.toml`: Codex custom security reviewer.
 - Create `.codex/agents/database-reviewer.toml`: Codex custom database reviewer.
-- Create `docs/AGENT_SETUP.md`: maintenance guide for Claude, Codex, Gemini, and future agents.
+- Create `docs/AGENT_SETUP.md`: maintenance guide for Claude, Codex, and future agents.
 - Modify `.gitignore`: add local Codex log/cache ignores without ignoring checked-in `.codex` setup.
 
 ---
@@ -68,7 +67,6 @@ What should change:
 **Files:**
 - Create: `AGENTS.md`
 - Modify: `CLAUDE.md`
-- Create: `GEMINI.md`
 
 - [ ] **Step 1: Create a refined `AGENTS.md` from the durable parts of `CLAUDE.md`**
 
@@ -223,22 +221,12 @@ Expected:
 - First command prints no output.
 - Second command only prints compatibility references if present; canonical repo rules should live in `AGENTS.md`.
 
-- [ ] **Step 5: Add `GEMINI.md` as a thin adapter**
-
-```md
-# GEMINI.md
-
-Read `AGENTS.md` first. It is the canonical repo guidance for ree-board.
-
-Use `.agents/skills/` for task-specific domain guidance when available.
-```
-
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 Run:
 
 ```bash
-git add AGENTS.md CLAUDE.md GEMINI.md
+git add AGENTS.md CLAUDE.md docs/superpowers/plans/2026-06-06-agent-setup-migration.md
 git commit -m "docs: add shared agent instructions"
 ```
 
@@ -712,7 +700,9 @@ Expected: commit succeeds.
 
 `AGENTS.md` is the source of truth for repo-wide agent instructions.
 
-`CLAUDE.md` and `GEMINI.md` are compatibility entrypoints that point back to `AGENTS.md`.
+`CLAUDE.md` is the Claude Code compatibility entrypoint that points back to `AGENTS.md`.
+
+Agents that support `AGENTS.md` directly should use that file without an additional adapter.
 
 ## Codex
 
@@ -786,7 +776,6 @@ Run:
 ```bash
 test -f AGENTS.md
 test -f CLAUDE.md
-test -f GEMINI.md
 test -f .codex/config.toml
 test -f .codex/hooks.json
 test -f .codex/agents/security-reviewer.toml
@@ -838,7 +827,7 @@ Expected: Codex mentions `AGENTS.md`, `.agents/skills`, `.codex/agents`, and `.c
 Run:
 
 ```bash
-git add AGENTS.md CLAUDE.md GEMINI.md .agents .codex scripts/agent-hooks docs/AGENT_SETUP.md .gitignore .claude/hooks
+git add AGENTS.md CLAUDE.md .agents .codex scripts/agent-hooks docs/AGENT_SETUP.md .gitignore .claude/hooks docs/superpowers/plans/2026-06-06-agent-setup-migration.md
 git commit -m "chore: finish codex agent setup migration"
 ```
 
