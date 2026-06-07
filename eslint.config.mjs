@@ -1,7 +1,6 @@
 import { defineConfig } from "eslint/config";
-import drizzle from "eslint-plugin-drizzle";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -15,29 +14,23 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default defineConfig([{
-    extends: compat.extends(
-        "next",
-        "next/core-web-vitals",
+export default defineConfig([
+    ...nextCoreWebVitals,
+    ...compat.extends(
         "prettier",
         "plugin:drizzle/all",
-        "plugin:@typescript-eslint/recommended",
     ),
-
-    plugins: {
-        drizzle,
-        "@typescript-eslint": typescriptEslint,
-    },
-
-    languageOptions: {
-        parser: tsParser,
-        parserOptions: {
-            project: "./tsconfig.json",
+    {
+        files: ["**/*.{ts,tsx}"],
+        languageOptions: {
+            parserOptions: {
+                project: "./tsconfig.json",
+            },
+        },
+        rules: {
+            ...typescriptEslint.configs.recommended.rules,
+            "@typescript-eslint/consistent-type-imports": "error",
+            "@typescript-eslint/no-import-type-side-effects": "error",
         },
     },
-
-    rules: {
-        "@typescript-eslint/consistent-type-imports": "error",
-        "@typescript-eslint/no-import-type-side-effects": "error",
-    },
-}]);
+]);
