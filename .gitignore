@@ -47,3 +47,8 @@ test.db*
 
 # claude code
 .claude/settings.local.json
+
+# codex local runtime
+.codex-log/
+.codex/session*.jsonl
+.codex/*.local.*
