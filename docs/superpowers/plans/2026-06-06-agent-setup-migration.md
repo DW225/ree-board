@@ -367,6 +367,7 @@ Expected: commit succeeds.
 - Modify: `.claude/hooks/format-check.sh`
 - Modify: `.claude/hooks/type-check.sh`
 - Modify: `.claude/hooks/test-runner.sh`
+- Modify: `eslint.config.mjs`
 
 - [ ] **Step 1: Create `scripts/agent-hooks/branch-protection.sh`**
 
@@ -399,7 +400,6 @@ if [[ ! "$file_path" =~ \.(ts|tsx|js|jsx)$ ]]; then
 fi
 
 if [ ! -f "$file_path" ]; then
-  echo "File not found: $file_path" >&2
   exit 0
 fi
 
@@ -414,8 +414,14 @@ set -euo pipefail
 
 file_path="${1:-${CLAUDE_TOOL_INPUT_FILE_PATH:-}}"
 
-if [ -n "$file_path" ] && [[ ! "$file_path" =~ \.(ts|tsx)$ ]]; then
-  exit 0
+if [ -n "$file_path" ]; then
+  if [[ ! "$file_path" =~ \.(ts|tsx)$ ]]; then
+    exit 0
+  fi
+
+  if [ ! -f "$file_path" ]; then
+    exit 0
+  fi
 fi
 
 npx tsc --noEmit
@@ -438,14 +444,17 @@ if [[ ! "$file_path" =~ \.test\.(ts|tsx)$ ]]; then
 fi
 
 if [ ! -f "$file_path" ]; then
-  echo "Test file not found: $file_path" >&2
   exit 0
 fi
 
 pnpm test "$file_path" --passWithNoTests
 ```
 
-- [ ] **Step 5: Make shared scripts executable**
+- [ ] **Step 5: Fix ESLint flat config composition if needed**
+
+If `pnpm exec eslint <file>` crashes before reporting file-level lint results, update `eslint.config.mjs` so Next's native flat configs are imported directly and `FlatCompat` is only used for legacy-style configs.
+
+- [ ] **Step 6: Make shared scripts executable**
 
 Run:
 
@@ -455,7 +464,7 @@ chmod +x scripts/agent-hooks/*.sh
 
 Expected: command exits 0.
 
-- [ ] **Step 6: Replace each Claude hook with a wrapper**
+- [ ] **Step 7: Replace each Claude hook with a wrapper**
 
 Use this pattern for each file:
 
@@ -464,10 +473,10 @@ Use this pattern for each file:
 set -euo pipefail
 
 repo_root="$(git rev-parse --show-toplevel)"
-"$repo_root/scripts/agent-hooks/<script-name>.sh" "${CLAUDE_TOOL_INPUT_FILE_PATH:-}"
+"$repo_root/scripts/agent-hooks/<script-name>.sh" "${CLAUDE_TOOL_INPUT_FILE_PATH:-}" || true
 ```
 
-For `branch-protection.sh`, omit the file path argument:
+For `branch-protection.sh`, omit the file path argument and do not add `|| true`:
 
 ```bash
 #!/usr/bin/env bash
@@ -477,25 +486,28 @@ repo_root="$(git rev-parse --show-toplevel)"
 "$repo_root/scripts/agent-hooks/branch-protection.sh"
 ```
 
-- [ ] **Step 7: Manually verify hooks**
+- [ ] **Step 8: Manually verify hooks**
 
 Run:
 
 ```bash
 scripts/agent-hooks/branch-protection.sh
 scripts/agent-hooks/format-check.sh package.json
+scripts/agent-hooks/format-check.sh no-such.ts
+scripts/agent-hooks/test-runner.sh no-such.test.ts
+scripts/agent-hooks/type-check.sh no-such.ts
 scripts/agent-hooks/type-check.sh app/page.tsx
 scripts/agent-hooks/test-runner.sh app/page.tsx
 ```
 
 Expected: branch protection exits 0 on a feature branch, format check exits 0 for non-JS/TS or valid files, type check exits 0 only when the project is type-clean, and test runner exits 0 for non-test files.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 Run:
 
 ```bash
-git add scripts/agent-hooks .claude/hooks
+git add scripts/agent-hooks .claude/hooks eslint.config.mjs docs/superpowers/plans/2026-06-06-agent-setup-migration.md
 git commit -m "chore: share agent hook scripts"
 ```
 
@@ -730,6 +742,8 @@ Expected: commit succeeds.
 `CLAUDE.md` is the Claude Code compatibility entrypoint that points back to `AGENTS.md`.
 
 Agents that support `AGENTS.md` directly should use that file without an additional adapter.
+
+Gemini supports `AGENTS.md`, so do not add `GEMINI.md` in this migration.
 
 ## Codex
 
