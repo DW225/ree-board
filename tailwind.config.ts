@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import type { Config } from "tailwindcss";
 import fluid, { extract, screens, fontSize } from "fluid-tailwind";
 import typography from "@tailwindcss/typography";
