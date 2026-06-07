@@ -1,4 +1,4 @@
-import { BoardState } from "@/lib/constants/board";
+import type { BoardState } from "@/lib/constants/board";
 import type { Board, BoardWithRole } from "@/lib/types/board";
 import type { SortDirection } from "@/lib/types/sort";
 import { computed, signal } from "@preact/signals-react";

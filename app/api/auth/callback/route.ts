@@ -1,6 +1,6 @@
 import { getSafeRedirectPath } from "@/lib/utils/redirect";
 import { createClient } from "@/lib/utils/supabase/server";
-import { type EmailOtpType } from "@supabase/supabase-js";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
