@@ -703,7 +703,35 @@ nickname_candidates = ["Database Reviewer", "Migration Reviewer", "Query Reviewe
 Run:
 
 ```bash
-node -e "const fs=require('fs'); for (const f of ['.codex/agents/security-reviewer.toml','.codex/agents/database-reviewer.toml']) { const s=fs.readFileSync(f,'utf8'); if (!s.includes('name =') || !s.includes('developer_instructions =')) process.exit(1); } console.log('ok')"
+python3 - <<'PY'
+import sys
+
+try:
+    import tomllib
+except ImportError:
+    print("Python 3.11+ with tomllib is required for this check", file=sys.stderr)
+    sys.exit(1)
+
+required = {
+    "name": str,
+    "description": str,
+    "developer_instructions": str,
+}
+
+for toml_file in [
+    ".codex/agents/security-reviewer.toml",
+    ".codex/agents/database-reviewer.toml",
+]:
+    with open(toml_file, "rb") as file:
+        config = tomllib.load(file)
+
+    for key, expected_type in required.items():
+        if not isinstance(config.get(key), expected_type):
+            print(f"{toml_file}: missing or invalid {key}", file=sys.stderr)
+            sys.exit(1)
+
+print("ok")
+PY
 ```
 
 Expected:

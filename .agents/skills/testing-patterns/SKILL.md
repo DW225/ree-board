@@ -23,7 +23,7 @@ Activate this skill when:
 ### Test Organization
 
 **File Structure:**
-```
+```text
 lib/
 ├── actions/
 │   └── post/
