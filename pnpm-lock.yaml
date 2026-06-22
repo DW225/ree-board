@@ -24,8 +24,8 @@ importers:
         specifier: 16.2.9
         version: 16.2.9
       '@preact/signals-react':
-        specifier: ^3.9.1
-        version: 3.9.1(react@19.2.4)
+        specifier: ^3.10.2
+        version: 3.10.2(react@19.2.4)
       '@sentry/nextjs':
         specifier: ^10.53.1
         version: 10.53.1(@opentelemetry/core@2.7.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.1(@opentelemetry/api@1.9.1))(next@16.2.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.94.0(esbuild@0.28.1)(postcss@8.5.14))
@@ -1809,11 +1809,11 @@ packages:
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
 
-  '@preact/signals-core@1.14.0':
-    resolution: {integrity: sha512-AowtCcCU/33lFlh1zRFf/u+12rfrhtNakj7UpaGEsmMwUKpKWMVvcktOGcwBBNiB4lWrZWc01LhiyyzVklJyaQ==}
+  '@preact/signals-core@1.14.3':
+    resolution: {integrity: sha512-m0K3vnbSLC5rHs2ZVfeAMvBtT1zIyq4mxx5OlNncSgMj5Iz6W5Rn3kPrDxAC+iIKmiVe0lSl6U37t5ZkEWoVAw==}
 
-  '@preact/signals-react@3.9.1':
-    resolution: {integrity: sha512-4bj3wUfXrYOqDDs6sX2Y5GBC8jgSa8ah8ZJHN2A+23ej+TdPDrtwVJ0e1cEhwemyOZ7Q7NHbilPRhtd5zVpaBA==}
+  '@preact/signals-react@3.10.2':
+    resolution: {integrity: sha512-FZei6NDqsPaOI7jJhfH6ZED0BQ/Z1lQgreGb5ylNljXEI+w5ZIZcPFL5GRLs5lylj7RTk94uJCZcbX0G0oQrOw==}
     peerDependencies:
       react: ^16.14.0 || 17.x || 18.x || 19.x
 
@@ -3024,8 +3024,8 @@ packages:
   '@types/node@25.8.0':
     resolution: {integrity: sha512-TCFSk8IZh+iLX1xtksoBVtdmgL+1IX0fC9BeU4QqFSuNdN/K+HUlhqOzEmSYYpZUVsLYcPqc9KX+60iDuninSQ==}
 
-  '@types/node@25.9.3':
-    resolution: {integrity: sha512-603BddQMv3pUcr4U2dhujk83N2tTDVr/34wII2B6bJy6g+8WD6yUb11jszNs0gdi4PesVWl7ABt8nYMVpnLUcg==}
+  '@types/node@25.9.4':
+    resolution: {integrity: sha512-dszCsrKb5U7ZsVZBWiHFklTloVl0mSEnWH/iZXfZUlI4rzCUnsvGmgqfuVRHL54ugE7/wRuxEIXRa2iMZ+BG6g==}
 
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
@@ -6085,6 +6085,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.8.5:
+    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
     engines: {node: '>= 0.4'}
@@ -8351,11 +8356,11 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
-  '@preact/signals-core@1.14.0': {}
+  '@preact/signals-core@1.14.3': {}
 
-  '@preact/signals-react@3.9.1(react@19.2.4)':
+  '@preact/signals-react@3.10.2(react@19.2.4)':
     dependencies:
-      '@preact/signals-core': 1.14.0
+      '@preact/signals-core': 1.14.3
       react: 19.2.4
       use-sync-external-store: 1.6.0(react@19.2.4)
 
@@ -9637,7 +9642,7 @@ snapshots:
     dependencies:
       undici-types: 7.24.6
 
-  '@types/node@25.9.3':
+  '@types/node@25.9.4':
     dependencies:
       undici-types: 7.24.6
 
@@ -11342,7 +11347,7 @@ snapshots:
       '@petamoriken/float16': 3.9.3
       debug: 4.4.3
       env-paths: 3.0.0
-      semver: 7.8.4
+      semver: 7.8.5
       shell-quote: 1.8.4
       which: 4.0.0
     transitivePeerDependencies:
@@ -12183,7 +12188,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 25.9.3
+      '@types/node': 25.9.4
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -13486,6 +13491,9 @@ snapshots:
   semver@7.8.2: {}
 
   semver@7.8.4: {}
+
+  semver@7.8.5:
+    optional: true
 
   set-function-length@1.2.2:
     dependencies:
