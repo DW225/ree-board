@@ -73,7 +73,7 @@
     "esbuild": "^0.28.1",
     "esbuild-register": "^3.6.0",
     "eslint": "^9.39.2",
-    "eslint-config-next": "16.2.7",
+    "eslint-config-next": "16.2.9",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-drizzle": "^0.2.3",
     "fluid-tailwind": "^1.0.4",
