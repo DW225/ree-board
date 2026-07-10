@@ -21,7 +21,7 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.8.1",
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^3.2.16",
-    "@libsql/client": "^0.17.3",
+    "@libsql/client": "^0.17.4",
     "@marsidev/react-turnstile": "^1.5.3",
     "@next/env": "16.2.9",
     "@preact/signals-react": "^3.10.2",
