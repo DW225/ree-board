@@ -1,12 +1,57 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
-    open-pull-requests-limit: 10
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: "weekly"
+      day: "tuesday"
+      time: "02:00"
+      timezone: "Asia/Taipei"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "npm"]
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    cooldown:
+      default-days: 3
+      semver-major-days: 21
+      semver-minor-days: 7
+      semver-patch-days: 3
+    groups:
+      next-react:
+        patterns: ["next", "@next/*", "react", "react-dom"]
+        update-types: ["minor", "patch"]
+      supabase:
+        patterns: ["@supabase/*"]
+        update-types: ["minor", "patch"]
+      database:
+        patterns: ["@libsql/*", "drizzle-*"]
+        update-types: ["minor", "patch"]
+      observability:
+        patterns: ["@sentry/*", "@vercel/speed-insights"]
+        update-types: ["minor", "patch"]
+      ui-client:
+        patterns: ["@atlaskit/*", "@marsidev/*", "@preact/*", "class-variance-authority", "clsx", "lucide-react", "next-themes", "radix-ui", "sonner", "swr", "tailwind-merge", "tailwindcss-animate"]
+        update-types: ["minor", "patch"]
+      markdown-validation:
+        patterns: ["react-markdown", "remark-*", "rehype-*", "zod", "drizzle-zod"]
+        update-types: ["minor", "patch"]
+      tooling:
+        patterns: ["@eslint/*", "@tailwindcss/*", "@types/*", "@typescript-eslint/*", "autoprefixer", "eslint", "eslint-*", "esbuild", "esbuild-*", "fluid-tailwind", "husky", "jest", "postcss", "tailwindcss", "ts-jest", "typescript", "typescript-eslint"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "02:30"
+      timezone: "Asia/Taipei"
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+    groups:
+      actions-minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
