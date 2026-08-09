@@ -8,11 +8,21 @@
  */
 
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 
 // Mock the Supabase client
-const mockExchangeCodeForSession = jest.fn();
-const mockVerifyOtp = jest.fn();
+interface MockAuthResult {
+  error: Error | null;
+}
+
+const mockExchangeCodeForSession = jest.fn<
+  (code: string) => Promise<MockAuthResult>
+>();
+const mockVerifyOtp = jest.fn<
+  (params: { token_hash: string; type: EmailOtpType }) =>
+    Promise<MockAuthResult>
+>();
 
 jest.mock("@/lib/utils/supabase/server", () => ({
   createClient: jest.fn(() =>
