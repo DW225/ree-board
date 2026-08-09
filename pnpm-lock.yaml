@@ -123,6 +123,9 @@ importers:
       '@fluid-tailwind/tailwind-merge':
         specifier: ^0.0.3
         version: 0.0.3(tailwind-merge@2.6.1)
+      '@jest/globals':
+        specifier: ^30.4.1
+        version: 30.4.1(supports-color@8.1.1)
       '@next/bundle-analyzer':
         specifier: 16.2.10
         version: 16.2.10
