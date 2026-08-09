@@ -7,6 +7,7 @@
  * 3. Token exchange flows behave correctly
  */
 
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { NextRequest } from "next/server";
 
 // Mock the Supabase client
@@ -20,7 +21,7 @@ jest.mock("@/lib/utils/supabase/server", () => ({
         exchangeCodeForSession: mockExchangeCodeForSession,
         verifyOtp: mockVerifyOtp,
       },
-    })
+    }),
   ),
 }));
 
@@ -34,7 +35,7 @@ describe("Auth Callback Route", () => {
     it("should reject absolute external URLs in next parameter", async () => {
       const { GET } = await import("../callback/route");
       const request = new NextRequest(
-        "http://localhost:3000/api/auth/callback?code=test-code&next=https://evil.com/steal"
+        "http://localhost:3000/api/auth/callback?code=test-code&next=https://evil.com/steal",
       );
 
       mockExchangeCodeForSession.mockResolvedValue({ error: null });
@@ -44,14 +45,14 @@ describe("Auth Callback Route", () => {
       // Should redirect to /board instead of the malicious URL
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/board"
+        "http://localhost:3000/board",
       );
     });
 
     it("should reject protocol-relative URLs", async () => {
       const { GET } = await import("../callback/route");
       const request = new NextRequest(
-        "http://localhost:3000/api/auth/callback?code=test-code&next=//evil.com/path"
+        "http://localhost:3000/api/auth/callback?code=test-code&next=//evil.com/path",
       );
 
       mockExchangeCodeForSession.mockResolvedValue({ error: null });
@@ -61,14 +62,14 @@ describe("Auth Callback Route", () => {
       // Should redirect to /board instead of the malicious URL
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/board"
+        "http://localhost:3000/board",
       );
     });
 
     it("should reject URLs with javascript protocol", async () => {
       const { GET } = await import("../callback/route");
       const request = new NextRequest(
-        "http://localhost:3000/api/auth/callback?code=test-code&next=javascript:alert(1)"
+        "http://localhost:3000/api/auth/callback?code=test-code&next=javascript:alert(1)",
       );
 
       mockExchangeCodeForSession.mockResolvedValue({ error: null });
@@ -78,14 +79,14 @@ describe("Auth Callback Route", () => {
       // Should redirect to /board
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/board"
+        "http://localhost:3000/board",
       );
     });
 
     it("should accept valid relative paths", async () => {
       const { GET } = await import("../callback/route");
       const request = new NextRequest(
-        "http://localhost:3000/api/auth/callback?code=test-code&next=/board/123"
+        "http://localhost:3000/api/auth/callback?code=test-code&next=/board/123",
       );
 
       mockExchangeCodeForSession.mockResolvedValue({ error: null });
@@ -94,14 +95,14 @@ describe("Auth Callback Route", () => {
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/board/123"
+        "http://localhost:3000/board/123",
       );
     });
 
     it("should default to /board when next parameter is missing", async () => {
       const { GET } = await import("../callback/route");
       const request = new NextRequest(
-        "http://localhost:3000/api/auth/callback?code=test-code"
+        "http://localhost:3000/api/auth/callback?code=test-code",
       );
 
       mockExchangeCodeForSession.mockResolvedValue({ error: null });
@@ -110,7 +111,7 @@ describe("Auth Callback Route", () => {
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/board"
+        "http://localhost:3000/board",
       );
     });
   });
@@ -119,7 +120,7 @@ describe("Auth Callback Route", () => {
     it("should redirect to sign-in with error when code exchange fails", async () => {
       const { GET } = await import("../callback/route");
       const request = new NextRequest(
-        "http://localhost:3000/api/auth/callback?code=invalid-code"
+        "http://localhost:3000/api/auth/callback?code=invalid-code",
       );
 
       mockExchangeCodeForSession.mockResolvedValue({
@@ -130,7 +131,9 @@ describe("Auth Callback Route", () => {
 
       expect(response.status).toBe(307);
       const location = response.headers.get("location");
-      expect(location).toContain("http://localhost:3000/?error=auth_callback_error");
+      expect(location).toContain(
+        "http://localhost:3000/?error=auth_callback_error",
+      );
       expect(location).toContain("error=");
     });
   });
@@ -139,7 +142,7 @@ describe("Auth Callback Route", () => {
     it("should redirect to reset-password page for recovery type", async () => {
       const { GET } = await import("../callback/route");
       const request = new NextRequest(
-        "http://localhost:3000/api/auth/callback?code=test-code&type=recovery"
+        "http://localhost:3000/api/auth/callback?code=test-code&type=recovery",
       );
 
       mockExchangeCodeForSession.mockResolvedValue({ error: null });
@@ -148,7 +151,7 @@ describe("Auth Callback Route", () => {
 
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/reset-password"
+        "http://localhost:3000/reset-password",
       );
     });
   });
