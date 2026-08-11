@@ -97,7 +97,7 @@ export default function ResetPasswordPage() {
               This password reset link is invalid or has expired. Please request
               a new one.
             </p>
-            <Link href="/sign-in">
+            <Link href="/">
               <Button className="w-full bg-slate-600 hover:bg-slate-700">
                 Back to Sign In
               </Button>
@@ -203,7 +203,7 @@ export default function ResetPasswordPage() {
 
           <div className="mt-6 pt-6 border-t border-slate-200 text-center">
             <Link
-              href="/sign-in"
+              href="/"
               className="text-sm text-slate-600 hover:text-slate-800"
             >
               ← Back to Sign In

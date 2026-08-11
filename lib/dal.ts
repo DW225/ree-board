@@ -24,7 +24,7 @@ export const verifySession = cache(async (): Promise<VerifiedSession> => {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/sign-in')
+    redirect('/')
   }
 
   // Look up internal user by Supabase ID
@@ -35,7 +35,7 @@ export const verifySession = cache(async (): Promise<VerifiedSession> => {
   if (!internalUser) {
     // Don't auto-create for anonymous users (they have their own flow)
     if (user.is_anonymous) {
-      redirect('/sign-in')
+      redirect('/')
     }
 
     // Auto-create user record (similar to Kinde webhook)
@@ -80,7 +80,7 @@ export const getCurrentUser = cache(async () => {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/sign-in')
+    redirect('/')
   }
 
   return user

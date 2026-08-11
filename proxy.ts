@@ -13,7 +13,6 @@ import { updateSession } from "@/lib/utils/supabase/middleware";
 export async function proxy(request: NextRequest) {
   // Public routes that don't require authentication
   const publicPaths = [
-    "/",
     "/sign-in",
     "/reset-password",
     "/invite",
@@ -33,17 +32,21 @@ export async function proxy(request: NextRequest) {
   }
 
   // Update session (refresh cookies) and get user for all requests
-  const session = await updateSession(request);
+  const { response, user } = await updateSession(request);
 
   // For protected routes, check if user is authenticated
-  if (!session) {
+  if (!user && pathname !== "/") {
     // No user on protected route - redirect to sign-in
-    const redirectUrl = new URL("/sign-in", request.url);
+    const redirectUrl = new URL("/", request.url);
     redirectUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(redirectUrl);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return redirectResponse;
   }
 
-  return session;
+  return response;
 }
 
 export const config = {

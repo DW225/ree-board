@@ -26,7 +26,7 @@ export type AuthResult = {
  * ```typescript
  * const authResult = await getAuthenticatedUser();
  * if (!authResult) {
- *   redirect("/sign-in");
+ *   redirect("/");
  * }
  * // Use authResult.userId for database operations
  * // Check authResult.isGuest for permission logic
