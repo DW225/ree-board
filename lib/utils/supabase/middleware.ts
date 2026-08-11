@@ -1,6 +1,32 @@
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import invariant from "tiny-invariant";
+
+interface SessionUpdateResult {
+  response: NextResponse;
+  user: User | null;
+}
+
+function getSafeRedirectUrl(
+  redirectParam: string | null,
+  request: NextRequest,
+): URL {
+  const fallbackUrl = new URL("/board", request.url);
+
+  if (!redirectParam?.startsWith("/")) {
+    return fallbackUrl;
+  }
+
+  try {
+    const requestedUrl = new URL(redirectParam, request.url);
+    return requestedUrl.origin === request.nextUrl.origin
+      ? requestedUrl
+      : fallbackUrl;
+  } catch {
+    return fallbackUrl;
+  }
+}
 
 /**
  * Updates and refreshes the Supabase session in middleware
@@ -12,12 +38,14 @@ import invariant from "tiny-invariant";
  * 1. Creates a Supabase client for middleware
  * 2. Refreshes the user session by calling getUser()
  * 3. Updates cookies in both request and response
- * 4. Redirects authenticated users away from /sign-in
+ * 4. Redirects authenticated users away from /
  *
  * @param request - The incoming Next.js request
- * @returns NextResponse with updated cookies or redirect
+ * @returns The authenticated user and a response with updated cookies or redirect
  */
-export async function updateSession(request: NextRequest) {
+export async function updateSession(
+  request: NextRequest,
+): Promise<SessionUpdateResult> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -62,20 +90,14 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Special handling for sign-in page: redirect authenticated users to /board
-  if (pathname === "/sign-in" && user) {
+  if (pathname === "/" && user) {
     // User is authenticated and trying to access sign-in page
     // Check if there's a redirect parameter they were trying to reach
     const redirectParam = request.nextUrl.searchParams.get("redirect");
 
-    // If redirect exists and is a safe internal path, use it; otherwise go to /board
-    const destination =
-      redirectParam?.startsWith("/") &&
-      !redirectParam.startsWith("//") &&
-      !redirectParam.startsWith("/\\")
-        ? redirectParam
-        : "/board";
-
-    const redirectUrl = new URL(destination, request.url);
+    // Resolve the redirect before trusting it because URL parsing strips some
+    // control characters that can turn an apparent path into another origin.
+    const redirectUrl = getSafeRedirectUrl(redirectParam, request);
 
     // Create redirect response and copy cookies
     const redirectResponse = NextResponse.redirect(redirectUrl);
@@ -83,7 +105,7 @@ export async function updateSession(request: NextRequest) {
       redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
     });
 
-    return redirectResponse;
+    return { response: redirectResponse, user };
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
@@ -99,5 +121,5 @@ export async function updateSession(request: NextRequest) {
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
 
-  return supabaseResponse;
+  return { response: supabaseResponse, user };
 }
