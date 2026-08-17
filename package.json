@@ -25,7 +25,7 @@
     "@marsidev/react-turnstile": "^1.5.3",
     "@next/env": "16.3.0",
     "@preact/signals-react": "^3.10.2",
-    "@sentry/nextjs": "^10.69.0",
+    "@sentry/nextjs": "^10.70.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.111.0",
     "@vercel/speed-insights": "^2.0.0",
