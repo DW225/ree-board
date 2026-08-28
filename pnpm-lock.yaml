@@ -39,8 +39,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(next@16.3.2(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@types/node@26.2.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       ably:
-        specifier: ^2.26.0
-        version: 2.26.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^2.27.0
+        version: 2.27.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -3222,8 +3222,8 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  ably@2.26.0:
-    resolution: {integrity: sha512-Lan2cpnvwDAIA/KieSXOptBqg1tN6aOPEo1DpTgHa/GZExzreL1lyyWUsVVrat4Lr7qqgG+aSHLfFHrFLusqtg==}
+  ably@2.27.0:
+    resolution: {integrity: sha512-xu5RT/PT66Ro1uZ0/sbohtW6CSk62/aRqJCRHeEcKPeyqBmAiL0bhkPuibs8O+3m5IV1l7z9GHy9R2RV9k4Z+g==}
     engines: {node: '>=16'}
     peerDependencies:
       react: '>=16.8.0'
@@ -6506,18 +6506,6 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.21.0:
-    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
   ws@8.21.3:
     resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
     engines: {node: '>=10.0.0'}
@@ -7702,7 +7690,7 @@ snapshots:
   '@libsql/isomorphic-ws@0.1.5':
     dependencies:
       '@types/ws': 8.18.1
-      ws: 8.21.0
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -9445,7 +9433,7 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  ably@2.26.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  ably@2.27.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       '@ably/msgpack-js': 0.4.1
       dequal: 2.0.3
@@ -13607,8 +13595,6 @@ snapshots:
       signal-exit: 4.1.0
 
   ws@7.5.13: {}
-
-  ws@8.21.0: {}
 
   ws@8.21.3: {}
 
