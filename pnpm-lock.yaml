@@ -39,8 +39,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(next@16.3.3(@babel/core@7.29.7(supports-color@8.1.1))(@opentelemetry/api@1.9.1)(@types/node@26.4.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
       ably:
-        specifier: ^2.27.0
-        version: 2.27.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: ^2.28.0
+        version: 2.28.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -3218,8 +3218,8 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  ably@2.27.0:
-    resolution: {integrity: sha512-xu5RT/PT66Ro1uZ0/sbohtW6CSk62/aRqJCRHeEcKPeyqBmAiL0bhkPuibs8O+3m5IV1l7z9GHy9R2RV9k4Z+g==}
+  ably@2.28.0:
+    resolution: {integrity: sha512-VHWAWaPRt+ysEQryI9Y0xN/fr0db4rvvUvk6akC9dAu06Ytax3/Vc8te2Z4IOwe+2AK41JpLxEbamEQVlqraIw==}
     engines: {node: '>=16'}
     peerDependencies:
       react: '>=16.8.0'
@@ -9427,7 +9427,7 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  ably@2.27.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  ably@2.28.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       '@ably/msgpack-js': 0.4.1
       dequal: 2.0.3
