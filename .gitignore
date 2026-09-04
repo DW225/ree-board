@@ -25,6 +25,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# pnpm specific directories
+.pnpm-store/
+.pnpm-debug.log
 
 
 # vercel
