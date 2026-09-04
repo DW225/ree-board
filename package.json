@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^2.0.2",
-    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^4.1.1",
+    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^4.1.2",
     "@libsql/client": "^0.17.4",
     "@marsidev/react-turnstile": "^1.6.1",
     "@next/env": "16.3.3",
@@ -86,5 +86,5 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.68.0"
   },
-  "packageManager": "pnpm@11.24.0"
+  "packageManager": "pnpm@11.25.0"
 }
