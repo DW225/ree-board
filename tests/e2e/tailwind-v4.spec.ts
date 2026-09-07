@@ -127,6 +127,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await page.getByRole('dialog', { name: 'Navigation' }).getByRole('button', { name: 'Close', exact: true }).click();
     await expect(navigation).toBeFocused();
     await navigation.click();
+    await page.getByRole('dialog', { name: 'Navigation' }).getByRole('link', { name: 'Board', exact: true }).hover();
     await page.mouse.click(1250, 800);
     await expect(page.getByRole('dialog', { name: 'Navigation' })).toBeHidden();
     await page.getByRole('combobox', { name: 'Role' }).focus();
@@ -275,4 +276,26 @@ test('mock enter and exit animations retain timing and geometry', async ({ page,
   const records = await page.evaluate(() => window.migrationAnimations.filter(a => a.role === 'dialog'));
   expect(records).toHaveLength(4);
   expect(JSON.stringify(records, null, 2)).toMatchSnapshot('dialog-sheet-animations.json');
+});
+
+test('mock vote update keeps dragging active and merge preview usable', async ({ page }) => {
+  test.skip(!mock);
+  await page.route('**/mock/vote', route => route.fulfill({ status: 204 }));
+  await page.goto(boardPath);
+  const source = page.getByTestId('post-mock-post');
+  const target = page.getByTestId('post-mock-task');
+  await target.hover();
+  await source.hover();
+  await expect(source).toHaveAttribute('draggable', 'true');
+  await source.getByRole('button', { name: 'Vote for this post' }).click();
+  await expect(source.getByRole('button', { name: 'Remove vote' })).toBeEnabled();
+  await expect(source).toHaveAttribute('draggable', 'true');
+  await source.dragTo(target);
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('textbox')).toHaveValue(/Migration baseline post/);
+  await dialog.getByRole('button', { name: 'Preview', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: 'Heading', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
 });
