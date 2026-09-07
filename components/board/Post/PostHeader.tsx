@@ -181,7 +181,7 @@ export const PostHeader = memo(function PostHeader({
               setMessage(post.content);
             }}
             onOpenChange={handleDialogItemOpenChange}
-            className="~max-w-[425px] ~md:~max-w-[31.25rem]/[43.75rem]"
+            className="max-w-none"
           >
             <DialogHeader>
               <div className="flex items-center gap-2">
@@ -201,7 +201,7 @@ export const PostHeader = memo(function PostHeader({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 disabled={isPending}
-                className="min-h-[200px] w-full ~md:~min-w-[21.875rem]/[34.375rem]"
+                className="min-h-[200px] w-full"
                 aria-label="Edit post content"
                 autoComplete="on"
                 spellCheck="true"
