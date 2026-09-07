@@ -1,0 +1,114 @@
+[
+  {
+    "rootSize": 16,
+    "width": 375,
+    "dialogWidth": 375,
+    "maxWidth": "none",
+    "inputWidth": 325,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 16,
+    "width": 767,
+    "dialogWidth": 767,
+    "maxWidth": "none",
+    "inputWidth": 717,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 16,
+    "width": 768,
+    "dialogWidth": 768,
+    "maxWidth": "none",
+    "inputWidth": 718,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 16,
+    "width": 769,
+    "dialogWidth": 769,
+    "maxWidth": "none",
+    "inputWidth": 719,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 16,
+    "width": 1024,
+    "dialogWidth": 1024,
+    "maxWidth": "none",
+    "inputWidth": 974,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 16,
+    "width": 1280,
+    "dialogWidth": 1280,
+    "maxWidth": "none",
+    "inputWidth": 1230,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 16,
+    "width": 1536,
+    "dialogWidth": 1536,
+    "maxWidth": "none",
+    "inputWidth": 1486,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 20,
+    "width": 375,
+    "dialogWidth": 375,
+    "maxWidth": "none",
+    "inputWidth": 313,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 20,
+    "width": 767,
+    "dialogWidth": 767,
+    "maxWidth": "none",
+    "inputWidth": 705,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 20,
+    "width": 768,
+    "dialogWidth": 768,
+    "maxWidth": "none",
+    "inputWidth": 706,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 20,
+    "width": 769,
+    "dialogWidth": 769,
+    "maxWidth": "none",
+    "inputWidth": 707,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 20,
+    "width": 1024,
+    "dialogWidth": 1024,
+    "maxWidth": "none",
+    "inputWidth": 962,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 20,
+    "width": 1280,
+    "dialogWidth": 1280,
+    "maxWidth": "none",
+    "inputWidth": 1218,
+    "minWidth": "0px"
+  },
+  {
+    "rootSize": 20,
+    "width": 1536,
+    "dialogWidth": 1536,
+    "maxWidth": "none",
+    "inputWidth": 1474,
+    "minWidth": "0px"
+  }
+]

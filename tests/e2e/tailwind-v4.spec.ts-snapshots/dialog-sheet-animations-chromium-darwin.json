@@ -1,0 +1,118 @@
+[
+  {
+    "role": "dialog",
+    "state": "open",
+    "duration": 150,
+    "easing": "ease",
+    "samples": [
+      {
+        "x": 32,
+        "y": 267.1,
+        "width": 1216,
+        "height": 381.9,
+        "opacity": "0"
+      },
+      {
+        "x": 6.3,
+        "y": 252.6,
+        "width": 1267.4,
+        "height": 398,
+        "opacity": "0.802403"
+      },
+      {
+        "x": 0,
+        "y": 249,
+        "width": 1280,
+        "height": 402,
+        "opacity": "0.999999"
+      }
+    ]
+  },
+  {
+    "role": "dialog",
+    "state": "closed",
+    "duration": 150,
+    "easing": "ease",
+    "samples": [
+      {
+        "x": 0,
+        "y": 249,
+        "width": 1280,
+        "height": 402,
+        "opacity": "1"
+      },
+      {
+        "x": 25.7,
+        "y": 263.5,
+        "width": 1228.6,
+        "height": 385.9,
+        "opacity": "0.197597"
+      },
+      {
+        "x": 32,
+        "y": 267.1,
+        "width": 1216,
+        "height": 381.9,
+        "opacity": "5.33653e-07"
+      }
+    ]
+  },
+  {
+    "role": "dialog",
+    "state": "open",
+    "duration": 500,
+    "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "samples": [
+      {
+        "x": -384,
+        "y": 0,
+        "width": 384,
+        "height": 900,
+        "opacity": "1"
+      },
+      {
+        "x": -86.2,
+        "y": 0,
+        "width": 384,
+        "height": 900,
+        "opacity": "1"
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "width": 384,
+        "height": 900,
+        "opacity": "1"
+      }
+    ]
+  },
+  {
+    "role": "dialog",
+    "state": "closed",
+    "duration": 300,
+    "easing": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "samples": [
+      {
+        "x": 0,
+        "y": 0,
+        "width": 384,
+        "height": 900,
+        "opacity": "1"
+      },
+      {
+        "x": -297.8,
+        "y": 0,
+        "width": 384,
+        "height": 900,
+        "opacity": "1"
+      },
+      {
+        "x": -384,
+        "y": 0,
+        "width": 384,
+        "height": 900,
+        "opacity": "1"
+      }
+    ]
+  }
+]
