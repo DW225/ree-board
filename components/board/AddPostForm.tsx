@@ -28,6 +28,7 @@ interface AddPostFormProps {
   boardId: string;
 }
 
+/** Renders the form used to add a post to a board column. */
 export default function AddPostForm({
   userId,
   postType,
@@ -96,13 +97,13 @@ export default function AddPostForm({
           onClick={() => setOpenFormId(formId)}
           className="flex items-center gap-1.5 w-full px-3 py-2 rounded-md bg-[#F8FAFC] border border-[#CBD5E1] text-[#94A3B8] hover:text-[#64748B] hover:border-[#94A3B8] transition-colors duration-150 ease-in-out"
         >
-          <Plus className="h-3.5 w-3.5 flex-shrink-0" />
+          <Plus className="h-3.5 w-3.5 shrink-0" />
           <span className="text-sm">Add a card</span>
         </button>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-2 rounded-lg bg-white border border-[#6366F1]/20 p-3 shadow-sm"
+          className="flex flex-col gap-2 rounded-lg bg-white border border-[#6366F1]/20 p-3 shadow-xs"
         >
           <Textarea
             value={content}

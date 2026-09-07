@@ -29,6 +29,7 @@ interface EditBoardDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/** Renders the dialog used to update board details. */
 export default function EditBoardDialog({
   boardId,
   currentTitle,

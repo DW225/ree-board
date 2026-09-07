@@ -1,6 +1,7 @@
 import { Puzzle } from "lucide-react";
 import type { ReactNode } from "react";
 
+/** Renders one connected-application status row. */
 function AppRow({
   icon,
   name,
@@ -15,7 +16,7 @@ function AppRow({
   return (
     <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 last:border-b-0">
       <div className="flex items-center gap-4">
-        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
           {icon}
         </div>
         <div>
@@ -91,11 +92,12 @@ function GoogleIcon() {
   );
 }
 
+/** Renders the account's connected applications. */
 export function ConnectedAppsCard() {
   return (
     <div
       id="apps"
-      className="rounded-xl border border-slate-200 bg-white shadow-sm"
+      className="rounded-xl border border-slate-200 bg-white shadow-xs"
     >
       <div className="px-6 py-5">
         <div className="flex items-center gap-2.5">

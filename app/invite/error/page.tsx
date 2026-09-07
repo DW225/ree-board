@@ -7,6 +7,7 @@ interface ErrorPageProps {
   searchParams: Promise<{ reason?: string }>;
 }
 
+/** Renders a contextual error page for a failed invitation. */
 export default async function InviteErrorPage({ searchParams }: Readonly<ErrorPageProps>) {
   const { reason } = await searchParams;
 
@@ -48,7 +49,7 @@ export default async function InviteErrorPage({ searchParams }: Readonly<ErrorPa
   const errorInfo = getErrorInfo(reason);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-rose-100">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br/srgb from-red-50 to-rose-100">
       <Card className="w-full max-w-md p-8 text-center">
         <AlertTriangle className="size-16 mx-auto text-red-500 mb-6" />
 
@@ -79,6 +80,7 @@ export default async function InviteErrorPage({ searchParams }: Readonly<ErrorPa
   );
 }
 
+/** Returns metadata for invitation error pages. */
 export function generateMetadata() {
   return {
     title: "Invitation Error - Ree Board",

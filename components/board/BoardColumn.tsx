@@ -47,6 +47,7 @@ const COLUMN_ACCENT_CLASS: Record<PostType, string> = {
   [PostType.action_item]: "bg-violet-500",
 } as const satisfies Record<PostType, string>;
 
+/** Renders a board column and coordinates its post interactions. */
 export default function BoardColumn({
   boardId,
   title,
@@ -227,7 +228,7 @@ export default function BoardColumn({
     >
       {/* Color-coded top accent bar */}
       <div
-        className={`w-full h-1 rounded-t-xl flex-shrink-0 ${accentClass}`}
+        className={`w-full h-1 rounded-t-xl shrink-0 ${accentClass}`}
         style={accentStyle}
       />
 
@@ -244,7 +245,7 @@ export default function BoardColumn({
       {/* Cards area — also serves as the drop target */}
       <div
         ref={columnRef}
-        className="flex-grow overflow-y-auto flex flex-col gap-2 px-3 pb-3 pt-1"
+        className="grow overflow-y-auto flex flex-col gap-2 px-3 pb-3 pt-1"
       >
         {!viewOnly && (
           <AddPostForm postType={postType} boardId={boardId} userId={userId} />

@@ -12,6 +12,7 @@ interface NavLinkProps {
   className?: string;
 }
 
+/** Renders a navigation link with active-route styling. */
 export default function NavLink({
   href,
   children,
@@ -29,7 +30,7 @@ export default function NavLink({
         "relative px-3 py-2 text-sm font-medium transition-colors",
         "text-slate-500 hover:text-slate-900",
         isActive && "text-indigo-600",
-        "rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        "rounded-md focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2",
         className,
       )}
       onClick={onClick}

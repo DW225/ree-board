@@ -6,7 +6,7 @@ import { Skeleton } from "./skeleton";
  */
 export function BoardCardSkeleton() {
   return (
-    <div className="w-64 h-40 bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+    <div className="w-64 h-40 bg-white rounded-lg shadow-xs border border-slate-200 p-4">
       <Skeleton className="h-6 w-3/4 mb-3 bg-slate-200" />
       <Skeleton className="h-4 w-full mb-2 bg-slate-200" />
       <Skeleton className="h-4 w-5/6 bg-slate-200" />
@@ -32,7 +32,7 @@ export function BoardListSkeleton({ count = 4 }: Readonly<{ count?: number }>) {
  */
 export function PostCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+    <div className="bg-white rounded-lg shadow-xs border border-slate-200 p-4">
       <Skeleton className="h-5 w-3/4 mb-3 bg-slate-200" />
       <Skeleton className="h-4 w-full mb-2 bg-slate-200" />
       <Skeleton className="h-4 w-5/6 mb-3 bg-slate-200" />

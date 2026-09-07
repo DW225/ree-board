@@ -26,6 +26,7 @@ interface MagicLinkManagerProps {
   viewOnly?: boolean;
 }
 
+/** Renders controls for creating, inspecting, and revoking board invitation links. */
 export default function MagicLinkManager({
   boardId,
   viewOnly = true,

@@ -1,79 +1,67 @@
-# Tailwind migration browser baseline
+# Tailwind migration checks
 
-Status: Task A in progress. On 2026-09-08, the user authorized mock services. Six mock editor checks pass across three browsers. Tailwind remains on v3. No browser reference images have been captured. Tasks B–D have not started.
+The baseline, Fluid removal, lint fixes, migration, Sonar integration, and state fixes are separate functional commits. The lint commit includes the `scripts/**` exclusion. The Stop hook runs lint; the existing lint failures caused its repeated failures. The hook remains enabled.
 
-## Environment
+## Environment and packages
 
-- Base commit: `853322d5f2d3a396fa4a90ffc0a1f49c0e646891`.
-- Branch: `feat/tailwind_v4_upgrade`.
+- Base: `853322d5f2d3a396fa4a90ffc0a1f49c0e646891`; branch: `feat/tailwind_v4_upgrade`.
 - macOS 26.6.2 (25G83), arm64; Node 24.20.0; pnpm 11.25.0.
-- Tailwind 3.4.19, Fluid 1.0.4, Fluid merge adapter 0.0.3, tailwind-merge 2.6.1, tailwindcss-animate 1.0.7, typography 0.5.20, PostCSS 8.5.26.
-- Playwright Test 1.63.0; installed Chromium 153.0.8010.12 (1243), Firefox 155.0 (1543), WebKit 26.6 (2359).
-- The user confirmed the product minimums: Safari 16.4+, Chrome 111+, Firefox 128+.
+- Playwright 1.63.0: Chromium 153.0.8010.12 (1243), Firefox 155.0 (1543), WebKit 26.6 (2359).
+- Product minimums confirmed by the user: Safari 16.4+, Chrome 111+, Firefox 128+. The bundled browsers do not test these minimum versions.
+- Baseline: Tailwind 3.4.19, Fluid 1.0.4, Fluid merge adapter 0.0.3, tailwind-merge 2.6.1, tailwindcss-animate 1.0.7.
+- Migration: Tailwind and matching PostCSS plugin 4.3.3, tw-animate-css 1.4.0, official shadcn `cn` 0.2.6. The npm repository was checked against `shadcn-ui/cn`.
+- Typography 0.5.20 and PostCSS 8.5.26 are retained. Fluid, the old animation plugin, autoprefixer, and direct clsx/tailwind-merge dependencies are removed.
 
-## Checks
-
-Before setup changes, the installed Jest runner passed 12 suites and 140 tests. `npx tsc --noEmit` passed. The installed ESLint runner found 26 errors and one warning. After setup changes, the same test and type checks passed, and lint reported the same totals.
-
-Existing lint issues include React effect/render rules, unused variables, unescaped text, test import rules, and three scripts outside the configured TypeScript project. Full local logs: `/tmp/ree-tailwind-baseline-eslint-direct.log` and `/tmp/ree-tailwind-lint-after.log`.
-
-The Homebrew pnpm launcher could not write its global package-manager lockfile inside the sandbox. The cached pnpm 11.25.0 CLI worked when run with Node. Package installation used that version. Direct runner commands used for checks:
+## Reproduce the mock checks
 
 ```sh
-node node_modules/eslint/bin/eslint.js .
-node node_modules/typescript/bin/tsc --noEmit
-node node_modules/jest/bin/jest.js --runInBand
-```
-
-The direct Next.js production build remained at “Creating an optimized production build” and was stopped. Build verification is incomplete, not a pass. Its local log is `/tmp/ree-tailwind-baseline-build-direct.log`.
-
-Playwright lists the first test in all three projects when setup IDs are supplied. Missing IDs produce the required setup error. Listing tests does not verify browser behavior.
-
-## Run without Supabase or Turso
-
-```sh
+pnpm install --frozen-lockfile
+pnpm lint
+npx tsc --noEmit
+pnpm test --runInBand
+node tests/e2e/download-baseline.mjs
 pnpm test:e2e:mock
 ```
 
-This command starts and stops a separate local server on `127.0.0.1:3100`. No accounts, database, environment file, or saved login state are needed. The existing esbuild dependency bundles the real `PostHeader`, `DialogItem`, Radix controls, signals, and application CSS. The fixture uses a simple card container; it is not the full board page or Next.js server.
+The mock command starts a separate server at `127.0.0.1:3100`. It bundles real BoardColumn, PostCard, PostProvider, Markdown, and Radix components with esbuild. Actions use test endpoints. Playwright controls their responses. A successful mock save uses browser local storage for the reload check. Each test gets a fresh browser context.
 
-Playwright supplies the avatar API response and controls a mock save endpoint. A successful save stores text in browser local storage, which permits a reload check. Each test gets a fresh browser context. The task server action is replaced at build time with a test module that throws if called. A bundle assertion rejects live database, Supabase, or Ably clients. Browser requests to other origins are blocked. These mocks are under `tests/e2e/mock`; production code does not load them.
+A bundle assertion rejects live database, Supabase, and Ably clients. Requests to external origins are blocked. The fixture uses React.lazy in place of the Next.js dynamic loader. Production code does not load these mocks. This is a component fixture, not a full Next.js board page.
 
-Verified on 2026-09-08: keyboard edit entry, forward and reverse focus trapping, 500-character limit, whitespace validation, Escape, focus return, menu reopening, save pending/disabled state, repeated submission, network failure, retained draft, retry, and reload of mock saved content. Two tests pass in each browser: six checks total.
+The suite covers keyboard entry, forward/reverse focus trapping, text limits, validation, Escape and focus return, pending saves, repeated submission, failed saves and retry, reload, task status, card creation, read-only and empty presentation, drag after voting, and merge preview. Popup checks cover normal and reduced motion, sheet close/outside actions, keyboard select, tooltip focus, and alert actions.
 
-This is component evidence only. It does not prove real authentication, RBAC, server-action transport, database persistence, guest permissions, or realtime delivery. Those still need service integration tests. Full board screenshots, the remaining component matrix, and animation/width reference measurements remain pending.
+The 36 original Chromium reference images are [PR attachments](https://github.com/DW225/ree-board/pull/1017), not Git files. Run the download command above once; it checks each image against `visual-baseline.json` and reuses valid local copies. The images cover board, menu, edit dialog, select, tooltip, and sheet at 375/768/1440px, with light/dark classes. JSON references cover widths at 375/767/768/769/1024/1280/1536px with 16/20px root fonts, plus dialog/sheet enter and exit timing, opacity, and geometry. Reference image bytes and JSON values remain unchanged after migration. `.gitattributes` keeps the JSON files on LF line endings. Visual and measurement cases are skipped on Firefox/WebKit; behavior checks run on all three engines.
 
-The fixture uses the documented [esbuild alias API](https://esbuild.github.io/api/#alias) and [Playwright web server setup](https://playwright.dev/docs/test-webserver).
+## Measured compatibility decisions
 
-## Run against test services
+- All three Fluid classes emitted no CSS. The old Fluid merge adapter removed the default dialog max-width. The editor was full viewport width and its textarea had a 0px minimum width. `max-w-none` and removal of the ineffective minimum-width class preserve that output; no clamp is needed.
+- V3 removed the authored `.dark` token rule because no application source uses the literal `dark` class. Dark variants such as prose-invert still work. The CSS utility retains the authored dark values and the same source boundary without activating an unused theme rule.
+- CSS preserves the original rem breakpoints, typography, HSL tokens, used palette colors, sRGB gradients, font stack, button cursors, and table cell padding.
+- V4 translate utilities combine with animated transforms differently. Centered dialogs use the original transform behavior and explicit 150ms animation duration. Sheet open/close remains 500/300ms with the original easing.
+- The v3 transparent focus outline is retained outside forced-colors mode. Enter/exit keyframes retain the v3 opacity and transform without the new zero-radius blur. Together these avoid a Chromium paint difference at fractional positions; the original 375px images match exactly.
+- Unused animation values incorrectly nested under v3 colors were removed. They were not activated as new behavior.
 
-1. Configure disposable test services. Do not use production data.
-2. Start `pnpm dev:sql` and `pnpm dev` in separate terminals.
-3. Sign in with a test member using the real login UI. Save browser state with `pnpm exec playwright codegen --save-storage=playwright/.auth/member.json http://127.0.0.1:3000`.
-4. Create a disposable board and a post with content `Migration baseline post`.
-5. Supply its actual path and post ID:
+## Verification status — 2026-09-08
 
-```sh
-export E2E_BOARD_PATH=/board/ACTUAL_BOARD_ID
-export E2E_POST_ID=ACTUAL_POST_ID
-pnpm test:e2e
-```
+- V3 baseline build and stable reference run passed. The original lint run had 26 errors and one warning; these were fixed in the separate lint commit.
+- V4 frozen install, lint, TypeScript, 13 Jest suites / 141 tests, and production build pass.
+- Negative checks pass: removing the animation import fails the animation assertion; changing max-width fails the width reference; bypassing class merging fails the Jest contract. All mutations were restored.
+- The production homepage returns HTTP 200 and has no browser page errors with external requests blocked.
+- The final production CSS mock run has 38 passes, 16 deliberate skips, and zero failures. All 36 reference images match with zero allowed pixel difference. Width and animation values match exactly.
+- State regression checks cover invitation expiration, an open revoke dialog, an open guest upgrade form, and stale member-import success/error responses. All 12 pass in the three browser engines, and fail when the corresponding fixes are removed.
 
-The suite uses an explicitly started server at `http://127.0.0.1:3000`. Set `E2E_BASE_URL` only to an approved test server. Authentication state and reports are ignored by Git. Keep credentials out of this directory.
+Build checks use dummy service settings, a temporary SQLite path, an empty Sentry token, and a local dummy Supabase URL. No production credentials are needed. To test compiled CSS, set `E2E_PRODUCTION_CSS` to the main CSS file under `.next/static/chunks` after `pnpm build`, then run `pnpm test:e2e:mock`. This tests production CSS with mocked components; it does not prove real server actions.
 
-## Remaining work
+Local build/test logs are under `/tmp/ree-v4-*.log`. Playwright writes failure images and traces to ignored `test-results/`. The pnpm launcher stalled in this environment; a temporary wrapper invoked the cached pnpm 11.25.0 CLI. The repository commands are unchanged.
 
-The test board and member, second-member, and guest sessions have not been supplied. The shared editor test has run against the mock fixture only. It has not run against a real board.
+## Acceptance limits
 
-Complete the remaining component matrix in the handout, capture and review v3 screenshots and animation/width data, and rerun without snapshot updates before removing Fluid. No baseline commit, migration commit, PR, or deployment has been made.
+Real Supabase authentication, Turso persistence, guest authorization, Ably two-session delivery, and the authenticated production board have not been tested. Read-only fixture checks prove presentation only. Actual 200% browser zoom and timing samples for every animated surface also remain unverified. These checks are not reported as passing.
 
+To run the shared editor test against disposable services:
 
-## Baseline update — 2026-09-08
+1. Configure test services and start the application. Never use production data.
+2. Sign in as a test member and save state with `pnpm exec playwright codegen --save-storage=playwright/.auth/member.json http://127.0.0.1:3000`.
+3. Create a board and a post containing `Migration baseline post`.
+4. Set `E2E_BOARD_PATH=/board/ACTUAL_BOARD_ID` and `E2E_POST_ID=ACTUAL_POST_ID`, then run `pnpm test:e2e`. Use `pnpm start` for production verification.
 
-Lint is now clean; `scripts/**` is excluded. TypeScript and all 140 Jest tests pass. The v3 production build passed outside the sandbox with dummy service settings (no production credentials), using Next.js 16.3.3/Turbopack. The earlier build stall was environment-related.
-
-The fixture now uses real BoardColumn, PostCard, PostProvider, Markdown, and popup components. It replaces service actions at build time and uses React.lazy in place of the Next.js chunk loader. The mock data tests passed: 23 tests, with 16 Chromium-only visual/measurement cases deliberately skipped on Firefox/WebKit. References were captured once and passed again without updates. The 36 screenshots cover the board, menu, edit dialog, select, tooltip, and sheet at three widths and both theme classes. JSON references cover root sizes 16/20px at seven viewport widths and dialog/sheet enter/exit geometry and timing.
-
-Measured v3 findings: all three Fluid classes emit no CSS. The Fluid merge adapter removes max-w-lg, leaving the editor at full viewport width. Textarea min-width is 0px. Preserve this with max-w-none and no Fluid minimum width. The authored .dark base rule is also removed by v3 source scanning: no application source contains the literal dark class. Dark variants such as prose-invert still work. The migration must preserve this compiled output and keep the authored theme values available.
-
-Remaining acceptance limits: no real Supabase/Turso/Ably checks, real guest authorization, two-session delivery, or full Next.js page screenshots. Browser zoom at 200%, all animated surfaces, and all component states are not yet covered. Mock read-only checks verify presentation only. AlertDialog is a local fixture because application deletion uses a different flow.
+Auth state is ignored by Git. The remaining service matrix needs a second member and a guest session. No production deployment or merge was performed; the repository runs its existing Vercel preview integration on pushes.

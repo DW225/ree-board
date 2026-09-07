@@ -56,6 +56,7 @@ interface PostHeaderProps {
   ) => void | Promise<void>;
 }
 
+/** Renders a post's content and editing controls. */
 export const PostHeader = memo(function PostHeader({
   post,
   onDelete,

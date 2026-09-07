@@ -20,7 +20,9 @@ const bundle = await build({
 assert(!Object.keys(bundle.metafile.inputs).some(path =>
   /(?:lib\/(?:db|utils\/supabase)|@supabase|@libsql|ably)[/\\]/.test(path),
 ), 'The mock editor must not include live service clients');
-const css = await postcss(Object.entries(config.plugins).map(
+const css = process.env.E2E_PRODUCTION_CSS
+  ? { css: await readFile(process.env.E2E_PRODUCTION_CSS, 'utf8') }
+  : await postcss(Object.entries(config.plugins).map(
   ([name, options]) => require(name)(options),
 )).process(await readFile('app/globals.css', 'utf8'), { from: 'app/globals.css' });
 

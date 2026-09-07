@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   description: "View and manage your profile settings",
 };
 
+/** Renders the authenticated user's profile and account settings. */
 export default async function ProfilePage() {
   const [session, supabaseUser] = await Promise.all([
     verifySession(),
@@ -68,7 +69,7 @@ export default async function ProfilePage() {
           {/* <ConnectedAppsCard /> */}
           <DangerZoneCard userId={userId} />
         </div>
-        <div className="flex w-full flex-shrink-0 flex-col gap-4 lg:w-72">
+        <div className="flex w-full shrink-0 flex-col gap-4 lg:w-72">
           <AccountStatsCard
             ownedBoardCount={ownedBoardCount}
             memberBoardCount={memberBoardCount}
