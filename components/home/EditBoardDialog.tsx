@@ -16,7 +16,7 @@ import type { Board } from "@/lib/types/board";
 import { boardTitleSchema } from "@/lib/utils/validation";
 import { Loader2, Lock, Users, X } from "lucide-react";
 import type { KeyboardEvent } from "react";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 type VisibilityOption = "team" | "private";
@@ -42,15 +42,16 @@ export default function EditBoardDialog({
   const [visibility, setVisibility] = useState<VisibilityOption>("team");
   const [isPending, startTransition] = useTransition();
 
-  // Reset all fields when dialog opens
-  useEffect(() => {
+  const [previous, setPrevious] = useState({ open, currentTitle, currentDescription });
+  if (open !== previous.open || currentTitle !== previous.currentTitle || currentDescription !== previous.currentDescription) {
+    setPrevious({ open, currentTitle, currentDescription });
     if (open) {
       setTitle(currentTitle);
       setTitleError("");
       setDescription(currentDescription ?? "");
       setVisibility("team");
     }
-  }, [open, currentTitle, currentDescription]);
+  }
 
   const validateTitle = (value: string): boolean => {
     const validation = boardTitleSchema.safeParse(value.trim());

@@ -15,7 +15,7 @@ import type { Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "../AnonymousModeProvider";
@@ -105,6 +105,8 @@ function PostCard({
     removeVotedPost,
   ]);
 
+  const getCurrentPost = useEffectEvent(() => post);
+
   useEffect(() => {
     if (!viewOnly) {
       const postCardEl = ref.current;
@@ -133,7 +135,7 @@ function PostCard({
               id: post.id,
               originalType: post.type,
               boardId: post.boardId,
-              post: post, // Include the full post for merge functionality
+              post: getCurrentPost(), // Include the full post for merge functionality
             }),
             onDragStart: () => setIsDragging(true),
             onDrop: () => setIsDragging(false),
@@ -151,7 +153,7 @@ function PostCard({
                   source.data.boardId === post.boardId
                 );
               },
-              getData: () => ({ type: "post-merge-target", targetPost: post }),
+              getData: () => ({ type: "post-merge-target", targetPost: getCurrentPost() }),
               onDragEnter: () => setIsDropTarget(true),
               onDragLeave: () => setIsDropTarget(false),
               onDrop: ({ source }) => {
@@ -212,6 +214,7 @@ function PostCard({
       {/* Drop indicator for merge functionality */}
       {!viewOnly && isDropTarget && <DropIndicator edge="top" gap="8px" />}
       <Card
+        data-testid={`post-${post.id}`}
         className={`w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg shadow-none ${
           accentColor ? "border-l-4" : ""
         } ${isDragging ? "opacity-50" : ""} relative`}

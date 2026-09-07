@@ -21,29 +21,29 @@ describe("Supabase Client Utilities", () => {
   });
 
   describe("Browser Client", () => {
-    it("should throw error when NEXT_PUBLIC_SUPABASE_URL is missing", () => {
+    it("should throw error when NEXT_PUBLIC_SUPABASE_URL is missing", async () => {
       delete process.env.NEXT_PUBLIC_SUPABASE_URL;
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "test-key";
 
-      const { createClient } = require("../client");
+      const { createClient } = await import("../client");
       expect(() => createClient()).toThrow(/Missing NEXT_PUBLIC_SUPABASE_URL/);
     });
 
-    it("should throw error when NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is missing", () => {
+    it("should throw error when NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is missing", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-      const { createClient } = require("../client");
+      const { createClient } = await import("../client");
       expect(() => createClient()).toThrow(
         /Missing.*NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/
       );
     });
 
-    it("should create client when all environment variables are present", () => {
+    it("should create client when all environment variables are present", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "test-publishable-key";
 
-      const { createClient } = require("../client");
+      const { createClient } = await import("../client");
       const client = createClient();
 
       expect(client).toBeDefined();
@@ -52,40 +52,40 @@ describe("Supabase Client Utilities", () => {
   });
 
   describe("Admin Client", () => {
-    it("should throw error when NEXT_PUBLIC_SUPABASE_URL is missing", () => {
+    it("should throw error when NEXT_PUBLIC_SUPABASE_URL is missing", async () => {
       delete process.env.NEXT_PUBLIC_SUPABASE_URL;
       process.env.SUPABASE_SECRET_KEY = "test-secret";
 
-      const { createAdminClient } = require("../admin");
+      const { createAdminClient } = await import("../admin");
       expect(() => createAdminClient()).toThrow(
         /Missing NEXT_PUBLIC_SUPABASE_URL/
       );
     });
 
-    it("should throw error when SUPABASE_SECRET_KEY is missing", () => {
+    it("should throw error when SUPABASE_SECRET_KEY is missing", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       delete process.env.SUPABASE_SECRET_KEY;
 
-      const { createAdminClient } = require("../admin");
+      const { createAdminClient } = await import("../admin");
       expect(() => createAdminClient()).toThrow(/Missing.*SUPABASE_SECRET_KEY/);
     });
 
-    it("should create admin client when all environment variables are present", () => {
+    it("should create admin client when all environment variables are present", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.SUPABASE_SECRET_KEY = "test-secret-key";
 
-      const { createAdminClient } = require("../admin");
+      const { createAdminClient } = await import("../admin");
       const client = createAdminClient();
 
       expect(client).toBeDefined();
       expect(client.auth).toBeDefined();
     });
 
-    it("should create admin client successfully when all credentials are provided", () => {
+    it("should create admin client successfully when all credentials are provided", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.SUPABASE_SECRET_KEY = "test-secret-key";
 
-      const { createAdminClient } = require("../admin");
+      const { createAdminClient } = await import("../admin");
       const client = createAdminClient();
 
       expect(client).toBeDefined();
@@ -110,11 +110,11 @@ describe("Supabase Client Utilities", () => {
   });
 
   describe("Client Type Safety", () => {
-    it("should return SupabaseClient type from browser client", () => {
+    it("should return SupabaseClient type from browser client", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "test-key";
 
-      const { createClient } = require("../client");
+      const { createClient } = await import("../client");
       const client = createClient();
 
       // Verify client has expected Supabase methods
@@ -123,11 +123,11 @@ describe("Supabase Client Utilities", () => {
       expect(typeof client.auth.signOut).toBe("function");
     });
 
-    it("should return SupabaseClient type from admin client", () => {
+    it("should return SupabaseClient type from admin client", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.SUPABASE_SECRET_KEY = "test-secret";
 
-      const { createAdminClient } = require("../admin");
+      const { createAdminClient } = await import("../admin");
       const client = createAdminClient();
 
       // Verify admin client has expected Supabase admin methods

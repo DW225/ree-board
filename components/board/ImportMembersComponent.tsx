@@ -25,7 +25,7 @@ import { addMember } from "@/lib/signal/memberSignals";
 import type { Board } from "@/lib/types/board";
 import { Check, Upload, Users } from "lucide-react";
 import { nanoid } from "nanoid";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 interface ImportMembersProps {
@@ -123,19 +123,16 @@ export default function ImportMembersComponent({
     }
   }, [currentBoardId]);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadAvailableBoards();
-    }
-  }, [isOpen, loadAvailableBoards]);
-
-  const loadBoardMembers = useCallback(async () => {
-    if (!selectedBoardId) return;
+  const loadBoardMembers = useCallback(async (boardId: string) => {
+    setSelectedBoardId(boardId);
+    setBoardMembers([]);
+    setSelectedMembers(new Set());
+    if (!boardId) return;
 
     try {
       setIsLoading(true);
       const members = await getMembersFromBoardWithExclusionAction(
-        selectedBoardId,
+        boardId,
         currentBoardId,
       );
 
@@ -155,16 +152,7 @@ export default function ImportMembersComponent({
     } finally {
       setIsLoading(false);
     }
-  }, [selectedBoardId, currentBoardId]);
-
-  useEffect(() => {
-    if (selectedBoardId) {
-      loadBoardMembers();
-    } else {
-      setBoardMembers([]);
-      setSelectedMembers(new Set());
-    }
-  }, [selectedBoardId, loadBoardMembers]);
+  }, [currentBoardId]);
 
   const handleMemberToggle = useCallback((memberId: string) => {
     setSelectedMembers((prev) => {
@@ -249,6 +237,7 @@ export default function ImportMembersComponent({
   const handleOpenChange = (open: boolean) => {
     if (!open && isImporting) return;
     setIsOpen(open);
+    if (open) void loadAvailableBoards();
     if (!open) {
       setSelectedBoardId("");
       setBoardMembers([]);
@@ -302,7 +291,7 @@ export default function ImportMembersComponent({
             </label>
             <Select
               value={selectedBoardId}
-              onValueChange={setSelectedBoardId}
+              onValueChange={loadBoardMembers}
               disabled={isLoading || isImporting}
             >
               <SelectTrigger

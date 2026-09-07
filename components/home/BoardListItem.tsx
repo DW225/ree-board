@@ -23,7 +23,6 @@ interface BoardListItemProps {
 
 const BoardListItem: FC<BoardListItemProps> = ({ board, isOwner = false }) => {
   const {
-    isDropdownOpen,
     setIsDropdownOpen,
     isEditDialogOpen,
     setIsEditDialogOpen,

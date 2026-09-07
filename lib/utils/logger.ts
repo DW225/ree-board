@@ -154,9 +154,11 @@ class Logger {
       (level === LogLevel.WARN || level === LogLevel.ERROR)
     ) {
       const formatted = this.formatLogEntry(entry);
-      level === LogLevel.WARN
-        ? console.warn(formatted)
-        : console.error(formatted);
+      if (level === LogLevel.WARN) {
+        console.warn(formatted);
+      } else {
+        console.error(formatted);
+      }
     }
 
     // Send errors to Sentry

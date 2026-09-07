@@ -1,12 +1,13 @@
 "use client";
 
 import { Trash2, TriangleAlert } from "lucide-react";
+import type { FC } from "react";
 
 interface Props {
   userId: string;
 }
 
-export function DangerZoneCard({ userId: _userId }: Readonly<Props>) {
+export const DangerZoneCard: FC<Readonly<Props>> = () => {
 
   return (
     <div className="rounded-xl border border-red-200 bg-white shadow-sm">
@@ -42,4 +43,4 @@ export function DangerZoneCard({ userId: _userId }: Readonly<Props>) {
       </div>
     </div>
   );
-}
+};

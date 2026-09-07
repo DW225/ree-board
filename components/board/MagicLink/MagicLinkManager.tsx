@@ -19,6 +19,7 @@ import type { LinkWithCreator } from "@/lib/types/link";
 import { getRoleDisplayName } from "@/lib/utils/role";
 import { AlertTriangle, Clock, Copy, ExternalLink, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useInterval } from "react-use";
 
 interface MagicLinkManagerProps {
   boardId: string;
@@ -35,6 +36,9 @@ export default function MagicLinkManager({
     null
   );
   const [isRevoking, setIsRevoking] = useState(false);
+  const [now, setNow] = useState(Date.now);
+  useInterval(() => setNow(Date.now()), 60_000);
+
 
   const handleRevoke = async (link: LinkWithCreator) => {
     setLinkToRevoke(link);
@@ -81,7 +85,6 @@ export default function MagicLinkManager({
       };
     }
 
-    const now = Date.now();
     const expiresAt = new Date(link.expiresAt);
     const hoursLeft = (expiresAt.getTime() - now) / MS_PER_HOUR;
 

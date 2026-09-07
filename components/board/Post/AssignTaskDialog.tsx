@@ -10,7 +10,7 @@ import {
 import { membersSignal } from "@/lib/signal/memberSignals";
 import type { MemberSignal } from "@/lib/types/member";
 import { Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface AssignTaskDialogProps {
   isOpen: boolean;
@@ -31,15 +31,14 @@ export function AssignTaskDialog({
   );
   const [isAssigning, setIsAssigning] = useState(false);
 
-  useEffect(() => {
+  const [previous, setPrevious] = useState({ isOpen: false, currentAssigneeId });
+  if (isOpen !== previous.isOpen || currentAssigneeId !== previous.currentAssigneeId) {
+    setPrevious({ isOpen, currentAssigneeId });
     if (isOpen) {
       setSearchTerm("");
-      const current = membersSignal.value.find(
-        (m) => m.userId === currentAssigneeId,
-      );
-      setSelectedMember(current ?? null);
+      setSelectedMember(membersSignal.value.find(m => m.userId === currentAssigneeId) ?? null);
     }
-  }, [isOpen, currentAssigneeId]);
+  }
 
   return (
     <Dialog

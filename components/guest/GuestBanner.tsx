@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useInterval } from "react-use";
 import { Button } from "@/components/ui/button";
 import { UpgradeAccountDialog } from "./UpgradeAccountDialog";
 import { Clock } from "lucide-react";
@@ -23,8 +24,11 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
   const [showDialog, setShowDialog] = useState(false);
 
+  const [now, setNow] = useState(Date.now);
+  useInterval(() => setNow(Date.now()), 60_000);
+
   // Calculate days remaining
-  const timeLeft = expiresAt.getTime() - Date.now();
+  const timeLeft = expiresAt.getTime() - now;
   const daysLeft = Math.ceil(timeLeft / MS_PER_DAY);
 
   // Don't show banner if expired (shouldn't happen, but defensive)
