@@ -1,6 +1,8 @@
 // Use dynamic require (not static import) so we can set env vars and mocks
 // before the client module initializes
-type ClientModule = typeof import("./client");
+import type * as Client from "./client";
+
+type ClientModule = typeof Client;
 
 let isTransientError: ClientModule["isTransientError"];
 let withDbRetry: ClientModule["withDbRetry"];

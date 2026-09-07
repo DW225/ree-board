@@ -131,7 +131,7 @@ export function UpgradeAccountDialog({
           <DialogHeader>
             <DialogTitle>Upgrade Your Account</DialogTitle>
             <DialogDescription>
-              Keep your access to all boards permanently. We'll send you a
+              Keep your access to all boards permanently. We&apos;ll send you a
               verification code to confirm your email.
             </DialogDescription>
           </DialogHeader>

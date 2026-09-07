@@ -15,6 +15,7 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig([
+    { ignores: ["scripts/**"] },
     ...nextCoreWebVitals,
     ...compat.extends(
         "prettier",

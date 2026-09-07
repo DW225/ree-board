@@ -78,25 +78,17 @@ export default function MergePostDialog({
   // Simplified estimation — actual count is calculated server-side
   const mergedVoteCount = Math.max(targetPost.voteCount, sourcePost.voteCount);
 
-  // Initialize merged content when dialog opens
+  const [previous, setPrevious] = useState({ isOpen: false, target: targetPost.content, source: sourcePost.content });
+  if (isOpen !== previous.isOpen || targetPost.content !== previous.target || sourcePost.content !== previous.source) {
+    setPrevious({ isOpen, target: targetPost.content, source: sourcePost.content });
+    setMergedContent(isOpen ? [targetPost.content, sourcePost.content].filter(content => content.trim()).join("\n\n---\n\n") : "");
+    setActiveTab("edit");
+  }
+
   useEffect(() => {
-    if (isOpen) {
-      const allContent = [targetPost.content, sourcePost.content]
-        .filter((content) => content.trim())
-        .join("\n\n---\n\n");
-      setMergedContent(allContent);
-      setActiveTab("edit");
-
-      // Focus the textarea after a short delay to ensure dialog is rendered
-      const focusTimer = setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 100);
-
-      return () => clearTimeout(focusTimer);
-    } else {
-      setMergedContent("");
-      setActiveTab("edit");
-    }
+    if (!isOpen) return;
+    const focusTimer = setTimeout(() => textareaRef.current?.focus(), 100);
+    return () => clearTimeout(focusTimer);
   }, [isOpen, targetPost.content, sourcePost.content]);
 
   const handleMerge = useCallback(async () => {

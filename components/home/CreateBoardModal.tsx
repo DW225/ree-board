@@ -32,7 +32,7 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { Loader2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { KeyboardEvent } from "react";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 type TemplateOption =
@@ -58,19 +58,16 @@ export default function CreateBoardModal({
 
   const open = createBoardModalOpenSignal.value;
 
-  // Reset form when modal is closed externally (e.g., via signal)
-  useEffect(() => {
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (!open) {
-      resetForm();
+      setTitle("");
+      setTitleError("");
+      setDescription("");
+      setTemplate("standard");
     }
-  }, [open]);
-
-  const resetForm = () => {
-    setTitle("");
-    setTitleError("");
-    setDescription("");
-    setTemplate("standard");
-  };
+  }
 
   const setOpen = (v: boolean) => {
     createBoardModalOpenSignal.value = v;

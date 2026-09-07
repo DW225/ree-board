@@ -17,7 +17,7 @@ import { logger } from "@/lib/utils/logger";
 import { z } from "zod";
 
 export const CreatePostAction = async (post: NewPost) =>
-  rbacWithAuth(post.boardId, async (userId, role) => {
+  rbacWithAuth(post.boardId, async (userId) => {
     logger.logAction("CreatePostAction", { userId, boardId: post.boardId });
 
     const validation = CreatePostSchema.safeParse({
