@@ -64,6 +64,7 @@ test('post edit keeps keyboard focus and text limits', async ({ page }) => {
 });
 
 test('mock save shows pending state, keeps failed draft, and retries once', async ({ page }) => {
+  // This case needs the fixture save endpoint; it does not run against live services.
   test.skip(!mock, 'This test controls the mock save endpoint only');
   await page.goto(boardPath);
   const card = page.getByTestId(`post-${postId}`);
@@ -110,6 +111,7 @@ test('mock save shows pending state, keeps failed draft, and retries once', asyn
 
 for (const reducedMotion of ['no-preference', 'reduce'] as const) {
   test(`mock popup controls and dismissal (${reducedMotion})`, async ({ page }) => {
+    // These standalone popup controls exist only in the mock fixture.
     test.skip(!mock);
     await page.emulateMedia({ reducedMotion });
     await page.goto(boardPath);
@@ -153,6 +155,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 }
 
 test('mock status submenu, post entry, empty and read-only states', async ({ page }) => {
+  // These routes and writes belong to the mock fixture, not a live board.
   test.skip(!mock);
   let statusWrites = 0;
   await page.route('**/mock/status', route => { statusWrites += 1; return route.fulfill({ status: 204 }); });
@@ -181,6 +184,7 @@ test('mock status submenu, post entry, empty and read-only states', async ({ pag
 for (const theme of ['light', 'dark']) {
   for (const width of [375, 768, 1440]) {
     test(`mock visual reference ${theme} ${width}`, async ({ page, browserName }) => {
+      // The saved visual references use the Chromium mock fixture.
       test.skip(!mock || browserName !== 'chromium');
       await page.setViewportSize({ width, height: width === 375 ? 812 : width === 768 ? 1024 : 900 });
       await page.goto(boardPath);
@@ -207,6 +211,7 @@ for (const theme of ['light', 'dark']) {
 }
 
 test('mock dialog widths match the v3 reference', async ({ page, browserName }) => {
+  // The saved geometry and timing references use the Chromium mock fixture.
   test.skip(!mock || browserName !== 'chromium');
   await page.goto(boardPath);
   const measurements = [];
@@ -236,6 +241,7 @@ interface AnimationRecord { role: string; state: string | null; duration: number
 declare global { interface Window { migrationAnimations: AnimationRecord[] } }
 
 test('mock enter and exit animations retain timing and geometry', async ({ page, browserName }) => {
+  // The saved geometry and timing references use the Chromium mock fixture.
   test.skip(!mock || browserName !== 'chromium');
   await page.addInitScript(() => {
     window.migrationAnimations = [];
@@ -279,6 +285,7 @@ test('mock enter and exit animations retain timing and geometry', async ({ page,
 });
 
 test('mock vote update keeps dragging active and merge preview usable', async ({ page }) => {
+  // This case controls the fixture vote endpoint and uses fixed mock post IDs.
   test.skip(!mock);
   await page.route('**/mock/vote', route => route.fulfill({ status: 204 }));
   await page.goto(boardPath);

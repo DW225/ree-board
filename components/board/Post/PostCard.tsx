@@ -40,6 +40,7 @@ interface PostCardProps {
   accentColor?: string;
 }
 
+/** Renders an interactive post card with editing, voting, and drag support. */
 function PostCard({
   post,
   viewOnly = false,
@@ -227,8 +228,8 @@ function PostCard({
         <CardContent className="px-3 pb-2 pt-0">
           <div
             className={`${
-              isAnonymous ? "blur-sm select-none" : "select-text"
-            } prose prose-sm break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 text-[#374151]`}
+              isAnonymous ? "blur-xs select-none" : "select-text"
+            } prose prose-sm wrap-break-word dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 text-[#374151]`}
           >
             <MarkdownRender content={post.content} />
           </div>

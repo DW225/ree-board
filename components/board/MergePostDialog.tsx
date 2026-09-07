@@ -62,6 +62,7 @@ function getPostLabel(type: Post["type"]): string {
   return POST_LABELS[type] ?? type;
 }
 
+/** Renders the dialog used to merge one board post into another. */
 export default function MergePostDialog({
   isOpen,
   onClose,
@@ -227,7 +228,7 @@ export default function MergePostDialog({
                 disabled={isSubmitting}
                 className={`flex flex-1 items-center justify-center rounded-[4px] text-sm font-medium transition-all disabled:opacity-50 ${
                   activeTab === "edit"
-                    ? "bg-white text-[#0F172A] shadow-sm"
+                    ? "bg-white text-[#0F172A] shadow-xs"
                     : "text-[#94A3B8]"
                 }`}
               >
@@ -239,7 +240,7 @@ export default function MergePostDialog({
                 disabled={isSubmitting}
                 className={`flex flex-1 items-center justify-center rounded-[4px] text-sm font-medium transition-all disabled:opacity-50 ${
                   activeTab === "preview"
-                    ? "bg-white text-[#0F172A] shadow-sm"
+                    ? "bg-white text-[#0F172A] shadow-xs"
                     : "text-[#94A3B8]"
                 }`}
               >

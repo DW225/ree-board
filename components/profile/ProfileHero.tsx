@@ -6,6 +6,7 @@ interface Props {
   email: string;
 }
 
+/** Renders the profile header and account identity. */
 export function ProfileHero({ initials, fullName, email }: Readonly<Props>) {
   return (
     <div className="border-b border-slate-200 bg-white">
@@ -13,7 +14,7 @@ export function ProfileHero({ initials, fullName, email }: Readonly<Props>) {
         {/* Avatar + Name Row */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex flex-wrap items-end gap-5">
-            <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-linear-to-br/srgb from-indigo-500 to-violet-500">
               <span className="text-3xl font-bold text-white">{initials}</span>
             </div>
             <div className="mb-1 flex flex-col gap-1">

@@ -12,6 +12,7 @@ import { Plus } from "lucide-react";
 import BoardCard from "./BoardCard";
 import BoardListItem from "./BoardListItem";
 
+/** Renders the dashboard card that opens the new-board flow. */
 function NewBoardCard() {
   return (
     <button
@@ -19,7 +20,7 @@ function NewBoardCard() {
       onClick={() => {
         createBoardModalOpenSignal.value = true;
       }}
-      className="h-40 w-full flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-[#CBD5E1] bg-white transition-colors hover:border-[#94A3B8] hover:shadow-sm"
+      className="h-40 w-full flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-[#CBD5E1] bg-white transition-colors hover:border-[#94A3B8] hover:shadow-xs"
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#6366F1]">
         <Plus className="h-5 w-5 text-white" />

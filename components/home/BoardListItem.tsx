@@ -21,6 +21,7 @@ interface BoardListItemProps {
   isOwner?: boolean;
 }
 
+/** Renders a board entry in the dashboard's compact list layout. */
 const BoardListItem: FC<BoardListItemProps> = ({ board, isOwner = false }) => {
   const {
     setIsDropdownOpen,

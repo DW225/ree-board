@@ -12,6 +12,7 @@ interface InvitePageProps {
   params: Promise<{ token: string }>;
 }
 
+/** Renders the invitation acceptance flow for the route token. */
 export default function InvitePage({ params }: Readonly<InvitePageProps>) {
   const [token, setToken] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<
@@ -122,7 +123,7 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
   // Show loading while checking auth or processing
   if (authStatus === "checking" || !token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br/srgb from-blue-50 to-indigo-100">
         <Card className="w-full max-w-md p-8 text-center">
           <Users className="size-16 mx-auto text-blue-500 mb-6" />
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
@@ -142,7 +143,7 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
   // Show CAPTCHA for unauthenticated users
   if (authStatus === "needs_guest" && !isProcessing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br/srgb from-blue-50 to-indigo-100">
         <Card className="w-full max-w-md p-8 text-center">
           <Users className="size-16 mx-auto text-blue-500 mb-6" />
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
@@ -190,7 +191,7 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
 
   // Show processing state
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br/srgb from-blue-50 to-indigo-100">
       <Card className="w-full max-w-md p-8 text-center">
         <Users className="size-16 mx-auto text-blue-500 mb-6" />
         <h1 className="text-2xl font-bold text-gray-900 mb-4">

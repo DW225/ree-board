@@ -16,6 +16,7 @@ import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
 import { logger } from "@/lib/utils/logger";
 import { z } from "zod";
 
+/** Creates a post after validating authorization and publishes the update. */
 export const CreatePostAction = async (post: NewPost) =>
   rbacWithAuth(post.boardId, async (userId) => {
     logger.logAction("CreatePostAction", { userId, boardId: post.boardId });

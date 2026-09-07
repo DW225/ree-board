@@ -93,6 +93,7 @@ function getRoleLabel(role: Role) {
   }
 }
 
+/** Renders the workflow for importing members from another board. */
 export default function ImportMembersComponent({
   currentBoardId,
   onImportComplete,

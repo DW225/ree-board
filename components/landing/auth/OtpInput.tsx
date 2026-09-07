@@ -10,6 +10,7 @@ interface OtpInputProps {
   onOtpPaste: (e: ClipboardEvent) => void;
 }
 
+/** Renders the segmented one-time-password input. */
 export function OtpInput({
   otp,
   otpRefs,
@@ -41,7 +42,7 @@ export function OtpInput({
             onChange={(e) => onOtpChange(i, e.target.value)}
             onKeyDown={(e) => onOtpKeyDown(i, e)}
             disabled={loading}
-            className={`w-11 h-14 text-center text-lg font-semibold text-[#1E293B] bg-[#F8FAFC] rounded-lg outline-none transition-colors ${
+            className={`w-11 h-14 text-center text-lg font-semibold text-[#1E293B] bg-[#F8FAFC] rounded-lg outline-hidden transition-colors ${
               i === 0 && digit === ""
                 ? "border-2 border-[#6366F1]"
                 : "border border-[#E2E8F0] focus:border-2 focus:border-[#6366F1]"

@@ -45,6 +45,7 @@ interface CreateBoardModalProps {
   userID: string;
 }
 
+/** Renders the modal used to create a board. */
 export default function CreateBoardModal({
   userID,
 }: Readonly<CreateBoardModalProps>) {

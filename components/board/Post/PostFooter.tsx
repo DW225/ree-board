@@ -54,6 +54,7 @@ interface PostFooterProps {
   isVoting?: boolean;
 }
 
+/** Renders post metadata and voting controls. */
 export const PostFooter = memo(function PostFooter({
   post,
   viewOnly,
@@ -111,7 +112,7 @@ export const PostFooter = memo(function PostFooter({
                   <button
                     type="button"
                     onClick={() => setIsAssignOpen(true)}
-                    className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2"
+                    className="rounded-full focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2"
                     aria-label="Assign task to member"
                   >
                     <AvatarIcon

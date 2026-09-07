@@ -81,6 +81,7 @@ function Chip({ label, onRemove }: Readonly<{ label: string; onRemove: () => voi
   );
 }
 
+/** Renders dashboard search and filtering controls. */
 export default function DashboardSearch() {
   useSignals();
 
@@ -134,7 +135,7 @@ export default function DashboardSearch() {
             value={textFilter}
             onChange={(e) => filterBoards(e.target.value)}
             aria-label="Search boards"
-            className="w-full rounded-lg border border-[#E2E8F0] bg-white py-2.5 pl-9 pr-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
+            className="w-full rounded-lg border border-[#E2E8F0] bg-white py-2.5 pl-9 pr-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] shadow-[0_1px_2px_rgba(0,0,0,0.06)] outline-hidden transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
           />
         </div>
 

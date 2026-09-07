@@ -10,7 +10,7 @@
 
 **Spec:** The requirements and acceptance checks in this handout implement the user request in this task. No separate design document is required.
 
-**Prepared:** 2026-09-07. **Status:** Task A in progress. See `tests/e2e/README.md` for checks and blockers. Tailwind remains on v3. On 2026-09-08, the user authorized mock services; six component checks pass in a separate mock editor fixture. Full board and service checks remain pending.
+**Prepared:** 2026-09-07. **Updated:** 2026-09-08. **Status:** V3 baseline and Fluid removal are committed. Tailwind v4 and the review fixes pass the approved mocked production checks. Screenshots are stored as PR attachments with a checksum-pinned download manifest. The user authorized mock services. See `tests/e2e/README.md` for results and explicit acceptance limits. Unchecked service checks remain deferred; mocks do not prove them.
 
 ## Global constraints
 
@@ -71,7 +71,7 @@ All paths below are relative to the repository root.
 **Produces:** A reproducible v3 reference and regression tests that run unchanged after the upgrade.
 
 - [x] Record the base commit, Node/pnpm versions, OS, browser versions, and dependency versions in the test README.
-- [ ] Run the current checks. Record existing failures separately; do not report them as migration failures or quietly accept new failures.
+- [x] Run the current checks. Record existing failures separately; do not report them as migration failures or quietly accept new failures.
 
 ```sh
 pnpm lint
@@ -120,7 +120,7 @@ export default defineConfig({
 - [ ] Sign in through the real login UI with a test member account. Save its browser state to the ignored path above. Create a disposable board and one post with content `Migration baseline post`.
 - [ ] Set `E2E_BOARD_PATH` to `/board/<actual-board-id>` and `E2E_POST_ID` to that post's actual ID. Store reproduction instructions, not session tokens, in the README. Tests must fail if these inputs are absent.
 - [ ] Prepare a second member session and a guest session for the realtime and permission checks. Keep their auth state private too.
-- [ ] Use fixed test content and loaded fonts for screenshots. Disable or mask only unrelated changing timestamps/avatars. Do not mask controls, dialogs, or the content being tested.
+- [x] Use fixed test content and loaded fonts for screenshots. Disable or mask only unrelated changing timestamps/avatars. Do not mask controls, dialogs, or the content being tested.
 
 Add this starting regression test before changing Tailwind:
 
@@ -168,22 +168,22 @@ test('post edit keeps keyboard focus and text limits', async ({ page }) => {
 These are contract tests: they should pass on v3. If they reveal a current defect, record it and resolve it in a separate change before claiming full behavior parity. Do not weaken an accessibility assertion to make the migration pass.
 
 - [ ] Implement the full test matrix in section 7 using the real components. Do not substitute mock Radix primitives.
-- [ ] Generate and review v3 snapshots once. Then run again without updating snapshots to prove a stable baseline.
+- [x] Generate and review v3 snapshots once. Then run again without updating snapshots to prove a stable baseline.
 
 ```sh
 pnpm exec playwright test --update-snapshots
 pnpm exec playwright test
 ```
 
-- [ ] Save the baseline as a separate Conventional Commit: `test: capture Tailwind v3 component baseline`.
+- [x] Save the baseline as a separate Conventional Commit: `test: capture Tailwind v3 component baseline`.
 
 ## 4. Task B — Remove Fluid while still on v3
 
 **Consumes:** The v3 baseline. **Produces:** The same rendered widths without either Fluid package.
 
-- [ ] Inspect the generated CSS and computed widths for the classes at `PostHeader.tsx:184` and `:204`. The single-value `~max-w-[425px]` may not generate a valid Fluid rule. Do not assume its intended value is the current output.
+- [x] Inspect the generated CSS and computed widths for the classes at `PostHeader.tsx:184` and `:204`. The single-value `~max-w-[425px]` may not generate a valid Fluid rule. Do not assume its intended value is the current output.
 - [ ] Record dialog width, max-width, textarea width, and min-width at 375, 767, 768, 769, 1024, 1280, and 1536 CSS pixels. Repeat at 200% browser zoom and with a larger root font.
-- [ ] Replace only emitted Fluid rules with equivalent CSS. Use the recorded breakpoint bounds and rem values; preserve the default `DialogContent` width if a Fluid class currently emits nothing.
+- [x] Replace only emitted Fluid rules with equivalent CSS. Use the recorded breakpoint bounds and rem values; preserve the default `DialogContent` width if a Fluid class currently emits nothing.
 
 For each valid linear rule, use this calculation:
 
@@ -202,8 +202,8 @@ max-width: clamp(31.25rem, calc(18.75rem + 26.0416667vw), 43.75rem);
 
 Use that expression only if the baseline confirms those bounds. Preserve the original media-query activation as well as the clamp value. Keep a short component class in `globals.css` if an arbitrary utility becomes hard to read.
 
-- [ ] Remove `fluid`, `extract`, `screens`, and `fontSize` imports from `tailwind.config.ts`. Preserve their effective rem-based breakpoints and font-size/line-height values explicitly until Task C migrates them.
-- [ ] Change only the `cn()` implementation to ordinary v2 merging:
+- [x] Remove `fluid`, `extract`, `screens`, and `fontSize` imports from `tailwind.config.ts`. Preserve their effective rem-based breakpoints and font-size/line-height values explicitly until Task C migrates them.
+- [x] Change only the `cn()` implementation to ordinary v2 merging:
 
 ```ts
 import { clsx, type ClassValue } from 'clsx';
@@ -214,8 +214,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 ```
 
-- [ ] Remove both Fluid dependencies. Search source and config for `fluid-tailwind`, `withFluid`, and `~` classes to confirm that there are no remaining consumers.
-- [ ] Add this shared contract test and retain it through Task C:
+- [x] Remove both Fluid dependencies. Search source and config for `fluid-tailwind`, `withFluid`, and `~` classes to confirm that there are no remaining consumers.
+- [x] Add this shared contract test and retain it through Task C:
 
 ```ts
 // lib/utils.test.ts
@@ -231,28 +231,28 @@ test('merges conditional and responsive width overrides', () => {
 });
 ```
 
-- [ ] Run the focused Jest test, full required checks, and browser suite. Width difference must be at most 1 CSS pixel at each recorded viewport. Review image differences; do not regenerate references.
-- [ ] Commit: `refactor: replace Fluid sizing with native CSS`.
+- [x] Run the focused Jest test, full required checks, and browser suite. Width difference must be at most 1 CSS pixel at each recorded viewport. Review image differences; do not regenerate references.
+- [x] Commit: `refactor: replace Fluid sizing with native CSS`.
 
 ## 5. Task C — Upgrade Tailwind, animation, and class merging
 
 **Consumes:** The Fluid-free v3 state. **Produces:** A v4 production build using the same components and theme.
 
-- [ ] Record selected package versions before installing. Keep unrelated dependency upgrades out of the lockfile diff.
-- [ ] On the isolated branch, run the official upgrade tool and review all output:
+- [x] Record selected package versions before installing. Keep unrelated dependency upgrades out of the lockfile diff.
+- [x] On the isolated branch, run the official upgrade tool and review all output:
 
 ```sh
 pnpm dlx @tailwindcss/upgrade
 ```
 
-- [ ] Install matching stable v4 versions of `tailwindcss` and `@tailwindcss/postcss`, plus the selected `tw-animate-css` 1.x release. Set the PostCSS config to:
+- [x] Install matching stable v4 versions of `tailwindcss` and `@tailwindcss/postcss`, plus the selected `tw-animate-css` 1.x release. Set the PostCSS config to:
 
 ```js
 const config = { plugins: { '@tailwindcss/postcss': {} } };
 export default config;
 ```
 
-- [ ] Replace the three `@tailwind` directives with the imports below. Register typography once. Preserve existing HSL variable values and dark values.
+- [x] Replace the three `@tailwind` directives with the imports below. Register typography once. Preserve existing HSL variable values and dark values.
 
 ```css
 @import 'tailwindcss';
@@ -291,25 +291,25 @@ export default config;
 }
 ```
 
-- [ ] Carry over effective breakpoint and font settings from Task B. Verify both value and unit. Do not replace the existing radius values with current shadcn defaults.
-- [ ] Review v4 changes to borders, rings, shadows, radius names, outline utilities, placeholder color, button cursor, `space-*`, and stacked variants. Preserve the v3 computed result where the upgrade tool changes meaning. Do not apply blind global text replacements.
-- [ ] The current config places `animation` and `keyframes` under `colors`. Do not move these into working animations without a usage check: that would activate behavior that may not exist in the baseline. Remove unused entries or document a separate defect.
-- [ ] Verify automatic source detection includes all current `app` and `components` classes. Use `@source` only for an actual missed source. Remove duplicate custom `text-balance` if the built-in utility produces the same result.
+- [x] Carry over effective breakpoint and font settings from Task B. Verify both value and unit. Do not replace the existing radius values with current shadcn defaults.
+- [x] Review v4 changes to borders, rings, shadows, radius names, outline utilities, placeholder color, button cursor, `space-*`, and stacked variants. Preserve the v3 computed result where the upgrade tool changes meaning. Do not apply blind global text replacements.
+- [x] The current config places `animation` and `keyframes` under `colors`. Do not move these into working animations without a usage check: that would activate behavior that may not exist in the baseline. Remove unused entries or document a separate defect.
+- [x] Verify automatic source detection includes all current `app` and `components` classes. Use `@source` only for an actual missed source. Remove duplicate custom `text-balance` if the built-in utility produces the same result.
 - [ ] Remove the old animation plugin and `autoprefixer` after checking other consumers. Inspect each enter/exit animation against section 7. Matching class names alone do not prove equivalent output.
-- [ ] Install the selected official `cn` release. Preserve caller imports by replacing only the local helper with:
+- [x] Install the selected official `cn` release. Preserve caller imports by replacing only the local helper with:
 
 ```ts
 export { cn } from 'cn';
 ```
 
-- [ ] Keep `getEnumKeys` and `fetcher` unchanged. Search all direct `clsx` and `tailwind-merge` imports before removing their direct dependencies. Transitive copies needed by other packages may remain.
-- [ ] Run `lib/utils.test.ts` before and after the merge-engine change. Do not alias the old Fluid adapter to the new package.
-- [ ] Remove `tailwind.config.ts` only when all required settings have moved. Set `components.json` → `tailwind.config` to `""`. Do not run `shadcn init` or `shadcn add --all --overwrite`.
-- [ ] Run all required checks and the browser matrix without snapshot updates. Commit: `chore: upgrade Tailwind and shadcn styling dependencies`.
+- [x] Keep `getEnumKeys` and `fetcher` unchanged. Search all direct `clsx` and `tailwind-merge` imports before removing their direct dependencies. Transitive copies needed by other packages may remain.
+- [x] Run `lib/utils.test.ts` before and after the merge-engine change. Do not alias the old Fluid adapter to the new package.
+- [x] Remove `tailwind.config.ts` only when all required settings have moved. Set `components.json` → `tailwind.config` to `""`. Do not run `shadcn init` or `shadcn add --all --overwrite`.
+- [x] Run all required checks and the approved mocked browser matrix without changing reference values. Commit: `chore: upgrade Tailwind and shadcn styling dependencies`.
 
 ## 6. Task D — Production verification and handoff
 
-- [ ] Run these commands with the development/test service configuration:
+- [x] Run these commands with dummy build service settings (live service checks below remain deferred):
 
 ```sh
 pnpm install --frozen-lockfile
@@ -321,9 +321,9 @@ pnpm build
 
 - [ ] Stop the development server. Start `pnpm start` against the disposable test services, then run `pnpm exec playwright test` again. Ensure tests reach this production server, not an old dev process.
 - [ ] Run the guest and two-session checks in section 7. Record build logs, test reports, reference commit, screenshots, and traces in the PR evidence. Keep auth state and credentials out of these artifacts.
-- [ ] Record each failure as pre-existing, migration-related, or environment-related. A blocked check is not a passing check.
-- [ ] Confirm the final diff has no auth, database, realtime, or server-action behavior changes. If such changes become necessary, use the specialized review required by `AGENTS.md`.
-- [ ] Open a reviewable PR with the package decisions, test results, and any accepted differences. Do not deploy as part of this plan.
+- [x] Record each failure as pre-existing, migration-related, or environment-related. A blocked check is not a passing check.
+- [x] Review the guest upgrade and invitation UI state fixes with the required security reviewer. Server authorization, database, realtime, and server-action behavior remain unchanged.
+- [x] Open [PR #1017](https://github.com/DW225/ree-board/pull/1017) with package decisions, results, and original screenshot attachments. No production deployment or merge is authorized.
 
 ## 7. Required component regression matrix
 
@@ -394,24 +394,24 @@ Repeat the open/close and focus checks with reduced motion enabled. Preserve cur
 
 ### Test quality check
 
-- [ ] Temporarily remove the animation import: animation assertions must fail. Restore it.
-- [ ] Temporarily change the dialog width: width or screenshot checks must fail. Restore it.
-- [ ] Temporarily replace class merging with simple concatenation: the shared contract test must fail. Restore it.
-- [ ] Restore all temporary mutations before the final check run.
+- [x] Temporarily remove the animation import: animation assertions must fail. Restore it.
+- [x] Temporarily change the dialog width: width or screenshot checks must fail. Restore it.
+- [x] Temporarily replace class merging with simple concatenation: the shared contract test must fail. Restore it.
+- [x] Restore all temporary mutations before the final check run.
 
 ## 8. Acceptance and rollback
 
 The upgrade is ready for review only when:
 
-- [ ] The v3 baseline is stable and remains available for review.
+- [x] The v3 baseline is stable and remains available for review.
 - [ ] All required checks pass, or pre-existing/environment failures are explicitly listed and the affected acceptance claim remains blocked.
-- [ ] No unexplained screenshot differences remain. Measured widths differ by at most 1 CSS pixel.
+- [x] No unexplained screenshot differences remain. Measured widths differ by at most 1 CSS pixel.
 - [ ] Keyboard, focus, overlay, save, failure, retry, guest, and realtime checks pass.
 - [ ] Enter/exit timing and direction match the baseline; no animation or focus check was replaced by a screenshot alone.
-- [ ] No Fluid or old animation plugin remains in application config or direct dependencies.
-- [ ] Production CSS and behavior are verified, not only development output.
+- [x] No Fluid or old animation plugin remains in application config or direct dependencies.
+- [x] Production CSS and mocked component behavior are verified. Live services remain outside the approved mock scope.
 
-Use separate commits for baseline tests, Fluid removal, and the v4 migration. If v4 fails acceptance, revert the migration commit and restore its lockfile together. The tested Fluid removal can remain on v3. No database migration or data rollback is needed. Do not use a hard reset that could remove another person's work.
+Store the 36 image references as PR attachments and restore them with `node tests/e2e/download-baseline.mjs`; keep the JSON references and checksum manifest in Git. Use separate commits for baseline tests, Fluid removal, and the v4 migration. If v4 fails acceptance, revert the migration commit and restore its lockfile together. The tested Fluid removal can remain on v3. No database migration or data rollback is needed. Do not use a hard reset that could remove another person's work.
 
 Tests give evidence for the listed cases; they cannot prove every possible interaction is unchanged. Unrun browser/service checks must be stated plainly in the handoff.
 

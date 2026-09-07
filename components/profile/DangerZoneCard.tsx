@@ -7,10 +7,11 @@ interface Props {
   userId: string;
 }
 
+/** Renders destructive account-management actions. */
 export const DangerZoneCard: FC<Readonly<Props>> = () => {
 
   return (
-    <div className="rounded-xl border border-red-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-red-200 bg-white shadow-xs">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-5 py-4">
         <TriangleAlert className="h-4 w-4 text-red-500" />

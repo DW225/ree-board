@@ -19,6 +19,7 @@ interface AssignTaskDialogProps {
   onAssign: (member: MemberSignal) => Promise<void>;
 }
 
+/** Renders a searchable dialog for assigning a task to a board member. */
 export function AssignTaskDialog({
   isOpen,
   onClose,
@@ -86,7 +87,7 @@ export function AssignTaskDialog({
               onChange={(e) => setSearchTerm(e.target.value)}
               disabled={isAssigning}
               aria-label="Search members"
-              className="flex-1 text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-transparent outline-none border-none"
+              className="flex-1 text-sm text-[#0F172A] placeholder:text-[#94A3B8] bg-transparent outline-hidden border-none"
             />
           </div>
 

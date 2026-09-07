@@ -14,6 +14,7 @@ interface Props {
   email: string;
 }
 
+/** Renders editable personal profile information. */
 export function PersonalInfoCard({
   fullName: initialFullName,
   displayName: initialDisplayName,
@@ -54,7 +55,7 @@ export function PersonalInfoCard({
   return (
     <div
       id="profile"
-      className="rounded-xl border border-slate-200 bg-white shadow-sm"
+      className="rounded-xl border border-slate-200 bg-white shadow-xs"
     >
       {/* Header */}
       <div className="flex items-start justify-between px-6 py-5">
@@ -136,7 +137,7 @@ export function PersonalInfoCard({
             <button
               onClick={handleSave}
               disabled={isPending}
-              className="rounded-lg bg-gradient-to-b from-indigo-500 to-violet-600 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="rounded-lg bg-linear-to-b/srgb from-indigo-500 to-violet-600 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {isPending ? "Saving..." : "Save changes"}
             </button>

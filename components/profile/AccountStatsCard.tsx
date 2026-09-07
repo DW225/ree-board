@@ -4,6 +4,7 @@ interface Props {
   memberSince: Date | null;
 }
 
+/** Renders board and membership statistics for an account. */
 export function AccountStatsCard({
   ownedBoardCount,
   memberBoardCount,
@@ -17,7 +18,7 @@ export function AccountStatsCard({
     : "—";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
       <h3 className="text-sm font-semibold text-slate-900">Account Overview</h3>
       <div className="my-4 h-px bg-slate-200" />
       <div className="flex flex-col gap-3">

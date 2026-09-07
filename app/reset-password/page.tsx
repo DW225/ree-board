@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 
 const SUCCESS_REDIRECT_DELAY = 2000; // 2 seconds
 
+/** Renders the password reset form and handles reset completion. */
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -69,7 +70,7 @@ export default function ResetPasswordPage() {
     "relative min-h-screen flex flex-col items-center justify-center bg-slate-100";
   const cardWrapperClasses = "w-full max-w-md mx-auto p-8";
   const cardClasses =
-    "bg-white border border-slate-200 rounded-lg p-8 shadow-sm";
+    "bg-white border border-slate-200 rounded-lg p-8 shadow-xs";
 
   // Loading state while checking session
   if (session === null) {

@@ -30,6 +30,7 @@ const strengthColors = [
   "bg-green-600",
 ];
 
+/** Renders password and account security controls. */
 export function SecurityCard() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -81,7 +82,7 @@ export function SecurityCard() {
   return (
     <div
       id="security"
-      className="rounded-xl border border-slate-200 bg-white shadow-sm"
+      className="rounded-xl border border-slate-200 bg-white shadow-xs"
     >
       {/* Collapsible Header */}
       <button
@@ -202,7 +203,7 @@ export function SecurityCard() {
                 type="submit"
                 form="security-password-form"
                 disabled={isPending || !newPassword || !confirmPassword}
-                className="rounded-lg bg-gradient-to-b from-indigo-500 to-violet-600 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-lg bg-linear-to-b/srgb from-indigo-500 to-violet-600 px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {isPending ? "Updating..." : "Update password"}
               </button>
