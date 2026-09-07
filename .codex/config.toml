@@ -9,3 +9,7 @@ multi_agent = true
 [agents]
 max_threads = 6
 max_depth = 1
+
+[mcp_servers.sonarqube]
+command = "sonar"
+args = [ "run", "mcp", "--project", "DW225_ree-board" ]
