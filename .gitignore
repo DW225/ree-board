@@ -55,3 +55,9 @@ test.db*
 .codex-log/
 .codex/session*.jsonl
 .codex/*.local.*
+
+# browser tests
+/playwright/.auth/
+/playwright-report/
+/test-results/
+/tests/e2e/*-snapshots/*.png
