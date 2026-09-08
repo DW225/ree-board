@@ -12,8 +12,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
-        specifier: ^4.1.2
-        version: 4.1.2(react@19.2.8)(supports-color@8.1.1)
+        specifier: ^4.2.0
+        version: 4.2.0(react@19.2.8)(supports-color@8.1.1)
       '@libsql/client':
         specifier: ^0.17.4
         version: 0.17.4
@@ -218,28 +218,28 @@ packages:
   '@atlaskit/feature-gate-js-client@6.0.2':
     resolution: {integrity: sha512-x4TKOAhM9Ejb6e2CA3OrIMv+T6+FdPSgEPH+yzB+k/A5OOHBaoKLzcG9Fs1mBGp/fISiD966xmdPdYb1RcMPDw==}
 
-  '@atlaskit/platform-feature-flags@2.1.1':
-    resolution: {integrity: sha512-TvXQ/KNsKJrWnvM1LelNhRV4CmMVSV9MYkyDMg419wxRMWi3FWYJnYmivdrJWozx7yO1ZmZ0lEwVRQi0+EP6XA==}
+  '@atlaskit/platform-feature-flags@2.2.0':
+    resolution: {integrity: sha512-wsdiOWuYPlcHmrsxqEfbzvwciDgTbCgfnaXwbkO9Tq/qTkWhWIRpyaQJ2qwoDu70woGd91jg6ZP2470vusyUgw==}
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.1.0':
-    resolution: {integrity: sha512-88krJVd1OcPHy0EFcJx0CjT1AOTB/1AneVvDWOhU4FH6NYDgTNF69euj8GUE07r0KK3L+9V77MKQhaOtwq2mXA==}
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.0':
+    resolution: {integrity: sha512-L0Wq4EKc9Yx+iywci3NLhwjsaru+hyZ9C/H7mz5pvrSh7vpp9q2YabRr85OnCLaY6equ5pxGVyI4PF3HP69ZMw==}
 
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@4.1.2':
-    resolution: {integrity: sha512-81rmHa2cFn5cF9jYffjYrIXEut2IGt6LtavIlY1DANwmYMlmoSAQIFTEJp5l/l3sNDVsnFvKyW777EDNlf87xQ==}
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@4.2.0':
+    resolution: {integrity: sha512-QHvT0f5uyDsti9YuiXZOKKbh/w8MSbCds+DEVSxP/ITXJXdh5MavaokKnlbVeglailgRj1lI2BnL85Nzg3A41A==}
     peerDependencies:
       react: ^18.2.0 || ^19.0.0
 
   '@atlaskit/pragmatic-drag-and-drop@2.0.2':
     resolution: {integrity: sha512-ou1j+lBqutK7p2S80lMresJeKu9qAL1zr1K+N0OyCTzbMpD6pXRHray8VkRoHgJICI7Wp1fk5ScJh6EctyAuPw==}
 
-  '@atlaskit/pragmatic-drag-and-drop@3.0.0':
-    resolution: {integrity: sha512-EEKBELv757wrvhMHBAoFcXjfzGZ4Y2FJ2xnSsWovsOKywkN1Q4IWRH52hQpPmJnATLcmO9viVhoXWSXFBLKSLQ==}
+  '@atlaskit/pragmatic-drag-and-drop@3.1.0':
+    resolution: {integrity: sha512-VU+2Oh6OgvC6D1xiX3lfm1gZJsaSPD+ZKjAHodOQ9IO6RfOvAyReLlK5ut9gIUpPmbD8d09wlCs7y4A6/I8c5Q==}
 
   '@atlaskit/react-compiler-gating@0.2.3':
     resolution: {integrity: sha512-hSWZ1DyJChQ9ZmpmrA7VbdRIO2/RtYwBP7KKJbEG8+8KJW2A82A0mTj0TaH9hoB7JKQB+b8/vDLYA6febqT3wA==}
 
-  '@atlaskit/tokens@16.8.0':
-    resolution: {integrity: sha512-f2uHECMvQdhFSYLyhP+r76s3ez/00Cj3Yl/OhH1kSB9RXmZuSgyBGodesEiFJy8OaUS4QOlNtXfSwAXVzLet8Q==}
+  '@atlaskit/tokens@16.11.2':
+    resolution: {integrity: sha512-ftfj67x3927BfwS85dpyG4gj89imvZrK3vKuarpNXDe7kKQBX53KzNjfTQ1I+wBeQlO/BvG1p0WGK1kG8GrtmQ==}
     peerDependencies:
       react: ^18.2.0 || ^19.0.0
 
@@ -287,10 +287,6 @@ packages:
 
   '@babel/helper-string-parser@7.29.7':
     resolution: {integrity: sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/helper-validator-identifier@7.28.5':
-    resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
 
   '@babel/helper-validator-identifier@7.29.7':
@@ -6594,24 +6590,24 @@ snapshots:
     transitivePeerDependencies:
       - react
 
-  '@atlaskit/platform-feature-flags@2.1.1(react@19.2.8)':
+  '@atlaskit/platform-feature-flags@2.2.0(react@19.2.8)':
     dependencies:
       '@atlaskit/feature-gate-js-client': 6.0.2(react@19.2.8)
       '@babel/runtime': 7.29.7
     transitivePeerDependencies:
       - react
 
-  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.1.0':
+  '@atlaskit/pragmatic-drag-and-drop-hitbox@2.2.0':
     dependencies:
-      '@atlaskit/pragmatic-drag-and-drop': 3.0.0
+      '@atlaskit/pragmatic-drag-and-drop': 3.1.0
       '@babel/runtime': 7.29.7
 
-  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@4.1.2(react@19.2.8)(supports-color@8.1.1)':
+  '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator@4.2.0(react@19.2.8)(supports-color@8.1.1)':
     dependencies:
-      '@atlaskit/pragmatic-drag-and-drop': 3.0.0
-      '@atlaskit/pragmatic-drag-and-drop-hitbox': 2.1.0
+      '@atlaskit/pragmatic-drag-and-drop': 3.1.0
+      '@atlaskit/pragmatic-drag-and-drop-hitbox': 2.2.0
       '@atlaskit/react-compiler-gating': 0.2.3(react@19.2.8)
-      '@atlaskit/tokens': 16.8.0(react@19.2.8)(supports-color@8.1.1)
+      '@atlaskit/tokens': 16.11.2(react@19.2.8)(supports-color@8.1.1)
       '@babel/runtime': 7.29.7
       '@compiled/react': 1.0.2(react@19.2.8)
       react: 19.2.8
@@ -6624,7 +6620,7 @@ snapshots:
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
 
-  '@atlaskit/pragmatic-drag-and-drop@3.0.0':
+  '@atlaskit/pragmatic-drag-and-drop@3.1.0':
     dependencies:
       '@babel/runtime': 7.29.7
       bind-event-listener: 3.0.0
@@ -6637,10 +6633,10 @@ snapshots:
     transitivePeerDependencies:
       - react
 
-  '@atlaskit/tokens@16.8.0(react@19.2.8)(supports-color@8.1.1)':
+  '@atlaskit/tokens@16.11.2(react@19.2.8)(supports-color@8.1.1)':
     dependencies:
       '@atlaskit/ds-lib': 8.0.0(react@19.2.8)
-      '@atlaskit/platform-feature-flags': 2.1.1(react@19.2.8)
+      '@atlaskit/platform-feature-flags': 2.2.0(react@19.2.8)
       '@atlaskit/react-compiler-gating': 0.2.3(react@19.2.8)
       '@babel/runtime': 7.29.7
       '@babel/traverse': 7.29.7(supports-color@8.1.1)
@@ -6652,7 +6648,7 @@ snapshots:
 
   '@babel/code-frame@7.27.1':
     dependencies:
-      '@babel/helper-validator-identifier': 7.28.5
+      '@babel/helper-validator-identifier': 7.29.7
       js-tokens: 4.0.0
       picocolors: 1.1.1
 
@@ -6721,8 +6717,6 @@ snapshots:
   '@babel/helper-plugin-utils@7.28.6': {}
 
   '@babel/helper-string-parser@7.29.7': {}
-
-  '@babel/helper-validator-identifier@7.28.5': {}
 
   '@babel/helper-validator-identifier@7.29.7': {}
 
