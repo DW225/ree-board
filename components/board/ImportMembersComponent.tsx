@@ -25,7 +25,7 @@ import { addMember } from "@/lib/signal/memberSignals";
 import type { Board } from "@/lib/types/board";
 import { Check, Upload, Users } from "lucide-react";
 import { nanoid } from "nanoid";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface ImportMembersProps {
@@ -107,28 +107,36 @@ export default function ImportMembersComponent({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const loadRequest = useRef(0);
 
   const loadAvailableBoards = useCallback(async () => {
+    const request = ++loadRequest.current;
     try {
       setIsLoading(true);
       const boards = await getBoardsWhereUserIsAdminAction();
+      if (request !== loadRequest.current) return;
       const filteredBoards = boards
         ? boards.filter((board) => board.id !== currentBoardId)
         : [];
       setAvailableBoards(filteredBoards);
     } catch (error) {
+      if (request !== loadRequest.current) return;
       toast.error("Failed to load available boards");
       console.error(error);
     } finally {
-      setIsLoading(false);
+      if (request === loadRequest.current) setIsLoading(false);
     }
   }, [currentBoardId]);
 
   const loadBoardMembers = useCallback(async (boardId: string) => {
+    const request = ++loadRequest.current;
     setSelectedBoardId(boardId);
     setBoardMembers([]);
     setSelectedMembers(new Set());
-    if (!boardId) return;
+    if (!boardId) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -137,6 +145,7 @@ export default function ImportMembersComponent({
         currentBoardId,
       );
 
+      if (request !== loadRequest.current) return;
       if (Array.isArray(members)) {
         setBoardMembers(members);
       } else {
@@ -147,11 +156,12 @@ export default function ImportMembersComponent({
 
       setSelectedMembers(new Set());
     } catch (error) {
+      if (request !== loadRequest.current) return;
       toast.error("Failed to load board members");
       console.error(error);
       setBoardMembers([]);
     } finally {
-      setIsLoading(false);
+      if (request === loadRequest.current) setIsLoading(false);
     }
   }, [currentBoardId]);
 
@@ -240,6 +250,8 @@ export default function ImportMembersComponent({
     setIsOpen(open);
     if (open) void loadAvailableBoards();
     if (!open) {
+      loadRequest.current += 1;
+      setIsLoading(false);
       setSelectedBoardId("");
       setBoardMembers([]);
       setSelectedMembers(new Set());

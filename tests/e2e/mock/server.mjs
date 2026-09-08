@@ -15,7 +15,7 @@ const bundle = await build({
   metafile: true,
   platform: 'browser',
   define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },
-  alias: { ...Object.fromEntries(['post', 'task', 'vote'].map(name => [`@/lib/actions/${name}/action`, './tests/e2e/mock/actions.ts'])), 'next/dynamic': './tests/e2e/mock/dynamic.tsx' },
+  alias: { ...Object.fromEntries(['post', 'task', 'vote', 'guest', 'member'].map(name => [`@/lib/actions/${name}/action`, './tests/e2e/mock/actions.ts'])), 'next/dynamic': './tests/e2e/mock/dynamic.tsx' },
 });
 assert(!Object.keys(bundle.metafile.inputs).some(path =>
   /(?:lib\/(?:db|utils\/supabase)|@supabase|@libsql|ably)[/\\]/.test(path),

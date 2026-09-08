@@ -1,3 +1,4 @@
+import { getTimeUntilExpiration } from "@/lib/utils/link-expiration";
 import { MS_PER_HOUR } from "@/lib/constants/time";
 import type {
   CreateLinkRequest,
@@ -8,6 +9,8 @@ import type {
 } from "@/lib/types/link";
 import { fetcher } from "@/lib/utils";
 import { toast } from "sonner";
+import { useState } from "react";
+import { useInterval } from "react-use";
 import useSWR from "swr";
 
 /**
@@ -17,6 +20,8 @@ import useSWR from "swr";
  * Note: Authentication is handled via session cookies, no need for explicit tokens
  */
 export function useMagicLinks(boardId: string) {
+  const [now, setNow] = useState(Date.now);
+  useInterval(() => { setNow(Date.now()); }, 60_000);
   const { data, error, isLoading, mutate } = useSWR<GetLinksResponse>(
     boardId ? `/api/board/${boardId}/links` : null,
     fetcher,
@@ -28,6 +33,12 @@ export function useMagicLinks(boardId: string) {
       errorRetryInterval: 1000, // Wait 1 second between retries
     }
   );
+
+  const links = (data?.links ?? []).map((link) => ({
+    ...link,
+    expiresIn: getTimeUntilExpiration(link.expiresAt, now),
+    isExpired: link.isExpired || (link.expiresAt !== null && new Date(link.expiresAt).getTime() <= now),
+  }));
 
   /**
    * Helper to format expiration time for display
@@ -180,20 +191,21 @@ export function useMagicLinks(boardId: string) {
    * Filters links by status
    */
   const getActiveLinks = (): LinkWithCreator[] => {
-    return data?.links.filter((link) => !link.isExpired) || [];
+    return links.filter((link) => !link.isExpired);
   };
 
   const getExpiredLinks = (): LinkWithCreator[] => {
-    return data?.links.filter((link) => link.isExpired) || [];
+    return links.filter((link) => link.isExpired);
   };
 
   const getLinksByRole = (role: number): LinkWithCreator[] => {
-    return data?.links.filter((link) => link.role === role) || [];
+    return links.filter((link) => link.role === role);
   };
 
   return {
     // Data
-    links: data?.links || [],
+    links,
+    now,
     activeLinks: getActiveLinks(),
     expiredLinks: getExpiredLinks(),
     linkCount: data?.count || 0,

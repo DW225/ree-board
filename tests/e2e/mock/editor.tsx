@@ -1,6 +1,9 @@
 import AnonymousModeProvider from '@/components/board/AnonymousModeProvider';
 import BoardColumn from '@/components/board/BoardColumn';
 import PostProvider from '@/components/board/PostProvider';
+import ImportMembersComponent from '@/components/board/ImportMembersComponent';
+import MagicLinkManager from '@/components/board/MagicLink/MagicLinkManager';
+import { GuestBanner } from '@/components/guest/GuestBanner';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -56,4 +59,10 @@ function Editor() {
     </AnonymousModeProvider>
   );
 }
-createRoot(document.getElementById('root')!).render(<Editor />);
+let fixture = <Editor />;
+if (params.get('review') === 'expiration') {
+  fixture = <><GuestBanner expiresAt={new Date(Date.now() + 30_000)} /><MagicLinkManager boardId="mock" viewOnly={false} /><Toaster /></>;
+} else if (params.get('review') === 'members') {
+  fixture = <><ImportMembersComponent currentBoardId="mock" /><Toaster /></>;
+}
+createRoot(document.getElementById('root')!).render(fixture);

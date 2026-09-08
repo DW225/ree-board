@@ -19,3 +19,10 @@ export const UpVotePostAction = (id: string) => request('vote', id);
 export const DownVotePostAction = (id: string) => request('vote', id);
 
 export const authedCreateAction = (action: unknown) => request("create-task", action);
+
+export const upgradeGuestAccount = async () => ({ success: true, needsOtp: true });
+export const verifyGuestUpgradeOTP = async () => ({ success: false, error: 'Mock verification only' });
+export const getBoardsWhereUserIsAdminAction = async () => (await fetch('/mock/boards')).json();
+export const getMembersFromBoardWithExclusionAction = async (boardId: string) =>
+  (await fetch('/mock/members', { method: 'POST', body: boardId })).json();
+export const bulkImportMembersAction = async () => ({ imported: 1, skipped: 0 });
