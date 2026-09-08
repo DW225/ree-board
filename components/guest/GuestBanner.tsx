@@ -25,16 +25,11 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
   const [showDialog, setShowDialog] = useState(false);
 
   const [now, setNow] = useState(Date.now);
-  useInterval(() => setNow(Date.now()), 60_000);
+  useInterval(() => { setNow(Date.now()); }, 60_000);
 
   // Calculate days remaining
   const timeLeft = expiresAt.getTime() - now;
   const daysLeft = Math.ceil(timeLeft / MS_PER_DAY);
-
-  // Don't show banner if expired (shouldn't happen, but defensive)
-  if (daysLeft <= 0) {
-    return null;
-  }
 
   // Determine banner urgency styling
   const isUrgent = daysLeft <= URGENT_THRESHOLD_DAYS;
@@ -83,7 +78,7 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
 
   return (
     <>
-      <div className={`border-b p-3 ${getBannerStyles()}`}>
+      {daysLeft > 0 && <div className={`border-b p-3 ${getBannerStyles()}`}>
         <div className="container mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Clock className={`size-4 ${getIconStyles()}`} />
@@ -105,7 +100,7 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
             Upgrade to Keep Access
           </Button>
         </div>
-      </div>
+      </div>}
       <UpgradeAccountDialog open={showDialog} onOpenChange={setShowDialog} />
     </>
   );

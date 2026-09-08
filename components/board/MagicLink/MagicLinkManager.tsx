@@ -19,7 +19,6 @@ import type { LinkWithCreator } from "@/lib/types/link";
 import { getRoleDisplayName } from "@/lib/utils/role";
 import { AlertTriangle, Clock, Copy, ExternalLink, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useInterval } from "react-use";
 
 interface MagicLinkManagerProps {
   boardId: string;
@@ -31,18 +30,15 @@ export default function MagicLinkManager({
   boardId,
   viewOnly = true,
 }: Readonly<MagicLinkManagerProps>) {
-  const { links, isLoading, revokeLink, copyLinkToClipboard } =
+  const { links, now, isLoading, revokeLink, copyLinkToClipboard } =
     useMagicLinks(boardId);
-  const [linkToRevoke, setLinkToRevoke] = useState<LinkWithCreator | null>(
-    null
-  );
+  const [linkToRevokeId, setLinkToRevokeId] = useState<number | null>(null);
+  const linkToRevoke = links.find((link) => link.id === linkToRevokeId);
   const [isRevoking, setIsRevoking] = useState(false);
-  const [now, setNow] = useState(Date.now);
-  useInterval(() => setNow(Date.now()), 60_000);
 
 
   const handleRevoke = async (link: LinkWithCreator) => {
-    setLinkToRevoke(link);
+    setLinkToRevokeId(link.id);
   };
 
   const confirmRevoke = async () => {
@@ -51,7 +47,7 @@ export default function MagicLinkManager({
     setIsRevoking(true);
     try {
       await revokeLink(linkToRevoke.id);
-      setLinkToRevoke(null);
+      setLinkToRevokeId(null);
     } catch (error) {
       console.error("Failed to revoke link:", error);
       // Error toast is handled in the hook
@@ -266,7 +262,7 @@ export default function MagicLinkManager({
       </div>
 
       {/* Revoke Confirmation Dialog */}
-      <Dialog open={!!linkToRevoke} onOpenChange={() => setLinkToRevoke(null)}>
+      <Dialog open={!!linkToRevoke} onOpenChange={() => { setLinkToRevokeId(null); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Revoke Magic Link</DialogTitle>
@@ -305,7 +301,7 @@ export default function MagicLinkManager({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setLinkToRevoke(null)}
+              onClick={() => { setLinkToRevokeId(null); }}
               disabled={isRevoking}
             >
               Cancel
