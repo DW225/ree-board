@@ -4,10 +4,16 @@ interface Props {
   initials: string;
   fullName: string;
   email: string;
+  isGuest?: boolean;
 }
 
 /** Renders the profile header and account identity. */
-export function ProfileHero({ initials, fullName, email }: Readonly<Props>) {
+export function ProfileHero({
+  initials,
+  fullName,
+  email,
+  isGuest = false,
+}: Readonly<Props>) {
   return (
     <div className="border-b border-slate-200 bg-white">
       <div className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-6 lg:px-12">
@@ -21,17 +27,17 @@ export function ProfileHero({ initials, fullName, email }: Readonly<Props>) {
               <h1 className="text-[22px] font-bold text-slate-900">
                 {fullName}
               </h1>
-              <p className="max-w-xs truncate text-sm text-slate-500">{email}</p>
+              <p className="max-w-xs truncate text-sm text-slate-500">
+                {email}
+              </p>
               <span className="inline-flex w-fit items-center rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-                Member
+                {isGuest ? "Guest account" : "Member"}
               </span>
             </div>
           </div>
           <div className="mb-2">
             {/* TODO: implement photo upload */}
-            <span
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm font-medium text-slate-700 opacity-50 cursor-not-allowed"
-            >
+            <span className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm font-medium text-slate-700 opacity-50 cursor-not-allowed">
               <Camera className="h-3.5 w-3.5 text-slate-500" />
               Change photo
             </span>

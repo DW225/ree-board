@@ -1,4 +1,5 @@
 import NavBar from "@/components/common/NavBar";
+import { GuestBanner } from "@/components/guest/GuestBanner";
 import { AccountStatsCard } from "@/components/profile/AccountStatsCard";
 // import { ConnectedAppsCard } from "@/components/profile/ConnectedAppsCard"; // TODO: enable when OIDC is supported
 import { DangerZoneCard } from "@/components/profile/DangerZoneCard";
@@ -32,12 +33,13 @@ export default async function ProfilePage() {
 
   const rawFullName = supabaseUser.user_metadata?.full_name;
   const fullName =
-    (typeof rawFullName === "string" ? rawFullName : undefined) ??
-    supabaseUser.email?.split("@")[0] ??
+    (typeof rawFullName === "string" ? rawFullName.trim() : "") ||
+    internalUser?.name?.trim() ||
+    supabaseUser.email?.split("@")[0] ||
     "User";
   const rawDisplayName = supabaseUser.user_metadata?.display_name;
   const displayName =
-    (typeof rawDisplayName === "string" ? rawDisplayName : undefined) ??
+    (typeof rawDisplayName === "string" ? rawDisplayName.trim() : "") ||
     fullName;
   const email = supabaseUser.email ?? "";
 
@@ -57,7 +59,15 @@ export default async function ProfilePage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <NavBar />
-      <ProfileHero initials={initials} fullName={fullName} email={email} />
+      {session.isGuest && (
+        <GuestBanner expiresAt={internalUser?.guestExpiresAt ?? null} />
+      )}
+      <ProfileHero
+        initials={initials}
+        fullName={fullName}
+        email={email}
+        isGuest={session.isGuest}
+      />
       <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:px-12">
         <div className="flex flex-1 flex-col gap-5">
           <PersonalInfoCard

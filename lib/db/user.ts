@@ -1,7 +1,49 @@
-import { userTable } from "@/db/schema";
+import { memberTable, userTable } from "@/db/schema";
 import type { NewUser, User } from "@/lib/types/user";
-import { eq } from "drizzle-orm";
+import { and, eq, exists, or, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
 import { db } from "./client";
+
+const viewer = alias(userTable, "profile_viewer");
+const viewerMember = alias(memberTable, "profile_viewer_member");
+const publicProfileQuery = db
+  .select({ name: userTable.name, email: userTable.email })
+  .from(userTable)
+  .innerJoin(viewer, eq(viewer.supabase_id, sql.placeholder("supabaseId")))
+  .where(
+    and(
+      eq(userTable.id, sql.placeholder("userId")),
+      or(
+        eq(userTable.id, viewer.id),
+        exists(
+          db
+            .select({ id: memberTable.id })
+            .from(memberTable)
+            .innerJoin(
+              viewerMember,
+              eq(memberTable.boardId, viewerMember.boardId)
+            )
+            .where(
+              and(
+                eq(memberTable.userId, userTable.id),
+                eq(viewerMember.userId, viewer.id)
+              )
+            )
+        )
+      )
+    )
+  )
+  .limit(1)
+  .prepare();
+
+// Email stays server-side and is used only to create the existing avatar URL.
+export async function getVisibleUserProfile(
+  userId: string,
+  supabaseId: string
+) {
+  const [user] = await publicProfileQuery.execute({ userId, supabaseId });
+  return user;
+}
 
 export async function createUser(user: NewUser) {
   await db
@@ -111,7 +153,8 @@ export const createGuestUser = async (data: {
  */
 export const convertGuestToUser = async (
   supabaseId: User["supabase_id"],
-  email: User["email"]
+  email: User["email"],
+  name: User["name"]
 ) => {
   await db
     .update(userTable)
@@ -119,6 +162,7 @@ export const convertGuestToUser = async (
       isGuest: false,
       guestExpiresAt: null,
       email,
+      name,
     })
     .where(eq(userTable.supabase_id, supabaseId));
 };

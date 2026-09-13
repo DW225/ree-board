@@ -33,17 +33,21 @@ export default function Navbar() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  const rawFullName: unknown = user?.user_metadata?.full_name;
+  const fullName = typeof rawFullName === "string" ? rawFullName.trim() : "";
+
   const getInitials = () => {
-    const name = user?.user_metadata?.full_name as string | undefined;
-    if (name) {
-      return name
-        .split(" ")
+    if (fullName) {
+      return fullName
+        .split(/\s+/)
         .map((n: string) => n[0])
         .slice(0, 2)
         .join("")
         .toUpperCase();
     }
-    return user?.email?.slice(0, 2).toUpperCase() ?? "?";
+    return (
+      user?.email?.slice(0, 2).toUpperCase() || (user?.is_anonymous ? "G" : "?")
+    );
   };
 
   const handleLogout = () => {
@@ -104,7 +108,8 @@ export default function Navbar() {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium text-slate-900">
-                        {(user?.user_metadata?.full_name as string) ?? ""}
+                        {fullName ||
+                          (user?.is_anonymous ? "Guest account" : "My account")}
                       </p>
                       <p className="text-xs text-slate-500">{user?.email}</p>
                     </div>

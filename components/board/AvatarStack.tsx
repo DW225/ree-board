@@ -12,12 +12,16 @@ export function AvatarStack() {
   const visibleMembers = useComputed(() => memberSignal.value.slice(0, 5));
 
   return (
-    <div className="flex -space-x-3 hover:-space-x-1 transition-all duration-200 cursor-pointer">
+    <div className="flex items-center -space-x-2">
       {visibleMembers.value.map((member) => (
-        <AvatarIcon key={member.id} userID={member.userId} />
+        <AvatarIcon
+          key={member.id}
+          userID={member.userId}
+          className="ring-2 ring-white"
+        />
       ))}
       {memberCount.value > 5 && (
-        <Avatar>
+        <Avatar className="size-9 ring-2 ring-white">
           <AvatarFallback>+{memberCount.value - 5}</AvatarFallback>
         </Avatar>
       )}

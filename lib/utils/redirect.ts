@@ -24,6 +24,18 @@ export const SafeRedirectPathSchema = z
         return false;
       }
 
+      // URL parsing removes tabs and newlines, which can turn /<control>/ into //.
+      if (
+        Array.from(path).some((character) => {
+          const codePoint = character.codePointAt(0);
+          return (
+            codePoint !== undefined && (codePoint <= 31 || codePoint === 127)
+          );
+        })
+      ) {
+        return false;
+      }
+
       // Reject common malicious protocol patterns
       const lowerPath = path.toLowerCase();
       if (
