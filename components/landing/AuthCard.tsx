@@ -83,7 +83,9 @@ export default function AuthCard() {
   useEffect(() => {
     const error = searchParams.get("error");
     if (!error) return;
-    toast.error(AUTH_ERROR_MESSAGES[error] ?? "Something went wrong. Please try again.");
+    toast.error(
+      AUTH_ERROR_MESSAGES[error] ?? "Something went wrong. Please try again."
+    );
     router.replace("/");
   }, [searchParams, router]);
 
@@ -121,9 +123,7 @@ export default function AuthCard() {
             {auth.isSignUp ? "Start for free" : signinHeading}
           </h2>
           <p className="text-sm text-[#64748B]">
-            {auth.isSignUp
-              ? "Create your ReeBoard account"
-              : signinSubheading}
+            {auth.isSignUp ? "Create your ReeBoard account" : signinSubheading}
           </p>
         </div>
 
@@ -228,9 +228,7 @@ export default function AuthCard() {
           <Button
             type="button"
             variant="link"
-            onClick={() =>
-              auth.switchMode(auth.isSignUp ? "signin" : "signup")
-            }
+            onClick={() => auth.switchMode(auth.isSignUp ? "signin" : "signup")}
             disabled={auth.loading}
             className="h-auto p-0 text-sm font-semibold text-[#6366F1]"
           >
