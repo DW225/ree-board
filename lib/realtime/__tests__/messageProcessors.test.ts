@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { PostType } from "@/lib/constants/post";
 import { TaskState } from "@/lib/constants/task";
 import type { Post } from "@/lib/types/post";
@@ -94,7 +95,9 @@ function expectConsoleWarn(
   );
 }
 
-function createConsoleSpy(method: "error" | "warn" = "error"): jest.SpyInstance {
+function createConsoleSpy(
+  method: "error" | "warn" = "error"
+): jest.SpyInstance {
   return jest.spyOn(console, method).mockImplementation();
 }
 

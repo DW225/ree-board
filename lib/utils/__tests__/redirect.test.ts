@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { getSafeRedirectPath, SafeRedirectPathSchema } from "../redirect";
 
 describe("SafeRedirectPathSchema", () => {

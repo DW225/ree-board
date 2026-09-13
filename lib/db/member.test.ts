@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 // Must mock all dependencies before module imports (jest.mock is hoisted)
 jest.mock("@/db/schema", () => ({
   boardTable: {},

@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 // Use dynamic require (not static import) so we can set env vars and mocks
 // before the client module initializes
 import type * as Client from "./client";
@@ -46,7 +47,7 @@ describe("isTransientError", () => {
 
   it("returns false for non-transient errors", () => {
     expect(isTransientError(new Error("SQL syntax error near 'foo'"))).toBe(
-      false,
+      false
     );
   });
 
