@@ -69,10 +69,10 @@ function TrustBadges() {
   );
 }
 
-const AUTH_ERROR_MESSAGES: Record<string, string> = {
-  auth_callback_error: "Authentication failed. Please try again.",
-  invalid_link: "The link is invalid or has expired.",
-};
+const AUTH_ERROR_MESSAGES = new Map([
+  ["auth_callback_error", "Authentication failed. Please try again."],
+  ["invalid_link", "The link is invalid or has expired."],
+]);
 
 export default function AuthCard() {
   const otpControls = useOtpInput();
@@ -84,7 +84,8 @@ export default function AuthCard() {
     const error = searchParams.get("error");
     if (!error) return;
     toast.error(
-      AUTH_ERROR_MESSAGES[error] ?? "Something went wrong. Please try again."
+      AUTH_ERROR_MESSAGES.get(error) ??
+        "Something went wrong. Please try again."
     );
     router.replace("/");
   }, [searchParams, router]);
@@ -228,7 +229,9 @@ export default function AuthCard() {
           <Button
             type="button"
             variant="link"
-            onClick={() => auth.switchMode(auth.isSignUp ? "signin" : "signup")}
+            onClick={() => {
+              auth.switchMode(auth.isSignUp ? "signin" : "signup");
+            }}
             disabled={auth.loading}
             className="h-auto p-0 text-sm font-semibold text-[#6366F1]"
           >
