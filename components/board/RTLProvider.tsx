@@ -1,9 +1,9 @@
 "use client";
 
-import { BaseRealtime, FetchRequest, WebSocketTransport } from "ably/modular";
+import { Realtime } from "ably";
 import { AblyProvider, ChannelProvider } from "ably/react";
 import type { ReactNode } from "react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 interface RTLProviderProps {
   boardId: string;
@@ -16,17 +16,24 @@ export default function RTLProvider({
 }: Readonly<RTLProviderProps>) {
   const client = useMemo(
     () =>
-      new BaseRealtime({
+      new Realtime({
         authUrl: "/api/ably/token",
         authMethod: "POST",
-        plugins: { FetchRequest, WebSocketTransport },
+        authParams: { boardId },
+        autoConnect: false,
       }),
-    []
+    [boardId]
   );
+  useEffect(() => {
+    client.connect();
+    return () => client.close();
+  }, [client]);
 
   return (
     <AblyProvider client={client}>
-      <ChannelProvider channelName={boardId}>{children}</ChannelProvider>
+      <ChannelProvider channelName={`board:${boardId}`}>
+        {children}
+      </ChannelProvider>
     </AblyProvider>
   );
 }

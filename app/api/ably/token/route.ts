@@ -2,6 +2,16 @@ import { getUserBySupabaseId } from "@/lib/db/user";
 import { createClient } from "@/lib/utils/supabase/server";
 import Ably from "ably";
 import { NextResponse } from "next/server";
+import { memberTable } from "@/db/schema";
+import { db } from "@/lib/db/client";
+import { Role } from "@/lib/constants/role";
+import { and, eq, inArray } from "drizzle-orm";
+import { z } from "zod";
+
+const boardIdSchema = z
+  .string()
+  .min(1)
+  .refine((id) => !/[^A-Za-z0-9_-]/.test(id));
 
 // ensure Vercel doesn't cache the result of this route,
 // as otherwise the token request data will eventually become outdated
@@ -35,6 +45,28 @@ export async function POST() {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
 
+    const memberships = await db
+      .select({ boardId: memberTable.boardId })
+      .from(memberTable)
+      .where(
+        and(
+          eq(memberTable.userId, internalUser.id),
+          inArray(memberTable.role, [Role.owner, Role.member, Role.guest])
+        )
+      );
+    const capability: Record<string, ["subscribe"]> = {};
+    for (const membership of memberships) {
+      const boardId = boardIdSchema.safeParse(membership.boardId);
+      if (boardId.success) capability[`board:${boardId.data}`] = ["subscribe"];
+    }
+    // Never omit capability: Ably would inherit all permissions from the API key.
+    if (Object.keys(capability).length === 0) {
+      return NextResponse.json(
+        { error: "No authorized boards" },
+        { status: 403 }
+      );
+    }
+
     const ablyAPIKey = process.env.ABLY_API_KEY;
     if (!ablyAPIKey) {
       throw new Error("ABLY_API_KEY environment variable is not set");
@@ -42,8 +74,10 @@ export async function POST() {
 
     const client = new Ably.Rest({ key: ablyAPIKey });
     const tokenRequestData = await client.auth.createTokenRequest({
-      capability: { "*": ["subscribe"] },
+      capability,
       clientId: internalUser.id,
+      // Removed memberships lose access when this short-lived token expires.
+      ttl: 60_000,
     });
     return Response.json(tokenRequestData);
   } catch (error) {
