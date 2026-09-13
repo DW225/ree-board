@@ -6,33 +6,63 @@ import { and, count, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./client";
 
+async function changeVote(
+  postId: Post["id"],
+  userId: User["id"],
+  boardId: Board["id"],
+  operation: "upvote" | "downvote"
+): Promise<number> {
+  return db.transaction(async (tx) => {
+    const postCondition = and(
+      eq(postTable.id, postId),
+      eq(postTable.boardId, boardId)
+    );
+    const [post] = await tx
+      .select({ id: postTable.id })
+      .from(postTable)
+      .where(postCondition);
+    if (!post) throw new Error("Post not found in this board");
+
+    if (operation === "upvote") {
+      await tx
+        .insert(voteTable)
+        .values({ id: nanoid(), userId, postId, boardId });
+    } else {
+      const removed = await tx
+        .delete(voteTable)
+        .where(
+          and(
+            eq(voteTable.postId, postId),
+            eq(voteTable.userId, userId),
+            eq(voteTable.boardId, boardId)
+          )
+        )
+        .returning({ id: voteTable.id });
+      if (removed.length === 0) throw new Error("Vote not found");
+    }
+
+    const [updatedPost] = await tx
+      .update(postTable)
+      .set({
+        voteCount: sql`${tx
+          .select({ count: count() })
+          .from(voteTable)
+          .where(
+            and(eq(voteTable.postId, postId), eq(voteTable.boardId, boardId))
+          )}`,
+      })
+      .where(postCondition)
+      .returning({ voteCount: postTable.voteCount });
+    return updatedPost.voteCount;
+  });
+}
+
 export async function upVote(
   postId: Post["id"],
   userId: User["id"],
   boardId: Board["id"]
 ): Promise<number> {
-  const batchResults = await db.batch([
-    db.insert(voteTable).values({
-      id: nanoid(),
-      userId,
-      postId,
-      boardId,
-    }),
-    db
-      .update(postTable)
-      .set({
-        voteCount: sql`${db
-          .select({ count: count() })
-          .from(voteTable)
-          .where(eq(voteTable.postId, postId))}`,
-      })
-      .where(eq(postTable.id, postId))
-      .returning({ voteCount: postTable.voteCount }),
-  ]);
-
-  // Extract vote count from the select result
-  const selectResult = batchResults[1];
-  return selectResult[0].voteCount;
+  return changeVote(postId, userId, boardId, "upvote");
 }
 
 export async function downVote(
@@ -40,31 +70,7 @@ export async function downVote(
   userId: User["id"],
   boardId: Board["id"]
 ): Promise<number> {
-  const batchResults = await db.batch([
-    db
-      .delete(voteTable)
-      .where(
-        and(
-          eq(voteTable.postId, postId),
-          eq(voteTable.userId, userId),
-          eq(voteTable.boardId, boardId)
-        )
-      ),
-    db
-      .update(postTable)
-      .set({
-        voteCount: sql`${db
-          .select({ count: count() })
-          .from(voteTable)
-          .where(eq(voteTable.postId, postId))}`,
-      })
-      .where(eq(postTable.id, postId))
-      .returning({ voteCount: postTable.voteCount }),
-  ]);
-
-  // Extract vote count from the select result
-  const selectResult = batchResults[1];
-  return selectResult[0].voteCount;
+  return changeVote(postId, userId, boardId, "downvote");
 }
 
 const prepareFetchUserVotedPost = db

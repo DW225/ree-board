@@ -17,40 +17,38 @@ import { logger } from "@/lib/utils/logger";
 import { z } from "zod";
 
 /** Creates a post after validating authorization and publishes the update. */
-export const CreatePostAction = async (post: NewPost) =>
-  rbacWithAuth(post.boardId, async (userId) => {
-    logger.logAction("CreatePostAction", { userId, boardId: post.boardId });
-
-    const validation = CreatePostSchema.safeParse({
-      boardId: post.boardId,
-      type: post.type,
-      content: post.content,
-    });
-    if (!validation.success) {
-      throw new Error(validation.error.issues[0].message);
-    }
-
-    const result = await createPost({ ...post, author: userId });
+export const CreatePostAction = async (post: NewPost) => {
+  const data = CreatePostSchema.parse(post);
+  return rbacWithAuth(data.boardId, async (userId) => {
+    logger.logAction("CreatePostAction", { userId, boardId: data.boardId });
+    const result = await createPost({ ...data, author: userId });
     try {
-      await ablyClient(post.boardId).publish({
+      await ablyClient(data.boardId).publish({
         name: EVENT_TYPE.POST.ADD,
         extras: { headers: { user: userId } },
-        data: JSON.stringify({ ...post, author: userId }),
+        data: JSON.stringify(result),
       });
     } catch (realtimeError) {
-      logger.warn("Failed to publish real-time create event", { boardId: post.boardId, userId }, realtimeError as Error);
+      logger.warn(
+        "Failed to publish real-time create event",
+        { boardId: data.boardId, userId },
+        realtimeError as Error
+      );
     }
     return result;
   });
+};
 
-export const DeletePostAction = async (id: Post["id"], boardId: Board["id"]) =>
-  rbacWithAuth(boardId, async (userId, role) => {
+export const DeletePostAction = async (
+  postId: Post["id"],
+  targetBoardId: Board["id"]
+) => {
+  const { id, boardId } = DeletePostSchema.parse({
+    id: postId,
+    boardId: targetBoardId,
+  });
+  return rbacWithAuth(boardId, async (userId, role) => {
     logger.logAction("DeletePostAction", { userId, boardId, postId: id });
-
-    const validation = DeletePostSchema.safeParse({ id, boardId });
-    if (!validation.success) {
-      throw new Error(validation.error.issues[0].message);
-    }
 
     await deletePost(id, boardId, userId, role);
     try {
@@ -60,27 +58,32 @@ export const DeletePostAction = async (id: Post["id"], boardId: Board["id"]) =>
         data: JSON.stringify({ id }),
       });
     } catch (realtimeError) {
-      logger.warn("Failed to publish real-time delete event", { boardId, userId }, realtimeError as Error);
+      logger.warn(
+        "Failed to publish real-time delete event",
+        { boardId, userId },
+        realtimeError as Error
+      );
     }
   });
+};
 
 export const UpdatePostTypeAction = async (
-  id: Post["id"],
-  boardId: Board["id"],
-  newType: Post["type"],
-) =>
-  rbacWithAuth(boardId, async (userId, role) => {
+  postId: Post["id"],
+  targetBoardId: Board["id"],
+  value: Post["type"]
+) => {
+  const { id, boardId, newType } = UpdatePostTypeSchema.parse({
+    id: postId,
+    boardId: targetBoardId,
+    newType: value,
+  });
+  return rbacWithAuth(boardId, async (userId, role) => {
     logger.logAction("UpdatePostTypeAction", {
       userId,
       boardId,
       postId: id,
       newType,
     });
-
-    const validation = UpdatePostTypeSchema.safeParse({ id, boardId, newType });
-    if (!validation.success) {
-      throw new Error(validation.error.issues[0].message);
-    }
 
     await updatePostType(id, boardId, newType, userId, role);
     try {
@@ -90,26 +93,31 @@ export const UpdatePostTypeAction = async (
         data: JSON.stringify({ id, type: newType }),
       });
     } catch (realtimeError) {
-      logger.warn("Failed to publish real-time update-type event", { boardId, userId }, realtimeError as Error);
+      logger.warn(
+        "Failed to publish real-time update-type event",
+        { boardId, userId },
+        realtimeError as Error
+      );
     }
   });
+};
 
 export const UpdatePostContentAction = async (
-  id: Post["id"],
-  boardId: Board["id"],
-  newContent: Post["content"],
-) =>
-  rbacWithAuth(boardId, async (userId, role) => {
+  postId: Post["id"],
+  targetBoardId: Board["id"],
+  value: Post["content"]
+) => {
+  const { id, boardId, newContent } = UpdatePostContentSchema.parse({
+    id: postId,
+    boardId: targetBoardId,
+    newContent: value,
+  });
+  return rbacWithAuth(boardId, async (userId, role) => {
     logger.logAction("UpdatePostContentAction", {
       userId,
       boardId,
       postId: id,
     });
-
-    const validation = UpdatePostContentSchema.safeParse({ id, boardId, newContent });
-    if (!validation.success) {
-      throw new Error(validation.error.issues[0].message);
-    }
 
     await updatePostContent(id, boardId, newContent, userId, role);
     try {
@@ -119,16 +127,31 @@ export const UpdatePostContentAction = async (
         data: JSON.stringify({ id, content: newContent }),
       });
     } catch (realtimeError) {
-      logger.warn("Failed to publish real-time update-content event", { boardId, userId }, realtimeError as Error);
+      logger.warn(
+        "Failed to publish real-time update-content event",
+        { boardId, userId },
+        realtimeError as Error
+      );
     }
   });
+};
 
-const PostIdSchema = z.string().trim().min(1);
+const PostIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(128)
+  .regex(/^[A-Za-z0-9_-]+$/);
 const BoardIdSchema = z.string().trim().min(1);
-const PostContentSchema = z.string().trim().min(1, "Content cannot be empty").max(500);
+const PostContentSchema = z
+  .string()
+  .trim()
+  .min(1, "Content cannot be empty")
+  .max(500);
 const PostTypeSchema = z.enum(PostType);
 
 const CreatePostSchema = z.object({
+  id: z.string().regex(/^[A-Za-z0-9_-]{21}$/, "Invalid post ID"),
   boardId: BoardIdSchema,
   type: PostTypeSchema,
   content: PostContentSchema,
@@ -154,17 +177,24 @@ const UpdatePostContentSchema = z.object({
 // Zod schema for merge post input validation
 const MergePostsSchema = z
   .object({
-    targetPostId: z.string().trim().min(1, "Target post ID is required"),
+    targetPostId: PostIdSchema,
     sourcePostIds: z
-      .array(z.string())
-      .min(1, "At least one source post is required"),
+      .array(PostIdSchema)
+      .min(1, "At least one source post is required")
+      .max(100),
     mergedContent: z
       .string()
       .trim()
       .min(1, "Merged content cannot be empty")
       .max(500),
-    boardId: z.string().min(1, "Board ID is required"),
+    boardId: BoardIdSchema,
   })
+  .refine(
+    (data) => new Set(data.sourcePostIds).size === data.sourcePostIds.length,
+    {
+      message: "Source post IDs must be unique",
+    }
+  )
   .refine((data) => !data.sourcePostIds.includes(data.targetPostId), {
     message: "Target post cannot be included in source posts",
   });
@@ -175,7 +205,7 @@ const publishMergeEvent = async (
   userID: string,
   targetPostId: Post["id"],
   sourcePostIds: Post["id"][],
-  result: MergePostResult,
+  result: MergePostResult
 ): Promise<void> => {
   try {
     await ablyClient(boardId).publish({
@@ -203,7 +233,7 @@ const publishMergeEvent = async (
         targetPostId,
         userId: userID,
       },
-      realtimeError as Error,
+      realtimeError as Error
     );
   }
 };
@@ -231,54 +261,55 @@ const getMergeErrorMessage = (error: unknown): string => {
 };
 
 export const MergePostsAction = async (
-  targetPostId: Post["id"],
-  sourcePostIds: Post["id"][],
-  mergedContent: Post["content"],
-  boardId: Board["id"],
-): Promise<MergePostResult> =>
-  rbacWithAuth(boardId, async (userId): Promise<MergePostResult> => {
-    logger.logAction("MergePostsAction", {
-      userId,
-      boardId,
-      targetPostId,
-      sourcePostCount: sourcePostIds.length,
+  target: Post["id"],
+  sources: Post["id"][],
+  content: Post["content"],
+  board: Board["id"]
+): Promise<MergePostResult> => {
+  const { targetPostId, sourcePostIds, mergedContent, boardId } =
+    MergePostsSchema.parse({
+      targetPostId: target,
+      sourcePostIds: sources,
+      mergedContent: content,
+      boardId: board,
     });
-
-    // Validate inputs using Zod schema
-    const validationResult = MergePostsSchema.safeParse({
-      targetPostId,
-      sourcePostIds,
-      mergedContent,
-      boardId,
-    });
-
-    if (!validationResult.success) {
-      throw new Error(validationResult.error.issues[0].message);
-    }
-
-    try {
-      const result = await mergePost(
-        targetPostId,
-        sourcePostIds,
-        mergedContent,
-        boardId,
-      );
-      await publishMergeEvent(
-        boardId,
-        userId,
-        targetPostId,
-        sourcePostIds,
-        result,
-      );
-      return result;
-    } catch (error) {
-      logger.logActionError("MergePostsAction", error as Error, {
+  return rbacWithAuth(
+    boardId,
+    async (userId, role): Promise<MergePostResult> => {
+      logger.logAction("MergePostsAction", {
         userId,
         boardId,
         targetPostId,
-        sourcePostIds,
+        sourcePostCount: sourcePostIds.length,
       });
 
-      throw new Error(getMergeErrorMessage(error));
+      try {
+        const result = await mergePost(
+          targetPostId,
+          sourcePostIds,
+          mergedContent,
+          boardId,
+          userId,
+          role
+        );
+        await publishMergeEvent(
+          boardId,
+          userId,
+          targetPostId,
+          sourcePostIds,
+          result
+        );
+        return result;
+      } catch (error) {
+        logger.logActionError("MergePostsAction", error as Error, {
+          userId,
+          boardId,
+          targetPostId,
+          sourcePostIds,
+        });
+
+        throw new Error(getMergeErrorMessage(error));
+      }
     }
-  });
+  );
+};

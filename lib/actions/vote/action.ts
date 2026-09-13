@@ -5,14 +5,24 @@ import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
 import { ablyClient, EVENT_TYPE } from "@/lib/utils/ably";
-import { actionWithAuth } from "../actionWithAuth";
+import { z } from "zod";
+import { rbacWithAuth } from "../actionWithAuth";
+
+const VoteInputSchema = z.object({
+  postId: z.string().trim().min(1),
+  boardId: z.string().trim().min(1),
+});
 
 export const UpVotePostAction = async (
-  postId: Post["id"],
-  userId: User["id"],
-  boardId: Board["id"],
-) =>
-  actionWithAuth(async () => {
+  rawPostId: Post["id"],
+  _userId: User["id"],
+  rawBoardId: Board["id"]
+) => {
+  const { postId, boardId } = VoteInputSchema.parse({
+    postId: rawPostId,
+    boardId: rawBoardId,
+  });
+  return rbacWithAuth(boardId, async (userId) => {
     // Perform the upvote and get the updated count
     const voteCount = await upVote(postId, userId, boardId);
 
@@ -34,13 +44,18 @@ export const UpVotePostAction = async (
 
     return { voteCount };
   });
+};
 
 export const DownVotePostAction = async (
-  postId: Post["id"],
-  userId: User["id"],
-  boardId: Board["id"],
-) =>
-  actionWithAuth(async () => {
+  rawPostId: Post["id"],
+  _userId: User["id"],
+  rawBoardId: Board["id"]
+) => {
+  const { postId, boardId } = VoteInputSchema.parse({
+    postId: rawPostId,
+    boardId: rawBoardId,
+  });
+  return rbacWithAuth(boardId, async (userId) => {
     // Perform the downvote and get the updated count
     const voteCount = await downVote(postId, userId, boardId);
 
@@ -62,3 +77,4 @@ export const DownVotePostAction = async (
 
     return { voteCount };
   });
+};

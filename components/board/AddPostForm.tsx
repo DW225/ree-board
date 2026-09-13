@@ -6,7 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { CreatePostAction } from "@/lib/actions/post/action";
 import { authedCreateAction } from "@/lib/actions/task/action";
 import { PostType } from "@/lib/constants/post";
-import { addPost, addPostTask, removePost } from "@/lib/signal/postSignals";
+import {
+  addPost,
+  addPostTask,
+  removePost,
+  updatePost,
+} from "@/lib/signal/postSignals";
 import type { Post } from "@/lib/types/post";
 import type { NewTask } from "@/lib/types/task";
 import { Plus, X } from "lucide-react";
@@ -63,7 +68,8 @@ export default function AddPostForm({
         addPost(newPost);
         setContent("");
 
-        await CreatePostAction(newPost);
+        const savedPost = await CreatePostAction(newPost);
+        updatePost(postId, savedPost);
         if (postType === PostType.action_item) {
           const newTask: NewTask = {
             id: nanoid(),
