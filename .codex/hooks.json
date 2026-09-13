@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm lint",
+            "command": "pnpm lint >&2 && printf '{}\\n' || exit 2",
             "timeout": 120,
             "statusMessage": "Running lint before stop"
           }
