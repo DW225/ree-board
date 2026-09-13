@@ -153,8 +153,7 @@ export const bulkImportMembersAction = async (
         return true;
       });
       const totalMemberCount = uniqueMembers.length;
-      let addMemberCount = 0;
-      await db.transaction(async (trx) => {
+      const importedMembers = await db.transaction(async (trx) => {
         const existingMembers = await fetchMembersByBoardID(
           data.targetBoardId,
           trx
@@ -168,16 +167,13 @@ export const bulkImportMembersAction = async (
             boardId: data.targetBoardId,
             role: m.role,
           }));
-        addMemberCount = membersToAdd.length;
-
-        if (membersToAdd.length > 0) {
-          await bulkAddMembers(membersToAdd, trx);
-        }
+        return bulkAddMembers(membersToAdd, trx);
       });
 
       return {
-        imported: addMemberCount,
-        skipped: totalMemberCount - addMemberCount,
+        imported: importedMembers.length,
+        skipped: totalMemberCount - importedMembers.length,
+        members: importedMembers,
       };
     },
     Role.owner

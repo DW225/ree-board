@@ -24,7 +24,6 @@ import { Role } from "@/lib/constants/role";
 import { addMember } from "@/lib/signal/memberSignals";
 import type { Board } from "@/lib/types/board";
 import { Check, Upload, Users } from "lucide-react";
-import { nanoid } from "nanoid";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -211,17 +210,17 @@ export default function ImportMembersComponent({
       );
 
       if (result && typeof result === "object" && "imported" in result) {
-        const importedMembers = boardMembers.filter((member) =>
-          selectedMembers.has(member.id)
+        const membersByUserId = new Map(
+          boardMembers.map((member) => [member.userId, member])
         );
 
-        for (const member of importedMembers) {
+        for (const importedMember of result.members) {
+          const member = membersByUserId.get(importedMember.userId);
+          if (!member) continue;
           const newMemberSignal = {
-            id: nanoid(),
-            userId: member.userId,
+            ...importedMember,
             username: member.username,
             email: member.email,
-            role: member.role === Role.owner ? Role.member : member.role,
           };
           addMember(newMemberSignal);
         }

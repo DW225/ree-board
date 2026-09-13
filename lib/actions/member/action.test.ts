@@ -5,9 +5,11 @@ import {
   addMember,
   bulkAddMembers,
   checkMemberRole,
+  fetchMembersByBoardID,
   fetchMembersWithExclude,
 } from "@/lib/db/member";
 import { findUserByEmail } from "@/lib/db/user";
+import type { NewMember } from "@/lib/types/member";
 import {
   addMemberToBoardAction,
   bulkImportMembersAction,
@@ -30,7 +32,9 @@ jest.mock("@/lib/db/client", () => ({
 jest.mock("@/lib/db/user", () => ({ findUserByEmail: jest.fn() }));
 jest.mock("@/lib/db/member", () => ({
   addMember: jest.fn(),
-  bulkAddMembers: jest.fn(),
+  bulkAddMembers: jest.fn(async (members: NewMember[]) =>
+    members.map(({ id, userId, role }) => ({ id, userId, role }))
+  ),
   checkMemberRole: jest.fn(),
   fetchMembersByBoardID: jest.fn(async () => []),
   fetchMembersWithExclude: jest.fn(async () => []),
@@ -200,5 +204,52 @@ it("imports each user once and retains the first requested role", async () => {
     [{ id: "new-member", userId: "user", boardId: "board", role: Role.guest }],
     expect.anything()
   );
-  expect(result).toEqual({ imported: 1, skipped: 0 });
+  expect(result).toEqual({
+    imported: 1,
+    skipped: 0,
+    members: [{ id: "new-member", userId: "user", role: Role.guest }],
+  });
+});
+
+it.each([
+  {
+    members: [{ id: "saved-member", userId: "added", role: Role.member }],
+    imported: 1,
+    skipped: 1,
+  },
+  { members: [], imported: 0, skipped: 2 },
+])(
+  "returns $imported inserted members and counts $skipped conflicts",
+  async (expected) => {
+    jest.mocked(bulkAddMembers).mockResolvedValueOnce(expected.members);
+    const result = await bulkImportMembersAction("board", [
+      { userId: "added", role: Role.member },
+      { userId: "skipped", role: Role.guest },
+    ]);
+    expect(result).toEqual(expected);
+  }
+);
+
+it("returns no members when all selected users already belong to the board", async () => {
+  jest.mocked(fetchMembersByBoardID).mockResolvedValueOnce([
+    {
+      id: "existing",
+      userId: "user",
+      role: Role.member,
+      username: "User",
+      email: "user@example.com",
+      updatedAt: new Date(0),
+    },
+  ]);
+  await expect(
+    bulkImportMembersAction("board", [{ userId: "user", role: Role.guest }])
+  ).resolves.toEqual({ imported: 0, skipped: 1, members: [] });
+});
+
+it("returns no members for an empty import", async () => {
+  await expect(bulkImportMembersAction("board", [])).resolves.toEqual({
+    imported: 0,
+    skipped: 0,
+    members: [],
+  });
 });

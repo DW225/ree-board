@@ -120,6 +120,71 @@ test("expiration updates an already open revoke dialog", async ({ page }) => {
   ).toBeVisible();
 });
 
+for (const imported of [0, 1]) {
+  test(`member import adds only the ${imported} saved members`, async ({
+    page,
+  }) => {
+    await page.route("**/mock/boards", (route) =>
+      route.fulfill({ json: [{ id: "source", title: "Source Board" }] })
+    );
+    await page.route("**/mock/members", (route) =>
+      route.fulfill({
+        json: [
+          {
+            id: "source-a",
+            userId: "user-a",
+            role: 0,
+            username: "Member A",
+            email: "a@example.invalid",
+            boardId: "source",
+            boardTitle: "Source Board",
+          },
+          {
+            id: "source-b",
+            userId: "user-b",
+            role: 1,
+            username: "Member B",
+            email: "b@example.invalid",
+            boardId: "source",
+            boardTitle: "Source Board",
+          },
+        ],
+      })
+    );
+    await page.route("**/mock/import", (route) =>
+      route.fulfill({
+        json: {
+          imported,
+          skipped: 2 - imported,
+          members: imported
+            ? [{ id: "saved-a", userId: "user-a", role: 1 }]
+            : [],
+        },
+      })
+    );
+    await page.goto("/board/mock?review=members");
+    await page
+      .getByRole("button", { name: "Import from Other Boards" })
+      .click();
+    await page.getByRole("combobox").click();
+    await page.getByRole("option", { name: "Source Board" }).click();
+    await page.getByRole("button", { name: "Select all", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Import 2 Members", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(page.getByText("Member A", { exact: true })).toHaveCount(
+      imported
+    );
+    await expect(page.getByText("Member B", { exact: true })).toHaveCount(0);
+    await expect(
+      page.getByText(`Successfully imported ${imported} members`, {
+        exact: false,
+      })
+    ).toBeVisible();
+  });
+}
+
 for (const staleResult of ["success", "failure"]) {
   test(`member loads ignore a stale ${staleResult} after closing and reopening`, async ({
     page,

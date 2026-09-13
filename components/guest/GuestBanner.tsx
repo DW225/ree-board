@@ -34,6 +34,13 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
     ? Math.ceil((expiresAt.getTime() - now) / MS_PER_DAY)
     : null;
 
+  let expirationMessage = "save your account to keep access";
+  if (daysLeft !== null) {
+    if (daysLeft <= 0) expirationMessage = "guest account has expired";
+    else if (daysLeft === 1) expirationMessage = "expires tomorrow";
+    else expirationMessage = `${daysLeft} days remaining`;
+  }
+
   // Determine banner urgency styling
   const isUrgent = daysLeft !== null && daysLeft <= URGENT_THRESHOLD_DAYS;
   const isCritical = daysLeft !== null && daysLeft <= CRITICAL_THRESHOLD_DAYS;
@@ -87,15 +94,7 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
             <Clock className={`size-4 ${getIconStyles()}`} />
             <p className={`text-sm ${getTextStyles()}`}>
               Guest account -{" "}
-              <span className="font-semibold">
-                {daysLeft === null
-                  ? "save your account to keep access"
-                  : daysLeft <= 0
-                    ? "guest account has expired"
-                    : daysLeft === 1
-                      ? "expires tomorrow"
-                      : `${daysLeft} days remaining`}
-              </span>
+              <span className="font-semibold">{expirationMessage}</span>
             </p>
           </div>
           <Button

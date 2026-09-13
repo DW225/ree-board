@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Route } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
+  // These tests require the isolated mock board and intercepted service requests.
   test.skip(process.env.E2E_MOCK !== "1");
   await page.route("**/*", (route) => {
     if (new URL(route.request().url()).origin !== "http://127.0.0.1:3100") {

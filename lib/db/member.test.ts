@@ -53,10 +53,48 @@ jest.mock("./client", () => {
   };
 });
 
-import { withDbRetry } from "./client";
-import { checkMemberRole } from "./member";
+import { Role } from "@/lib/constants/role";
+import type { Transaction } from "@/lib/types/db";
+import { db, withDbRetry } from "./client";
+import { bulkAddMembers, checkMemberRole } from "./member";
 
 const mockWithDbRetry = withDbRetry as jest.Mock;
+
+it.each([false, true])(
+  "returns only inserted members with transaction=%s",
+  async (inTransaction) => {
+    const returning = jest
+      .fn()
+      .mockResolvedValue([{ id: "saved", userId: "added", role: Role.member }]);
+    const insert = jest.fn(() => ({
+      values: jest.fn(() => ({
+        onConflictDoNothing: jest.fn(() => ({ returning })),
+      })),
+    }));
+    if (!inTransaction) (db.insert as jest.Mock).mockImplementationOnce(insert);
+    const result = await bulkAddMembers(
+      [
+        { id: "saved", userId: "added", boardId: "board", role: Role.member },
+        {
+          id: "skipped",
+          userId: "existing",
+          boardId: "board",
+          role: Role.guest,
+        },
+      ],
+      inTransaction ? ({ insert } as unknown as Transaction) : undefined
+    );
+    expect(result).toEqual([
+      { id: "saved", userId: "added", role: Role.member },
+    ]);
+  }
+);
+
+it("returns an empty list without inserting an empty batch", async () => {
+  jest.clearAllMocks();
+  await expect(bulkAddMembers([])).resolves.toEqual([]);
+  expect(db.insert).not.toHaveBeenCalled();
+});
 
 describe("checkMemberRole", () => {
   beforeEach(() => {
