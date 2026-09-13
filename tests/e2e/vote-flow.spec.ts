@@ -75,3 +75,49 @@ test("board guest cannot submit a vote", async ({ page }) => {
   await expect(vote).toHaveText("0");
   expect(requests).toBe(0);
 });
+
+test("create response preserves a newer vote and content edit", async ({
+  page,
+}) => {
+  const creation = Promise.withResolvers<Route>();
+  const voting = Promise.withResolvers<Route>();
+  await page.route("**/mock/create", (route) => creation.resolve(route));
+  await page.route("**/mock/vote", (route) => voting.resolve(route));
+  await page.route("**/mock/save", (route) => route.fulfill({ status: 204 }));
+  await page.goto("/board/mock?empty");
+  await page
+    .getByRole("button", { name: "Add a card", exact: true })
+    .first()
+    .click();
+  await page
+    .getByPlaceholder("What went well this sprint?")
+    .fill("Original post");
+  await page.getByRole("button", { name: "Add card", exact: true }).click();
+  const createRequest = await creation.promise;
+  const id = createRequest.request().postDataJSON().id as string;
+  const card = page.getByTestId(`post-${id}`);
+  const vote = card.getByRole("button", {
+    name: /^(Vote for this post|Remove vote)$/,
+  });
+  await vote.click();
+  const voteRequest = await voting.promise;
+  await expect(vote).toHaveText("1");
+  await card.getByRole("button", { name: "Open menu", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Edit", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Edit Post" });
+  await dialog
+    .getByRole("textbox", { name: "Edit post content" })
+    .fill("Newer edit");
+  await dialog.getByRole("button", { name: "Save Changes" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(card).toContainText("Newer edit");
+  await createRequest.fulfill({ status: 204 });
+  await expect(
+    page.getByPlaceholder("What went well this sprint?")
+  ).toBeEnabled();
+  await expect(vote).toHaveText("1");
+  await expect(card).toContainText("Newer edit");
+  await voteRequest.fulfill({ status: 204 });
+  await expect(vote).toBeEnabled();
+  await expect(vote).toHaveText("1");
+});

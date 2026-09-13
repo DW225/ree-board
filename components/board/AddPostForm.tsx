@@ -10,6 +10,8 @@ import {
   addPost,
   addPostTask,
   removePost,
+  postsSignal,
+  votesSignal,
   updatePost,
 } from "@/lib/signal/postSignals";
 import type { Post } from "@/lib/types/post";
@@ -69,7 +71,24 @@ export default function AddPostForm({
         setContent("");
 
         const savedPost = await CreatePostAction(newPost);
-        updatePost(postId, savedPost);
+        const currentPost = postsSignal.value.find(
+          (post) => post.id === postId
+        );
+        if (currentPost) {
+          // Apply saved fields without undoing changes made while creation was pending.
+          updatePost(postId, {
+            ...savedPost,
+            content:
+              currentPost.content === newPost.content
+                ? savedPost.content
+                : currentPost.content,
+            type:
+              currentPost.type === newPost.type
+                ? savedPost.type
+                : currentPost.type,
+            voteCount: votesSignal.value[postId] ?? savedPost.voteCount,
+          });
+        }
         if (postType === PostType.action_item) {
           const newTask: NewTask = {
             id: nanoid(),
