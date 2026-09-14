@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 /**
  * Validation tests for Supabase client utilities
  *

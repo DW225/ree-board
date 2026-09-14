@@ -1,15 +1,14 @@
-import { BaseRest, FetchRequest } from "ably/modular";
+import { Rest } from "ably";
 
 export const ablyClient = (channelID: string) => {
   if (!process.env.ABLY_API_KEY) {
     throw new Error("Missing ably API key");
   }
-  const client = new BaseRest({
+  const client = new Rest({
     key: process.env.ABLY_API_KEY,
-    plugins: { FetchRequest },
   });
 
-  return client.channels.get(channelID);
+  return client.channels.get(`board:${channelID}`);
 };
 
 export const EVENT_PREFIX = {

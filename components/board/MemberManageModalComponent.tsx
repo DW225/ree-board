@@ -49,7 +49,7 @@ const MemberList = dynamic(() => import("@/components/board/MemberList"), {
 });
 
 const ImportMembersComponent = dynamic(
-  () => import("@/components/board/ImportMembersComponent"),
+  () => import("@/components/board/ImportMembersComponent")
 );
 
 export default function MemberManageModalComponent({
@@ -64,7 +64,7 @@ export default function MemberManageModalComponent({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteEmailError, setInviteEmailError] = useState<string>("");
   const [memberToRemove, setMemberToRemove] = useState<MemberSignal | null>(
-    null,
+    null
   );
   const [isInvitePending, startInviteTransition] = useTransition();
   const [isRemoving, setIsRemoving] = useState(false);
@@ -84,7 +84,7 @@ export default function MemberManageModalComponent({
 
     startInviteTransition(async () => {
       try {
-        const user = await findUserByEmailAction(emailResult.data);
+        const user = await findUserByEmailAction(emailResult.data, boardId);
         if (!user) {
           throw new Error("User not found");
         }
@@ -152,7 +152,12 @@ export default function MemberManageModalComponent({
           }
         }}
       >
-        <DialogTrigger className="cursor-pointer">{children}</DialogTrigger>
+        <DialogTrigger
+          aria-label="View board members"
+          className="shrink-0 cursor-pointer rounded-full p-1 focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          {children}
+        </DialogTrigger>
         <DialogContent className="sm:max-w-md rounded-xl border-[#E2E8F0] p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh]">
           <DialogDescription className="sr-only">
             Manage team members and their roles for this board.
@@ -236,14 +241,10 @@ export default function MemberManageModalComponent({
                 {/* OR divider + Import from Other Boards */}
                 <div className="flex items-center gap-3 my-4">
                   <div className="flex-1 h-px bg-[#E2E8F0]" />
-                  <span className="text-xs text-[#94A3B8] font-medium">
-                    OR
-                  </span>
+                  <span className="text-xs text-[#94A3B8] font-medium">OR</span>
                   <div className="flex-1 h-px bg-[#E2E8F0]" />
                 </div>
-                <ImportMembersComponent
-                  currentBoardId={boardId}
-                />
+                <ImportMembersComponent currentBoardId={boardId} />
               </div>
             )}
           </div>

@@ -12,7 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { MergePostsAction } from "@/lib/actions/post/action";
 import { PostType } from "@/lib/constants/post";
 import type { EnrichedPost } from "@/lib/signal/postSignals";
-import { mergePosts, rollbackMerge } from "@/lib/signal/postSignals";
+import {
+  mergePosts,
+  rollbackMerge,
+  updatePost,
+} from "@/lib/signal/postSignals";
 import type { Board } from "@/lib/types/board";
 import type { Post } from "@/lib/types/post";
 import { GitMerge, Heart, Loader2, X } from "lucide-react";
@@ -79,10 +83,28 @@ export default function MergePostDialog({
   // Simplified estimation — actual count is calculated server-side
   const mergedVoteCount = Math.max(targetPost.voteCount, sourcePost.voteCount);
 
-  const [previous, setPrevious] = useState({ isOpen: false, target: targetPost.content, source: sourcePost.content });
-  if (isOpen !== previous.isOpen || targetPost.content !== previous.target || sourcePost.content !== previous.source) {
-    setPrevious({ isOpen, target: targetPost.content, source: sourcePost.content });
-    setMergedContent(isOpen ? [targetPost.content, sourcePost.content].filter(content => content.trim()).join("\n\n---\n\n") : "");
+  const [previous, setPrevious] = useState({
+    isOpen: false,
+    target: targetPost.content,
+    source: sourcePost.content,
+  });
+  if (
+    isOpen !== previous.isOpen ||
+    targetPost.content !== previous.target ||
+    sourcePost.content !== previous.source
+  ) {
+    setPrevious({
+      isOpen,
+      target: targetPost.content,
+      source: sourcePost.content,
+    });
+    setMergedContent(
+      isOpen
+        ? [targetPost.content, sourcePost.content]
+            .filter((content) => content.trim())
+            .join("\n\n---\n\n")
+        : ""
+    );
     setActiveTab("edit");
   }
 
@@ -116,10 +138,11 @@ export default function MergePostDialog({
         targetPost.id,
         sourcePostIds,
         mergedContent,
-        boardId,
+        boardId
       );
 
       if (result && "mergedPost" in result) {
+        updatePost(targetPost.id, result.mergedPost);
         toast.success("Posts merged successfully");
         onClose();
       } else {
@@ -160,7 +183,7 @@ export default function MergePostDialog({
         handleMerge();
       }
     },
-    [onClose, handleMerge, isSubmitting],
+    [onClose, handleMerge, isSubmitting]
   );
 
   return (

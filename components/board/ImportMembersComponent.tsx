@@ -24,7 +24,6 @@ import { Role } from "@/lib/constants/role";
 import { addMember } from "@/lib/signal/memberSignals";
 import type { Board } from "@/lib/types/board";
 import { Check, Upload, Users } from "lucide-react";
-import { nanoid } from "nanoid";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -103,7 +102,7 @@ export default function ImportMembersComponent({
   const [selectedBoardId, setSelectedBoardId] = useState<string>("");
   const [boardMembers, setBoardMembers] = useState<BoardMember[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -128,42 +127,45 @@ export default function ImportMembersComponent({
     }
   }, [currentBoardId]);
 
-  const loadBoardMembers = useCallback(async (boardId: string) => {
-    const request = ++loadRequest.current;
-    setSelectedBoardId(boardId);
-    setBoardMembers([]);
-    setSelectedMembers(new Set());
-    if (!boardId) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const members = await getMembersFromBoardWithExclusionAction(
-        boardId,
-        currentBoardId,
-      );
-
-      if (request !== loadRequest.current) return;
-      if (Array.isArray(members)) {
-        setBoardMembers(members);
-      } else {
-        console.error("Failed to load members:", members);
-        toast.error("Failed to load board members");
-        setBoardMembers([]);
+  const loadBoardMembers = useCallback(
+    async (boardId: string) => {
+      const request = ++loadRequest.current;
+      setSelectedBoardId(boardId);
+      setBoardMembers([]);
+      setSelectedMembers(new Set());
+      if (!boardId) {
+        setIsLoading(false);
+        return;
       }
 
-      setSelectedMembers(new Set());
-    } catch (error) {
-      if (request !== loadRequest.current) return;
-      toast.error("Failed to load board members");
-      console.error(error);
-      setBoardMembers([]);
-    } finally {
-      if (request === loadRequest.current) setIsLoading(false);
-    }
-  }, [currentBoardId]);
+      try {
+        setIsLoading(true);
+        const members = await getMembersFromBoardWithExclusionAction(
+          boardId,
+          currentBoardId
+        );
+
+        if (request !== loadRequest.current) return;
+        if (Array.isArray(members)) {
+          setBoardMembers(members);
+        } else {
+          console.error("Failed to load members:", members);
+          toast.error("Failed to load board members");
+          setBoardMembers([]);
+        }
+
+        setSelectedMembers(new Set());
+      } catch (error) {
+        if (request !== loadRequest.current) return;
+        toast.error("Failed to load board members");
+        console.error(error);
+        setBoardMembers([]);
+      } finally {
+        if (request === loadRequest.current) setIsLoading(false);
+      }
+    },
+    [currentBoardId]
+  );
 
   const handleMemberToggle = useCallback((memberId: string) => {
     setSelectedMembers((prev) => {
@@ -199,33 +201,33 @@ export default function ImportMembersComponent({
         .filter((member) => selectedMembers.has(member.id))
         .map((member) => ({
           userId: member.userId,
-          role: member.role,
+          role: member.role === Role.owner ? Role.member : member.role,
         }));
 
       const result = await bulkImportMembersAction(
         currentBoardId,
-        membersToImport,
+        membersToImport
       );
 
       if (result && typeof result === "object" && "imported" in result) {
-        const importedMembers = boardMembers.filter((member) =>
-          selectedMembers.has(member.id),
+        const membersByUserId = new Map(
+          boardMembers.map((member) => [member.userId, member])
         );
 
-        for (const member of importedMembers) {
+        for (const importedMember of result.members) {
+          const member = membersByUserId.get(importedMember.userId);
+          if (!member) continue;
           const newMemberSignal = {
-            id: nanoid(),
-            userId: member.userId,
+            ...importedMember,
             username: member.username,
             email: member.email,
-            role: member.role,
           };
           addMember(newMemberSignal);
         }
 
         toast.success(
           `Successfully imported ${result.imported} members` +
-            (result.skipped > 0 ? ` (${result.skipped} already existed)` : ""),
+            (result.skipped > 0 ? ` (${result.skipped} already existed)` : "")
         );
 
         setSelectedMembers(new Set());

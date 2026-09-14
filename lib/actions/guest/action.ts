@@ -1,7 +1,5 @@
 "use server";
 
-import { userTable } from "@/db/schema";
-import { db } from "@/lib/db/client";
 import {
   convertGuestToUser,
   createGuestUser,
@@ -9,7 +7,7 @@ import {
 } from "@/lib/db/user";
 import { createClient } from "@/lib/utils/supabase/server";
 import { emailSchema } from "@/lib/utils/validation";
-import { eq } from "drizzle-orm";
+import { actionWithAuth } from "../actionWithAuth";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
@@ -24,7 +22,7 @@ const NameSchema = z
   .max(50, "Name must be less than 50 characters")
   .regex(
     /^[a-zA-Z0-9_\- ]+$/,
-    "Name can only contain letters, numbers, spaces, underscores, and hyphens",
+    "Name can only contain letters, numbers, spaces, underscores, and hyphens"
   )
   .refine((val) => val.trim().length > 0, {
     message: "Name cannot be only whitespace",
@@ -127,45 +125,67 @@ export async function createAnonymousGuestSession(captchaToken?: string) {
 export async function upgradeGuestAccount(email: string): Promise<{
   success: boolean;
   needsOtp?: boolean;
+  emailVerified?: boolean;
   error?: string;
 }> {
   try {
-    // Validate email
-    const validatedEmail = emailSchema.parse(email);
+    return await actionWithAuth(async (userId) => {
+      // Validate email
+      const validatedEmail = emailSchema.parse(email);
 
-    const supabase = await createClient();
+      const supabase = await createClient();
 
-    // Get current anonymous user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      // Get current anonymous user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user?.is_anonymous) {
+      if (!user) {
+        return {
+          success: false,
+          error: "No guest session found. Please start over.",
+        };
+      }
+
+      const internalUser = await getUserBySupabaseId(user.id);
+      if (!internalUser?.isGuest || internalUser.id !== userId) {
+        return { success: false, error: "No guest account found." };
+      }
+
+      if (!user.is_anonymous) {
+        if (
+          user.is_anonymous === false &&
+          user.email_confirmed_at &&
+          user.email?.toLowerCase() === validatedEmail.toLowerCase()
+        ) {
+          return { success: true, needsOtp: true, emailVerified: true };
+        }
+        return {
+          success: false,
+          error: "Use the verified email for this account.",
+        };
+      }
+
+      // Update user to have email (this triggers OTP send)
+      const { error: updateError } = await supabase.auth.updateUser({
+        email: validatedEmail,
+      });
+
+      if (updateError) {
+        console.error("Failed to update user email:", updateError);
+        return {
+          success: false,
+          error: updateError.message,
+          needsOtp: false,
+        };
+      }
+
+      // OTP sent successfully - user needs to verify
       return {
-        success: false,
-        error: "No guest session found. Please start over.",
+        success: true,
+        needsOtp: true,
       };
-    }
-
-    // Update user to have email (this triggers OTP send)
-    const { error: updateError } = await supabase.auth.updateUser({
-      email: validatedEmail,
     });
-
-    if (updateError) {
-      console.error("Failed to update user email:", updateError);
-      return {
-        success: false,
-        error: updateError.message,
-        needsOtp: false,
-      };
-    }
-
-    // OTP sent successfully - user needs to verify
-    return {
-      success: true,
-      needsOtp: true,
-    };
   } catch (error) {
     console.error("Error upgrading guest account:", error);
 
@@ -198,59 +218,77 @@ export async function upgradeGuestAccount(email: string): Promise<{
 export async function verifyGuestUpgradeOTP(
   email: string,
   otp: string,
-  name: string,
+  name: string
 ): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
-    // Validate inputs
-    const validatedEmail = emailSchema.parse(email);
-    const validatedOtp = OTPSchema.parse(otp);
-    const validatedName = NameSchema.parse(name);
+    return await actionWithAuth(async (userId) => {
+      // Validate inputs
+      const validatedEmail = emailSchema.parse(email);
+      const validatedName = NameSchema.parse(name).trim();
 
-    const supabase = await createClient();
+      const supabase = await createClient();
 
-    // Verify OTP
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email: validatedEmail,
-      token: validatedOtp,
-      type: "email",
+      const {
+        data: { user: originalUser },
+        error: sessionError,
+      } = await supabase.auth.getUser();
+      if (sessionError || !originalUser) {
+        return {
+          success: false,
+          error: "No guest session found. Please start over.",
+        };
+      }
+      const internalUser = await getUserBySupabaseId(originalUser.id);
+      if (!internalUser?.isGuest || internalUser.id !== userId) {
+        return { success: false, error: "No guest account found." };
+      }
+
+      // A verified session can retry a failed profile save without consuming the code again.
+      if (originalUser.is_anonymous) {
+        const { error } = await supabase.auth.verifyOtp({
+          email: validatedEmail,
+          token: OTPSchema.parse(otp),
+          type: "email_change",
+        });
+        if (error) return { success: false, error: error.message };
+      }
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (
+        userError ||
+        !user ||
+        user.id !== originalUser.id ||
+        user.is_anonymous !== false ||
+        !user.email_confirmed_at ||
+        user.email?.toLowerCase() !== validatedEmail.toLowerCase()
+      ) {
+        return {
+          success: false,
+          error: "Email verification is incomplete. Please try again.",
+        };
+      }
+
+      const { error: profileError } = await supabase.auth.updateUser({
+        data: {
+          full_name: validatedName,
+          display_name: validatedName,
+          name: validatedName,
+        },
+      });
+      if (profileError) return { success: false, error: profileError.message };
+
+      await convertGuestToUser(originalUser.id, user.email, validatedName);
+
+      return {
+        success: true,
+      };
     });
-
-    if (verifyError) {
-      console.error("Failed to verify OTP:", verifyError);
-      return {
-        success: false,
-        error: verifyError.message,
-      };
-    }
-
-    // Get user after verification
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "Failed to get user after verification",
-      };
-    }
-
-    // Update our database - convert guest to permanent user
-    await convertGuestToUser(user.id, validatedEmail);
-
-    // Update user name in database
-
-    await db
-      .update(userTable)
-      .set({ name: validatedName })
-      .where(eq(userTable.supabase_id, user.id));
-
-    return {
-      success: true,
-    };
   } catch (error) {
     console.error("Error verifying guest upgrade OTP:", error);
 

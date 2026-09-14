@@ -71,13 +71,16 @@ export const sortedPostsSignal = computed(() => {
 
 export const postsByTypeSignal = computed(() => {
   const posts = enrichedPostsSignal.value;
-  return posts.reduce((acc, post) => {
-    if (!acc[post.type]) {
-      acc[post.type] = [];
-    }
-    acc[post.type].push(post);
-    return acc;
-  }, {} as Record<Post["type"], typeof posts>);
+  return posts.reduce(
+    (acc, post) => {
+      if (!acc[post.type]) {
+        acc[post.type] = [];
+      }
+      acc[post.type].push(post);
+      return acc;
+    },
+    {} as Record<Post["type"], typeof posts>
+  );
 });
 
 // Initialization function
@@ -103,6 +106,7 @@ export const initializePostSignals = (posts: Post[], tasks: Task[]) => {
 
 // Action creators for post operations
 export const addPost = (newPost: Post) => {
+  if (postsSignal.value.some((post) => post.id === newPost.id)) return;
   batch(() => {
     postsSignal.value = [...postsSignal.value, newPost];
     votesSignal.value = {
@@ -294,9 +298,9 @@ export const mergePosts = (
   const currentVotes = votesSignal.value;
 
   // Capture original state for rollback
-  const allPostIds = [targetPostId, ...sourcePostIds];
+  const allPostIds = new Set([targetPostId, ...sourcePostIds]);
   const rollbackData: MergeRollbackData = {
-    originalPosts: currentPosts.filter((p) => allPostIds.includes(p.id)),
+    originalPosts: currentPosts.filter((p) => allPostIds.has(p.id)),
     originalTasks: { ...currentTasks },
     originalVotes: { ...currentVotes },
   };
@@ -364,9 +368,11 @@ export const rollbackMerge = (rollbackData: MergeRollbackData) => {
     const currentPosts = postsSignal.value;
 
     // Remove merged post and restore original posts
-    const postIdsToRestore = rollbackData.originalPosts.map((p) => p.id);
+    const postIdsToRestore = new Set(
+      rollbackData.originalPosts.map((p) => p.id)
+    );
     const filteredPosts = currentPosts.filter(
-      (p) => !postIdsToRestore.includes(p.id)
+      (p) => !postIdsToRestore.has(p.id)
     );
     const restoredPosts = [...filteredPosts, ...rollbackData.originalPosts];
 

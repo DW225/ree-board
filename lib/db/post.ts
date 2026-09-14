@@ -17,8 +17,8 @@ export const createPost = async (post: NewPost) => {
       author: post.author,
       boardId: post.boardId,
       type: post.type,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     })
     .returning();
 
@@ -33,7 +33,7 @@ const prepareFetchPostsByBoardID = db
 
 export const fetchPostsByBoardID = async (boardId: Board["id"]) => {
   return await withDbRetry(() =>
-    prepareFetchPostsByBoardID.execute({ boardId }),
+    prepareFetchPostsByBoardID.execute({ boardId })
   );
 };
 
@@ -41,7 +41,7 @@ export const deletePost = async (
   postId: Post["id"],
   boardId: Board["id"],
   userId: string,
-  role: Role,
+  role: Role
 ) => {
   const condition =
     role === Role.owner
@@ -49,7 +49,7 @@ export const deletePost = async (
       : and(
           eq(postTable.id, postId),
           eq(postTable.boardId, boardId),
-          eq(postTable.author, userId),
+          eq(postTable.author, userId)
         );
 
   const deletedPosts = await db
@@ -67,7 +67,7 @@ export const updatePostType = async (
   boardId: Board["id"],
   newType: Post["type"],
   userId: string,
-  role: Role,
+  role: Role
 ) => {
   const condition =
     role === Role.owner
@@ -75,7 +75,7 @@ export const updatePostType = async (
       : and(
           eq(postTable.id, id),
           eq(postTable.boardId, boardId),
-          eq(postTable.author, userId),
+          eq(postTable.author, userId)
         );
 
   const updatedPosts = await db
@@ -97,7 +97,7 @@ export const updatePostContent = async (
   boardId: Board["id"],
   newContent: Post["content"],
   userId: string,
-  role: Role,
+  role: Role
 ) => {
   const condition =
     role === Role.owner
@@ -105,7 +105,7 @@ export const updatePostContent = async (
       : and(
           eq(postTable.id, id),
           eq(postTable.boardId, boardId),
-          eq(postTable.author, userId),
+          eq(postTable.author, userId)
         );
 
   const updatedPosts = await db
@@ -143,6 +143,8 @@ export const mergePost = async (
   sourcePostIds: Post["id"][],
   mergedContent: Post["content"],
   boardId: Board["id"],
+  userId: string,
+  role: Role
 ): Promise<MergePostResult> => {
   if (sourcePostIds.length === 0) {
     throw new Error("At least one source post is required for merging");
@@ -159,17 +161,23 @@ export const mergePost = async (
       .select()
       .from(postTable)
       .where(
-        and(inArray(postTable.id, allPostIds), eq(postTable.boardId, boardId)),
+        and(inArray(postTable.id, allPostIds), eq(postTable.boardId, boardId))
       );
 
     if (posts.length !== allPostIds.length) {
       throw new Error(
-        "One or more posts not found or don't belong to the specified board",
+        "One or more posts not found or don't belong to the specified board"
       );
     }
 
-    const targetPost = posts.find((p) => p.id === targetPostId);
-    if (!targetPost) {
+    if (
+      role !== Role.owner &&
+      (role !== Role.member || posts.some((post) => post.author !== userId))
+    ) {
+      throw new Error(UNAUTHORIZED_POST_MUTATION_ERROR);
+    }
+
+    if (!posts.some((p) => p.id === targetPostId)) {
       throw new Error("Target post not found");
     }
 
@@ -191,7 +199,7 @@ export const mergePost = async (
       .from(voteTable)
       .where(inArray(voteTable.postId, allPostIds))
       .orderBy(
-        sql`CASE WHEN ${voteTable.postId} = ${targetPostId} THEN 0 ELSE 1 END`,
+        sql`CASE WHEN ${voteTable.postId} = ${targetPostId} THEN 0 ELSE 1 END`
       );
 
     // 4. Create a map to keep only the first vote per user (prioritizing target post)
@@ -211,8 +219,8 @@ export const mergePost = async (
         .where(
           and(
             inArray(voteTable.postId, allPostIds),
-            not(inArray(voteTable.id, votesToKeepIds)),
-          ),
+            not(inArray(voteTable.id, votesToKeepIds))
+          )
         );
     }
 

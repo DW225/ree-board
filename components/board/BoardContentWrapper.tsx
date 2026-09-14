@@ -10,12 +10,12 @@ import { redirect } from "next/navigation";
 // Critical path components
 const BoardGrid = dynamic(() => import("@/components/board/BoardGrid"));
 const AnonymousModeProvider = dynamic(
-  () => import("@/components/board/AnonymousModeProvider"),
+  () => import("@/components/board/AnonymousModeProvider")
 );
 const PostProvider = dynamic(() => import("@/components/board/PostProvider"));
 const RTLProvider = dynamic(() => import("@/components/board/RTLProvider"));
 const PostChannel = dynamic(
-  () => import("@/components/board/PostChannelComponent"),
+  () => import("@/components/board/PostChannelComponent")
 );
 
 // Secondary features - lazy load with loading states
@@ -29,7 +29,7 @@ const AvatarStack = dynamic(
         <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
       </div>
     ),
-  },
+  }
 );
 
 const MemberManageModalComponent = dynamic(
@@ -42,7 +42,7 @@ const MemberManageModalComponent = dynamic(
         <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
       </div>
     ),
-  },
+  }
 );
 
 const SortButton = dynamic(() => import("@/components/board/SortButton"), {
@@ -57,7 +57,7 @@ const LinkButton = dynamic(
     loading: () => (
       <div className="w-10 h-10 rounded-md bg-gray-200 animate-pulse" />
     ),
-  },
+  }
 );
 
 interface BoardContentWrapperProps {
@@ -108,16 +108,26 @@ export default async function BoardContentWrapper({
         <PostProvider initials={initialData} boardId={boardId}>
           <PostChannel boardId={boardId} userId={userID} />
           <div className="container mx-auto w-full max-w-full px-4">
-            <div className="flex justify-end py-2">
+            <div className="flex flex-wrap items-center justify-end gap-3 py-3">
+              {viewOnly && (
+                <p className="mr-auto text-sm text-slate-600">
+                  <span className="font-medium text-slate-900">
+                    Read-only board
+                  </span>
+                  <span className="ml-2">
+                    You can view posts. Ask the board owner for edit access.
+                  </span>
+                </p>
+              )}
               <MemberManageModalComponent
                 boardId={boardId}
                 viewOnly={!hasManagePermission}
               >
                 <AvatarStack />
               </MemberManageModalComponent>
-              <SortButton className="shrink-0 ml-1" />
+              <SortButton className="shrink-0" />
               {hasManagePermission && (
-                <LinkButton boardId={boardId} className="shrink-0 ml-1" />
+                <LinkButton boardId={boardId} className="shrink-0" />
               )}
             </div>
             <BoardGrid boardId={boardId} viewOnly={viewOnly} userId={userID} />

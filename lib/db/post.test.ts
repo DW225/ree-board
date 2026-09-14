@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 jest.mock("@/db/schema", () => ({
   postTable: {
     id: "id",
@@ -71,7 +72,7 @@ describe("post mutation authorization", () => {
     mockDeleteReturning.mockResolvedValue([]);
 
     await expect(
-      deletePost("post-1", "board-1", "user-1", Role.member),
+      deletePost("post-1", "board-1", "user-1", Role.member)
     ).rejects.toThrow("Post not found or you do not have permission");
   });
 
@@ -84,8 +85,8 @@ describe("post mutation authorization", () => {
         "board-1",
         PostType.to_discuss,
         "user-1",
-        Role.member,
-      ),
+        Role.member
+      )
     ).rejects.toThrow("Post not found or you do not have permission");
   });
 
@@ -93,7 +94,7 @@ describe("post mutation authorization", () => {
     mockUpdateReturning.mockResolvedValue([]);
 
     await expect(
-      updatePostContent("post-1", "board-1", "content", "user-1", Role.member),
+      updatePostContent("post-1", "board-1", "content", "user-1", Role.member)
     ).rejects.toThrow("Post not found or you do not have permission");
   });
 
@@ -102,7 +103,7 @@ describe("post mutation authorization", () => {
     mockUpdateReturning.mockResolvedValue([{ id: "post-1" }]);
 
     await expect(
-      deletePost("post-1", "board-1", "user-1", Role.member),
+      deletePost("post-1", "board-1", "user-1", Role.member)
     ).resolves.toBeUndefined();
     await expect(
       updatePostType(
@@ -110,11 +111,11 @@ describe("post mutation authorization", () => {
         "board-1",
         PostType.to_discuss,
         "user-1",
-        Role.member,
-      ),
+        Role.member
+      )
     ).resolves.toBeUndefined();
     await expect(
-      updatePostContent("post-1", "board-1", "content", "user-1", Role.member),
+      updatePostContent("post-1", "board-1", "content", "user-1", Role.member)
     ).resolves.toBeUndefined();
   });
 });

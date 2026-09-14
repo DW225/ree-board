@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { retryWithBackoff } from "./retryWithBackoff";
 
 describe("retryWithBackoff", () => {

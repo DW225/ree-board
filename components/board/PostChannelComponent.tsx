@@ -21,11 +21,11 @@ export default function PostChannel({
   const postProcessor = useMemo(() => createPostMessageProcessor(), []);
   const taskProcessor = useMemo(() => createTaskMessageProcessor(), []);
 
-  useChannel(boardId, (message) => {
+  useChannel(`board:${boardId}`, (message) => {
     const messageType = message.name;
     if (messageType === undefined) return;
 
-    if (message.extras.headers.user !== userId) {
+    if (message.extras?.headers?.user !== userId) {
       if (messageType.startsWith(EVENT_PREFIX.POST)) {
         // Process post updates and creations using new processor
         postProcessor(messageType, message.data, userId);

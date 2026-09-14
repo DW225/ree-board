@@ -36,16 +36,19 @@ export function UpgradeAccountDialog({
   const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
   const [needsOtp, setNeedsOtp] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Reset state when dialog closes
   const handleOpenChange = (newOpen: boolean) => {
+    if (loading) return;
     if (!newOpen) {
       setEmail("");
       setName("");
       setOtp("");
       setNeedsOtp(false);
+      setEmailVerified(false);
       setError("");
     }
     onOpenChange(newOpen);
@@ -53,6 +56,7 @@ export function UpgradeAccountDialog({
 
   const handleSendOTP = async (e: SubmitEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError("");
 
@@ -61,7 +65,12 @@ export function UpgradeAccountDialog({
 
       if (result.success && result.needsOtp) {
         setNeedsOtp(true);
-        toast.success("Verification code sent to your email");
+        setEmailVerified(result.emailVerified === true);
+        toast.success(
+          result.emailVerified
+            ? "Email verified. Enter your display name."
+            : "Verification code sent to your email"
+        );
       } else {
         setError(result.error || "Failed to send verification code");
         toast.error(result.error || "Failed to send verification code");
@@ -91,6 +100,7 @@ export function UpgradeAccountDialog({
 
   const handleVerifyOTP = async (e: SubmitEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError("");
 
@@ -149,7 +159,11 @@ export function UpgradeAccountDialog({
                 autoFocus
               />
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p role="alert" className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? (
                 <>
@@ -171,30 +185,37 @@ export function UpgradeAccountDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Verify Your Email</DialogTitle>
+          <DialogTitle>
+            {emailVerified ? "Complete Your Account" : "Verify Your Email"}
+          </DialogTitle>
           <DialogDescription>
-            We sent a 6-digit code to <strong>{email}</strong>
+            {emailVerified
+              ? "Email verified. Enter your display name for"
+              : "We sent a 6-digit code to"}{" "}
+            <strong>{email}</strong>
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleVerifyOTP} className="space-y-4">
-          <div>
-            <Label htmlFor="otp">Verification Code</Label>
-            <Input
-              id="otp"
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replaceAll(/\D/g, ""))}
-              placeholder="123456"
-              maxLength={6}
-              required
-              disabled={loading}
-              autoFocus
-              className="text-center text-2xl tracking-widest"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Enter the 6-digit code from your email
-            </p>
-          </div>
+          {!emailVerified && (
+            <div>
+              <Label htmlFor="otp">Verification Code</Label>
+              <Input
+                id="otp"
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replaceAll(/\D/g, ""))}
+                placeholder="123456"
+                maxLength={6}
+                required
+                disabled={loading}
+                autoFocus
+                className="text-center text-2xl tracking-widest"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter the 6-digit code from your email
+              </p>
+            </div>
+          )}
           <div>
             <Label htmlFor="name">Display Name</Label>
             <Input
@@ -210,7 +231,11 @@ export function UpgradeAccountDialog({
               Letters, numbers, spaces, underscores, and hyphens only
             </p>
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
           <div className="space-y-2">
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? (

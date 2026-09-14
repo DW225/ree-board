@@ -17,12 +17,12 @@ export const addMember = async (newMember: NewMember) => {
 
 export const removeMember = async (
   userID: User["id"],
-  boardId: Board["id"],
+  boardId: Board["id"]
 ) => {
   await db
     .delete(memberTable)
     .where(
-      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardId)),
+      and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardId))
     );
 };
 
@@ -42,7 +42,7 @@ const prepareFetchMembersByBoardID = db
 
 export const fetchMembersByBoardID = async (
   boardId: Board["id"],
-  trx?: Transaction,
+  trx?: Transaction
 ) => {
   if (trx) {
     return await trx
@@ -59,7 +59,7 @@ export const fetchMembersByBoardID = async (
       .where(eq(memberTable.boardId, boardId));
   }
   return await withDbRetry(() =>
-    prepareFetchMembersByBoardID.execute({ boardId }),
+    prepareFetchMembersByBoardID.execute({ boardId })
   );
 };
 
@@ -71,24 +71,24 @@ const prepareCheckMemberRole = db
   .where(
     and(
       eq(memberTable.userId, sql.placeholder("userId")),
-      eq(memberTable.boardId, sql.placeholder("boardId")),
-    ),
+      eq(memberTable.boardId, sql.placeholder("boardId"))
+    )
   )
   .prepare();
 
 export const checkMemberRole = async (
   userID: User["id"],
-  boardId: Board["id"],
+  boardId: Board["id"]
 ) => {
   const member = await withDbRetry(() =>
-    prepareCheckMemberRole.execute({ userId: userID, boardId }),
+    prepareCheckMemberRole.execute({ userId: userID, boardId })
   );
   return member.length > 0 ? member[0].role : null;
 };
 
 export const fetchMembersWithExclude = async (
   boardIds: Board["id"][],
-  excludeBoardId: Board["id"],
+  excludeBoardId: Board["id"]
 ) => {
   if (boardIds.length === 0) return [];
 
@@ -105,8 +105,8 @@ export const fetchMembersWithExclude = async (
       db
         .select()
         .from(excludedMembers)
-        .where(eq(excludedMembers.userId, memberTable.userId)),
-    ),
+        .where(eq(excludedMembers.userId, memberTable.userId))
+    )
   );
 
   return await db
@@ -127,15 +127,19 @@ export const fetchMembersWithExclude = async (
 
 export const bulkAddMembers = async (
   members: NewMember[],
-  trx?: Transaction,
+  trx?: Transaction
 ) => {
-  if (members.length === 0) return;
+  if (members.length === 0) return [];
 
-  if (trx) {
-    await trx.insert(memberTable).values(members).onConflictDoNothing();
-  } else {
-    await db.insert(memberTable).values(members).onConflictDoNothing();
-  }
+  return (trx ?? db)
+    .insert(memberTable)
+    .values(members)
+    .onConflictDoNothing()
+    .returning({
+      id: memberTable.id,
+      userId: memberTable.userId,
+      role: memberTable.role,
+    });
 };
 
 const prepareCheckIfMemberExists = db
@@ -144,21 +148,21 @@ const prepareCheckIfMemberExists = db
   .where(
     and(
       eq(memberTable.userId, sql.placeholder("userId")),
-      eq(memberTable.boardId, sql.placeholder("boardId")),
-    ),
+      eq(memberTable.boardId, sql.placeholder("boardId"))
+    )
   )
   .limit(1)
   .prepare();
 
 export const checkIfMemberExists = async (
   userId: User["id"],
-  boardId: Board["id"],
+  boardId: Board["id"]
 ): Promise<boolean> => {
   const existing = await withDbRetry(() =>
     prepareCheckIfMemberExists.execute({
       userId,
       boardId,
-    }),
+    })
   );
 
   return existing.length > 0;
@@ -169,7 +173,7 @@ export const checkIfMemberExists = async (
  * Useful for enforcing one-board limit for guest users
  */
 export const getBoardCountForUser = async (
-  userId: User["id"],
+  userId: User["id"]
 ): Promise<number> => {
   const result = await db
     .select({ value: count() })

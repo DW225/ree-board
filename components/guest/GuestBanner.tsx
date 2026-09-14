@@ -7,7 +7,7 @@ import { UpgradeAccountDialog } from "./UpgradeAccountDialog";
 import { Clock } from "lucide-react";
 
 interface GuestBannerProps {
-  expiresAt: Date;
+  expiresAt: Date | null;
 }
 
 // Expiration warning thresholds (in days)
@@ -25,15 +25,25 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
   const [showDialog, setShowDialog] = useState(false);
 
   const [now, setNow] = useState(Date.now);
-  useInterval(() => { setNow(Date.now()); }, 60_000);
+  useInterval(() => {
+    setNow(Date.now());
+  }, 60_000);
 
   // Calculate days remaining
-  const timeLeft = expiresAt.getTime() - now;
-  const daysLeft = Math.ceil(timeLeft / MS_PER_DAY);
+  const daysLeft = expiresAt
+    ? Math.ceil((expiresAt.getTime() - now) / MS_PER_DAY)
+    : null;
+
+  let expirationMessage = "save your account to keep access";
+  if (daysLeft !== null) {
+    if (daysLeft <= 0) expirationMessage = "guest account has expired";
+    else if (daysLeft === 1) expirationMessage = "expires tomorrow";
+    else expirationMessage = `${daysLeft} days remaining`;
+  }
 
   // Determine banner urgency styling
-  const isUrgent = daysLeft <= URGENT_THRESHOLD_DAYS;
-  const isCritical = daysLeft <= CRITICAL_THRESHOLD_DAYS;
+  const isUrgent = daysLeft !== null && daysLeft <= URGENT_THRESHOLD_DAYS;
+  const isCritical = daysLeft !== null && daysLeft <= CRITICAL_THRESHOLD_DAYS;
 
   // Helper functions to get urgency-based styles
   const getBannerStyles = () => {
@@ -78,17 +88,13 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
 
   return (
     <>
-      {daysLeft > 0 && <div className={`border-b p-3 ${getBannerStyles()}`}>
-        <div className="container mx-auto flex items-center justify-between gap-4">
+      <div className={`border-b p-3 ${getBannerStyles()}`}>
+        <div className="container mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Clock className={`size-4 ${getIconStyles()}`} />
             <p className={`text-sm ${getTextStyles()}`}>
               Guest account -{" "}
-              <span className="font-semibold">
-                {daysLeft === 1
-                  ? "expires tomorrow"
-                  : `${daysLeft} days remaining`}
-              </span>
+              <span className="font-semibold">{expirationMessage}</span>
             </p>
           </div>
           <Button
@@ -100,7 +106,7 @@ export function GuestBanner({ expiresAt }: Readonly<GuestBannerProps>) {
             Upgrade to Keep Access
           </Button>
         </div>
-      </div>}
+      </div>
       <UpgradeAccountDialog open={showDialog} onOpenChange={setShowDialog} />
     </>
   );
