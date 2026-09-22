@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^2.0.2",
-    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^4.2.0",
+    "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^4.2.2",
     "@libsql/client": "^0.18.0",
     "@marsidev/react-turnstile": "^1.6.1",
     "@next/env": "16.3.5",
@@ -33,7 +33,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "ably": "^2.28.0",
     "class-variance-authority": "^0.7.1",
-    "cn": "0.2.6",
+    "cn": "0.3.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
