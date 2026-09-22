@@ -1,11 +1,42 @@
+import { validateLocalE2e } from "@/lib/config/localE2e";
+import { localMessageSchema } from "@/lib/realtime/localMessage";
+import { z } from "zod";
 import { Rest } from "ably";
 
 export const ablyClient = (channelID: string) => {
-  if (!process.env.ABLY_API_KEY) {
+  const local = validateLocalE2e();
+  if (local && process.env.NEXT_PUBLIC_E2E_REALTIME_MODE !== "ably") {
+    z.string()
+      .regex(/^[A-Za-z0-9_-]{1,128}$/)
+      .parse(channelID);
+    return {
+      async publish(value: unknown) {
+        const message = localMessageSchema.parse(value);
+        const response = await fetch(
+          `${local.relayOrigin}/boards/${channelID}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.E2E_RELAY_TOKEN}`,
+            },
+            body: JSON.stringify(message),
+            signal: AbortSignal.timeout(5000),
+            redirect: "error",
+          }
+        );
+        if (!response.ok) throw new Error("Local event publication failed");
+        // Ably's REST publisher returns an empty result when no serials are supplied.
+        return {};
+      },
+    };
+  }
+  const key = local ? process.env.ABLY_E2E_API_KEY : process.env.ABLY_API_KEY;
+  if (!key) {
     throw new Error("Missing ably API key");
   }
   const client = new Rest({
-    key: process.env.ABLY_API_KEY,
+    key,
   });
 
   return client.channels.get(`board:${channelID}`);

@@ -17,7 +17,7 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig([
-  { ignores: ["scripts/**"] },
+  { ignores: ["scripts/**", ".e2e/**"] },
   ...nextCoreWebVitals,
   prettier,
   ...compat.extends("plugin:drizzle/all"),

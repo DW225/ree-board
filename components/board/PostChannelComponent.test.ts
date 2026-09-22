@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import PostChannel from "./PostChannelComponent";
+import { AblyPostChannel as PostChannel } from "./PostChannelComponent";
 import { addPostTask, updatePostState } from "@/lib/signal/postSignals";
 import type * as React from "react";
 

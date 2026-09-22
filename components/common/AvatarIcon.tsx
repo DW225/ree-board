@@ -79,7 +79,11 @@ export const AvatarIcon = forwardRef<HTMLDivElement, AvatarIconProps>(
         ref={ref}
       >
         <AvatarImage
-          src={`${user?.avatar_url}?d=404&s=36`}
+          src={
+            process.env.NEXT_PUBLIC_E2E_RUN_ID
+              ? undefined
+              : `${user?.avatar_url}?d=404&s=36`
+          }
           alt={user?.name ?? "Unknown User"}
           className="size-full rounded-[inherit] object-cover"
         />

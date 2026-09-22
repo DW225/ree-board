@@ -21,7 +21,6 @@ import { createClient } from "@/lib/utils/supabase/client";
 import { ChevronDown, LogOut, Menu, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import NavLink from "../navbar/NavLink";
@@ -30,7 +29,6 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const toggleMenu = () => setIsOpen((v) => !v);
   const { user } = useSupabaseSession();
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const rawFullName: unknown = user?.user_metadata?.full_name;
@@ -58,7 +56,8 @@ export default function Navbar() {
         toast.error("Error signing out. Please try again.");
         return;
       }
-      router.push("/");
+      // Discard prefetched authenticated routes after the session cookie is cleared.
+      globalThis.location.replace("/");
     });
   };
 

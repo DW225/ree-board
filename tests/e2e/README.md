@@ -1,3 +1,63 @@
+# Local E2E
+
+The default local command runs the real production app, Supabase Auth, libSQL, Mailpit, and Chromium on a Docker network with external access blocked. Board events use a small local relay. CAPTCHA uses an explicit local widget fixture. No production credentials or saved login file are needed.
+
+Use macOS or Linux, Node 24+, pnpm 11.25.0, Docker 29+, and a clean worktree without Next.js `.env` files. The supervisor refuses those files without reading them.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm test:e2e:tools
+pnpm test:e2e:local --slot 0
+```
+
+The first run downloads pinned images and prepares the Linux browser image. Runtime starts only after preparation. The supervisor starts the local Supabase stack on a temporary bootstrap network, then moves only its owned containers to an internal network with no host gateway. It preserves generated gateway certificates, database keys, volumes, and DNS aliases. All services, Node, and Chromium must pass external-connection denial checks before the app runs. The browser check uses no request interception. Normal test contexts also reject unexpected requests.
+
+Each run gets fresh storage, replays all nine migrations, builds the app with its local public settings, runs the three browser journeys, and removes its owned resources. The same command is configured in `.github/workflows/local-e2e.yml`. CI execution still requires a pushed branch.
+
+For manual agent browser work, use the host profile:
+
+```sh
+pnpm exec playwright install chromium
+pnpm e2e:up --slot 0
+# Open the printed app and inbox URLs in a NEW browser context/profile.
+# In another terminal:
+pnpm e2e:down --slot 0
+```
+
+This interactive host profile publishes ports on loopback. It does not block host or container internet access. `pnpm test:e2e:local --host --slot 0` is available for diagnosis; the default command is the isolated acceptance run.
+
+`e2e:up` stays in the foreground. Ctrl+C also cancels startup. `pnpm e2e:reset --slot 0` replaces only that checkout's selected run. A second `down` is safe. Stop an interactive run before starting another command in the same checkout. After a hard supervisor stop, use `down` to remove stale resources with the exact run labels. Failed removal keeps the ownership record for a retry.
+
+Use one worktree and slot per concurrent agent. Each checkout has one atomic lock. Ports, Auth data, SQL data, build output, and reports are separate. **Cookies are not isolated by port:** use separate browser contexts or profiles, and close them after the run.
+
+For host slot 0, the app is `http://localhost:35000` and Mailpit is `http://127.0.0.1:35004`. Use the printed URLs for other slots. Addresses such as `alice@ree-board.test` require no external inbox. Auth sends real messages to local Mailpit; SMTP forwarding is not configured. The isolated profile uses internal service DNS and publishes no service ports.
+
+Three focused journeys cover:
+
+- Confirmation, password and OTP login, resend, wrong/used codes, recovery, password replacement, session refresh, sign-out, and visible mail failure. The isolated profile sets a 30-second server OTP lifetime to check expiry with the real Auth clock; the interactive profile keeps one hour. The isolated profile also uses a two-minute JWT lifetime and checks the app's cookie refresh after real token expiry with the browser page closed.
+- Board/post persistence, editing, votes, task assignment/status, deletion, two-session delivery, a separate board, owner-only access, membership revocation, database stop/restart, notification loss, and stream reconnect. SQL checks distinguish failed writes from saved data whose notification failed.
+- A real anonymous guest invitation, rejected server-action writes, email upgrade, and retention of the same user identity and read-only board role.
+
+The ignored `.e2e/run-…/` directory holds reports, traces, logs, the database, and the build. Traces can contain disposable local session tokens. Generated credentials have restricted file permissions and are removed at teardown. The runner has no host home, source, or Docker socket mount. Its service-failure controls can act only on that run's SQL and mail containers. Host file writes reject symlinks.
+
+Online service checks are separate:
+
+```sh
+pnpm test:e2e:captcha --slot 1
+# Supply a dedicated test-app key through your secret store or shell environment:
+pnpm test:e2e:ably --slot 2
+```
+
+The CAPTCHA command runs pass, reject, and used-token scenarios with Cloudflare's official public dummy keys. Local Auth performs the real server verification. It tests signup, password login, OTP send/resend, and anonymous entry. Cloudflare network access is required. Known dummy site keys and local modes are rejected in deployed builds.
+
+The Ably command requires `ABLY_E2E_API_KEY` and the approved `ABLY_E2E_KEY_ID` (`appId.keyId`). It refuses a missing or mismatched key and never uses `ABLY_API_KEY` as a fallback. Use a dedicated test app with no production integrations. The suite uses the real token route and SDK for subscribe-only access, cross-board denial, renewal, reconnect, and membership revocation. It remains unverified until a dedicated test key is supplied.
+
+Local relay success does not prove Ably service behavior. The offline CAPTCHA fixture does not prove Cloudflare verification. Hosted Auth settings, external email delivery, and Turso Cloud replication are outside these local checks. Two final isolated runs passed all three journeys, including real expired-cookie refresh. Separate worktree checks also passed for login, reload, logout, reset, and stop isolation. All three Turnstile scenarios passed. Current evidence and the remaining dedicated-Ably check are in the [implementation plan](../../docs/superpowers/plans/2026-09-14-local-e2e-environment.md).
+
+The existing mock and manually configured browser suites retain their commands below and do not load these local specs.
+
+---
+
 # Tailwind migration checks
 
 The baseline, Fluid removal, lint fixes, migration, Sonar integration, and state fixes are separate functional commits. The lint commit includes the `scripts/**` exclusion. The Stop hook runs lint; the existing lint failures caused its repeated failures. The hook remains enabled.
@@ -55,7 +115,7 @@ Local build/test logs are under `/tmp/ree-v4-*.log`. Playwright writes failure i
 
 ## Acceptance limits
 
-Real Supabase authentication, Turso persistence, guest authorization, Ably two-session delivery, and the authenticated production board have not been tested. Read-only fixture checks prove presentation only. Actual 200% browser zoom and timing samples for every animated surface also remain unverified. These checks are not reported as passing.
+At the 2026-09-08 Tailwind checkpoint, real Supabase authentication, Turso persistence, guest authorization, Ably two-session delivery, and the authenticated production board had not been tested. The Local E2E section above records the newer local-service results. Read-only fixture checks prove presentation only. Actual 200% browser zoom and timing samples for every animated surface also remain unverified. These checks are not reported as passing.
 
 To run the shared editor test against disposable services:
 
