@@ -19,7 +19,16 @@ updates:
       semver-patch-days: 3
     groups:
       next-react:
-        patterns: ["next", "@next/*", "react", "react-dom"]
+        patterns:
+          [
+            "next",
+            "@next/*",
+            "eslint-config-next",
+            "react",
+            "react-dom",
+            "@types/react",
+            "@types/react-dom",
+          ]
         update-types: ["minor", "patch"]
       supabase:
         patterns: ["@supabase/*"]
@@ -28,16 +37,51 @@ updates:
         patterns: ["@libsql/*", "drizzle-*"]
         update-types: ["minor", "patch"]
       observability:
-        patterns: ["@sentry/*", "@vercel/speed-insights"]
+        patterns: ["@sentry/*", "@vercel/speed-insights", "@vercel/toolbar"]
         update-types: ["minor", "patch"]
       ui-client:
-        patterns: ["@atlaskit/*", "@marsidev/*", "@preact/*", "class-variance-authority", "clsx", "lucide-react", "next-themes", "radix-ui", "sonner", "swr", "tailwind-merge", "tailwindcss-animate"]
+        patterns:
+          [
+            "@atlaskit/*",
+            "@marsidev/*",
+            "@preact/*",
+            "class-variance-authority",
+            "cn",
+            "lucide-react",
+            "next-themes",
+            "radix-ui",
+            "react-use",
+            "sonner",
+            "swr",
+            "tw-animate-css",
+          ]
         update-types: ["minor", "patch"]
       markdown-validation:
-        patterns: ["react-markdown", "remark-*", "rehype-*", "zod", "drizzle-zod"]
+        patterns: ["react-markdown", "remark-*", "rehype-*", "zod"]
         update-types: ["minor", "patch"]
       tooling:
-        patterns: ["@eslint/*", "@tailwindcss/*", "@types/*", "@typescript-eslint/*", "autoprefixer", "eslint", "eslint-*", "esbuild", "esbuild-*", "fluid-tailwind", "husky", "jest", "postcss", "tailwindcss", "ts-jest", "typescript", "typescript-eslint"]
+        patterns:
+          [
+            "@eslint/*",
+            "@jest/*",
+            "@playwright/*",
+            "@tailwindcss/*",
+            "@types/*",
+            "@typescript-eslint/*",
+            "eslint",
+            "eslint-*",
+            "esbuild",
+            "esbuild-*",
+            "husky",
+            "jest",
+            "lint-staged",
+            "postcss",
+            "prettier",
+            "tailwindcss",
+            "ts-jest",
+            "typescript",
+            "typescript-eslint",
+          ]
         update-types: ["minor", "patch"]
 
   - package-ecosystem: "github-actions"
