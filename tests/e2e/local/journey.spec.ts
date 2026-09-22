@@ -78,6 +78,9 @@ test("local confirmation, password login, board persistence and collaboration", 
     0
   );
   await page.reload();
+  await expect(page.getByTestId("local-realtime-status")).toHaveText(
+    "Connected"
+  );
   await expect(page.getByText(content, { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Open menu", exact: true }).click();
@@ -140,6 +143,9 @@ test("local confirmation, password login, board persistence and collaboration", 
     });
     expect(savedTask.rows).toHaveLength(1);
     await page.reload();
+    await expect(page.getByTestId("local-realtime-status")).toHaveText(
+      "Connected"
+    );
     await expect(task.getByText("Done", { exact: true })).toBeVisible();
 
     // Notification loss must not turn a successful database write into a duplicate retry.
@@ -220,6 +226,9 @@ test("local confirmation, password login, board persistence and collaboration", 
     await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
     await expect(memberPage.getByText(edited, { exact: true })).toHaveCount(0);
     await page.reload();
+    await expect(page.getByTestId("local-realtime-status")).toHaveText(
+      "Connected"
+    );
     await expect(page.getByText(edited, { exact: true })).toHaveCount(0);
     expect(
       (
@@ -230,18 +239,18 @@ test("local confirmation, password login, board persistence and collaboration", 
       ).rows
     ).toHaveLength(0);
 
-    const revoked = memberPage.waitForResponse(
-      (response) =>
-        response.url().endsWith(`/api/e2e/realtime/${boardId}`) &&
-        response.status() === 403,
-      { timeout: 65_000 }
-    );
     await page.getByRole("button", { name: "View board members" }).click();
     await page.getByPlaceholder("Search Members").fill(member.email);
     await page
       .getByRole("dialog")
       .getByRole("button", { name: "Remove", exact: true })
       .click();
+    const revoked = memberPage.waitForResponse(
+      (response) =>
+        response.url().endsWith(`/api/e2e/realtime/${boardId}`) &&
+        response.status() === 403,
+      { timeout: 65_000 }
+    );
     await page
       .getByRole("dialog", { name: "Remove Member", exact: true })
       .getByRole("button", { name: "Remove", exact: true })
