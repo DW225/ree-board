@@ -9,18 +9,18 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24.20.0
           package-manager-cache: false
-      - uses: docker/setup-docker-action@v5
+      - uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
         with:
           version: v29.4.0
-      - run: npm install --global pnpm@11.25.0
-      - run: pnpm install --frozen-lockfile
+      - run: npm install --global --ignore-scripts pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm test:e2e:local --slot 0
       - if: always()
         run: pnpm e2e:down --slot 0

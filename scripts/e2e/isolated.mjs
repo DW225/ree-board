@@ -17,6 +17,11 @@ import { validateLocalE2e } from "../../lib/config/localE2e.ts";
 const root = resolve(import.meta.dirname, "../..");
 
 export async function prepareImage(manifest, runCommand) {
+  const uid = process.getuid?.();
+  const gid = process.getgid?.();
+  if (!Number.isInteger(uid) || uid === 0 || !Number.isInteger(gid)) {
+    throw new Error("Run local E2E from a non-root macOS or Linux account");
+  }
   const image = `ree-board-e2e:${manifest.runId}`;
   console.log(
     "Preparing the pinned Linux browser image (cached after the first run)..."
@@ -25,6 +30,10 @@ export async function prepareImage(manifest, runCommand) {
     "docker",
     [
       "build",
+      "--build-arg",
+      `E2E_UID=${uid}`,
+      "--build-arg",
+      `E2E_GID=${gid}`,
       "--file",
       "scripts/e2e/Dockerfile",
       "--tag",

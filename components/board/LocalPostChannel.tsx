@@ -9,15 +9,19 @@ export function LocalPostChannel({
   onMessage,
 }: {
   boardId: string;
-  onMessage(message: LocalMessage): void;
+  onMessage: (message: LocalMessage) => void;
 }) {
   const [status, setStatus] = useState("Connecting");
   useEffect(() => {
     const stream = new EventSource(
       `/api/e2e/realtime/${encodeURIComponent(boardId)}`
     );
-    stream.addEventListener("ready", () => setStatus("Connected"));
-    stream.onerror = () => setStatus("Reconnecting");
+    stream.addEventListener("ready", () => {
+      setStatus("Connected");
+    });
+    stream.onerror = () => {
+      setStatus("Reconnecting");
+    };
     stream.onmessage = (event) => {
       try {
         const message = localMessageSchema.safeParse(JSON.parse(event.data));
@@ -26,7 +30,9 @@ export function LocalPostChannel({
         /* Ignore malformed inbound events. */
       }
     };
-    return () => stream.close();
+    return () => {
+      stream.close();
+    };
   }, [boardId, onMessage]);
   return (
     <span className="sr-only" role="status" data-testid="local-realtime-status">

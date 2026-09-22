@@ -11,9 +11,9 @@ export interface CaptchaHandle {
 interface CaptchaProps {
   siteKey: string;
   ref?: Ref<CaptchaHandle>;
-  onSuccess(token: string): void;
-  onError?(): void;
-  onExpire?(): void;
+  onSuccess: (token: string) => void;
+  onError?: () => void;
+  onExpire?: () => void;
 }
 
 export function Captcha({

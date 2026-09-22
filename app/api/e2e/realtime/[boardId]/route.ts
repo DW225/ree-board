@@ -40,7 +40,9 @@ export async function GET(
     .limit(1);
   if (!membership) return new Response(null, { status: 403 });
   const lifetime = new AbortController();
-  const expiry = setTimeout(() => lifetime.abort(), 60_000);
+  const expiry = setTimeout(() => {
+    lifetime.abort();
+  }, 60_000);
   const signal = AbortSignal.any([request.signal, lifetime.signal]);
   try {
     const upstream = await fetch(

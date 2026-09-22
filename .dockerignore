@@ -16,3 +16,11 @@ playwright-report
 docs
 .DS_Store
 *.tsbuildinfo
+
+# Local credentials and databases are never source inputs.
+**/*.pem
+**/*.key
+**/test.db*
+**/.vercel
+**/.claude
+**/.codex-log
