@@ -7,6 +7,7 @@ import { createServer } from "node:http";
 import { setTimeout as delay } from "node:timers/promises";
 import {
   cleanEnvironment,
+  dockerEnvironment,
   assertCleanCheckout,
   command,
   waitFor,
@@ -25,6 +26,77 @@ test("child processes cannot inherit hosted service credentials", () => {
   assert.equal(env.ABLY_API_KEY, undefined);
   assert.equal(env.SUPABASE_ACCESS_TOKEN, undefined);
   assert.equal(env.NEXT_PUBLIC_SUPABASE_URL, undefined);
+});
+
+test("Docker selection stays on the resolved local socket and rejects remote endpoints", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "ree-docker-check-"));
+  const source = {
+    ...cleanEnvironment(),
+    DOCKER_CONFIG: directory,
+    DOCKER_CONTEXT: "",
+    DOCKER_HOST: "",
+    ABLY_API_KEY: "live-sentinel",
+  };
+  const socket = "unix:///tmp/ree-docker-context.sock";
+  try {
+    await command(
+      "docker",
+      ["context", "create", "local-check", "--docker", `host=${socket}`],
+      source
+    );
+    const selected = await dockerEnvironment({
+      ...source,
+      DOCKER_CONTEXT: "local-check",
+    });
+    assert.equal(selected.DOCKER_HOST, socket);
+    assert.equal(selected.DOCKER_CONFIG, directory);
+    assert.equal(selected.DOCKER_CONTEXT, undefined);
+    assert.equal(selected.ABLY_API_KEY, undefined);
+    assert.equal(cleanEnvironment(selected).DOCKER_HOST, undefined);
+    assert.equal(cleanEnvironment(selected).DOCKER_CONFIG, undefined);
+    await command("docker", ["context", "use", "local-check"], source);
+    assert.equal((await dockerEnvironment(source)).DOCKER_HOST, socket);
+    const overridden = await dockerEnvironment({
+      ...source,
+      DOCKER_HOST: "unix:///tmp/ree-docker-host.sock",
+    });
+    assert.equal(overridden.DOCKER_HOST, "unix:///tmp/ree-docker-host.sock");
+    await command("docker", ["context", "use", "default"], source);
+    assert.equal(
+      (
+        await command(
+          "docker",
+          ["context", "inspect", "--format", "{{.Endpoints.docker.Host}}"],
+          selected
+        )
+      ).trim(),
+      socket
+    );
+    await command(
+      "docker",
+      [
+        "context",
+        "create",
+        "remote-check",
+        "--docker",
+        "host=tcp://docker.invalid:2375",
+      ],
+      source
+    );
+    await assert.rejects(
+      dockerEnvironment({ ...source, DOCKER_CONTEXT: "remote-check" }),
+      /local Docker Unix socket/
+    );
+    await assert.rejects(
+      dockerEnvironment({
+        ...source,
+        DOCKER_HOST: "tcp://docker.invalid:2375",
+      }),
+      /local Docker Unix socket/
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("a checkout with a Next environment file is refused without reading its contents", async () => {

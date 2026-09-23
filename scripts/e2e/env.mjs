@@ -38,6 +38,28 @@ export function cleanEnvironment(source = process.env) {
   );
 }
 
+export async function dockerEnvironment(source = process.env) {
+  const env = cleanEnvironment(source);
+  for (const key of ["DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG"]) {
+    if (source[key]) env[key] = source[key];
+  }
+  // Let the installed CLI resolve its context/host precedence without contacting a daemon.
+  const endpoint = (
+    await command(
+      "docker",
+      ["context", "inspect", "--format", "{{.Endpoints.docker.Host}}"],
+      env,
+      undefined,
+      10_000
+    )
+  ).trim();
+  if (!/^unix:\/\/\/.+/.test(endpoint))
+    throw new Error("Local E2E requires a local Docker Unix socket");
+  delete env.DOCKER_CONTEXT;
+  env.DOCKER_HOST = endpoint;
+  return env;
+}
+
 export async function assertCleanCheckout(directory) {
   const names = await readdir(directory);
   const blocked = names.some(
@@ -202,8 +224,7 @@ export async function stopChild(child) {
   await exited;
 }
 
-async function removeOwnedServices(manifest) {
-  const env = cleanEnvironment();
+async function removeOwnedServices(manifest, env) {
   const directory = join(root, manifest.runDirectory);
   const project = `ree-${manifest.runId}`;
   const list = async (kind, filter) =>
@@ -307,7 +328,7 @@ function localEnvironment(
   ablySettings
 ) {
   return {
-    ...(manifest.runtime === "container" ? {} : baseEnv),
+    ...(manifest.runtime === "container" ? {} : cleanEnvironment(baseEnv)),
     NODE_ENV: "production",
     APP_ENV: "local-e2e",
     E2E_MANIFEST: JSON.stringify(manifest),
@@ -337,6 +358,7 @@ async function start(slot, isolated, captchaScenario, ablySettings) {
   if (Number(process.versions.node.split(".")[0]) < 24)
     throw new Error("Local E2E requires Node 24 or later");
   await assertCleanCheckout(root);
+  const baseEnv = await dockerEnvironment();
   await mkdir(join(root, ".e2e"), { recursive: true, mode: 0o700 });
   const manifest = localE2eManifest(
     `run-${randomUUID()}`,
@@ -356,7 +378,6 @@ async function start(slot, isolated, captchaScenario, ablySettings) {
       `Slot ${slot} already exists. Use e2e:down for that slot first.`
     );
   }
-  const baseEnv = cleanEnvironment();
   const project = `ree-${manifest.runId}`;
   let network = `${project}-network`;
   const sqlContainer = `${project}-sql`;
@@ -384,7 +405,7 @@ async function start(slot, isolated, captchaScenario, ablySettings) {
         await stopChild(testChild);
         await stopChild(app);
         await relay?.close();
-        await removeOwnedServices(manifest);
+        await removeOwnedServices(manifest, baseEnv);
         await rm(join(runDirectory, "env.json"), { force: true });
         await rm(join(runDirectory, "owner.json"), { force: true });
         await rm(slotFile, { force: true });
@@ -407,7 +428,7 @@ async function start(slot, isolated, captchaScenario, ablySettings) {
   try {
     await writeFile(
       join(runDirectory, "owner.json"),
-      JSON.stringify({ pid: process.pid }),
+      JSON.stringify({ pid: process.pid, dockerHost: baseEnv.DOCKER_HOST }),
       { mode: 0o600 }
     );
     for (let offset = 0; offset <= 8; offset++) await checkPort(port + offset);
@@ -430,7 +451,7 @@ async function start(slot, isolated, captchaScenario, ablySettings) {
     if (version !== "2.117.0")
       throw new Error("Use the pinned Supabase CLI 2.117.0");
     const runnerImage = isolated
-      ? await isolatedTools.prepareImage(manifest, runCommand)
+      ? await isolatedTools.prepareImage(manifest, baseEnv, runCommand)
       : undefined;
     const template = await readFile(join(root, "supabase/config.toml"), "utf8");
     // Official public dummy keys: https://developers.cloudflare.com/turnstile/troubleshooting/testing/
@@ -529,6 +550,7 @@ async function start(slot, isolated, captchaScenario, ablySettings) {
       const runtimeNetwork = await isolatedTools.isolateServices(
         manifest,
         network,
+        baseEnv,
         runCommand
       );
       network = runtimeNetwork.network;
@@ -598,6 +620,7 @@ async function start(slot, isolated, captchaScenario, ablySettings) {
         network,
         [...serviceIds, sqlId],
         runnerImage,
+        baseEnv,
         runCommand
       );
       abort.signal.throwIfAborted();
@@ -752,13 +775,24 @@ async function down(slot) {
     return;
   }
   if (response) throw new Error("The owned supervisor refused shutdown");
+  let dockerSource = process.env;
   // Refuse to race a supervisor that is still starting. Never kill an unknown PID.
   try {
     const owner = JSON.parse(
       await readFile(join(directory, "owner.json"), "utf8")
     );
-    if (!Number.isSafeInteger(owner.pid) || owner.pid <= 1)
+    if (
+      !Number.isSafeInteger(owner.pid) ||
+      owner.pid <= 1 ||
+      typeof owner.dockerHost !== "string" ||
+      !/^unix:\/\/\/.+/.test(owner.dockerHost)
+    )
       throw new Error("Invalid local owner record");
+    dockerSource = {
+      ...process.env,
+      DOCKER_HOST: owner.dockerHost,
+      DOCKER_CONTEXT: "",
+    };
     process.kill(owner.pid, 0);
     throw new Error(
       "The local supervisor is still active. Stop its terminal with Ctrl+C."
@@ -766,7 +800,7 @@ async function down(slot) {
   } catch (error) {
     if (!["ENOENT", "ESRCH"].includes(error.code)) throw error;
   }
-  await removeOwnedServices(manifest);
+  await removeOwnedServices(manifest, await dockerEnvironment(dockerSource));
   await rm(join(directory, "env.json"), { force: true });
   await rm(join(directory, "owner.json"), { force: true });
   await rm(slotFile, { force: true });

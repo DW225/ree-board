@@ -2,7 +2,7 @@
 
 The default local command runs the real production app, Supabase Auth, libSQL, Mailpit, and Chromium on a Docker network with external access blocked. Board events use a small local relay. CAPTCHA uses an explicit local widget fixture. No production credentials or saved login file are needed.
 
-Use macOS or Linux, Node 24+, pnpm 11.25.0, Docker 29+, and a clean worktree without Next.js `.env` files. The supervisor refuses those files without reading them.
+Use macOS or Linux, Node 24+, pnpm 11.25.0, Docker 29+, and a clean worktree without Next.js `.env` files. The supervisor refuses those files without reading them. Docker selection through `DOCKER_HOST`, `DOCKER_CONTEXT`, and `DOCKER_CONFIG` is supported. The selected endpoint must be a local Unix socket. The supervisor keeps that socket for all service operations and records it for cleanup after a crash; application processes do not inherit Docker settings.
 
 ```sh
 pnpm install --frozen-lockfile

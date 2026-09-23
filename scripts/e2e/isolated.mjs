@@ -5,7 +5,6 @@ import { pathToFileURL } from "node:url";
 import { request } from "node:http";
 import {
   command,
-  cleanEnvironment,
   waitFor,
   spawnOwned,
   stopChild,
@@ -16,7 +15,7 @@ import { validateLocalE2e } from "../../lib/config/localE2e.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 
-export async function prepareImage(manifest, runCommand) {
+export async function prepareImage(manifest, env, runCommand) {
   const uid = process.getuid?.();
   const gid = process.getgid?.();
   if (!Number.isInteger(uid) || uid === 0 || !Number.isInteger(gid)) {
@@ -42,7 +41,7 @@ export async function prepareImage(manifest, runCommand) {
       `ree-board.e2e.run=${manifest.runId}`,
       ".",
     ],
-    cleanEnvironment(),
+    env,
     join(root, manifest.runDirectory),
     1_200_000
   );
@@ -56,7 +55,7 @@ export async function prepareImage(manifest, runCommand) {
       "scripts/e2e/network-check.mjs",
       "--positive-control",
     ],
-    cleanEnvironment(),
+    env,
     join(root, manifest.runDirectory),
     30_000
   );
@@ -100,8 +99,7 @@ async function readGeneratedFiles(id, state, dockerApi) {
   return copiedFiles;
 }
 
-export async function isolateServices(manifest, bootstrap, runCommand) {
-  const env = cleanEnvironment();
+export async function isolateServices(manifest, bootstrap, env, runCommand) {
   const directory = join(root, manifest.runDirectory);
   const network = `ree-${manifest.runId}-isolated`;
   const exec = (args, timeout = 60_000) =>
@@ -132,12 +130,7 @@ export async function isolateServices(manifest, bootstrap, runCommand) {
     `ree-board.e2e.run=${manifest.runId}`,
     network,
   ]);
-  const endpoint = (
-    await exec(["context", "inspect", "--format", "{{.Endpoints.docker.Host}}"])
-  ).trim();
-  if (!endpoint.startsWith("unix://"))
-    throw new Error("The isolated runner requires a local Docker Unix socket");
-  const socketPath = endpoint.slice("unix://".length);
+  const socketPath = env.DOCKER_HOST.slice("unix://".length);
   const dockerApi = (method, path, body, status) =>
     new Promise((done, reject) => {
       const connection = request(
@@ -248,9 +241,9 @@ export async function checkServiceNetworks(
   network,
   ids,
   image,
+  env,
   runCommand
 ) {
-  const env = cleanEnvironment();
   const directory = join(root, manifest.runDirectory);
   for (const id of ids) {
     const networks = JSON.parse(
