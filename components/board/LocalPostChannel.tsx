@@ -8,8 +8,8 @@ export function LocalPostChannel({
   boardId,
   onMessage,
 }: {
-  boardId: string;
-  onMessage: (message: LocalMessage) => void;
+  readonly boardId: string;
+  readonly onMessage: (message: LocalMessage) => void;
 }) {
   const [status, setStatus] = useState("Connecting");
   useEffect(() => {
@@ -35,8 +35,8 @@ export function LocalPostChannel({
     };
   }, [boardId, onMessage]);
   return (
-    <span className="sr-only" role="status" data-testid="local-realtime-status">
+    <output className="sr-only" data-testid="local-realtime-status">
       {status}
-    </span>
+    </output>
   );
 }

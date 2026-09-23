@@ -3,7 +3,7 @@ import { createClient as createAuthClient } from "@supabase/supabase-js";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { Role } from "../../../lib/constants/role";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { signUp, signIn, createBoard } from "./helpers";
 import { test, expect, run } from "./fixtures";
@@ -462,8 +462,11 @@ test("real email resend, single-use OTP, recovery, refresh and sign-out", async 
     const afterRefresh = await session();
     expect(afterRefresh.user.id).toBe(beforeRefresh.user.id);
     expect(afterRefresh.expires_at).toBeGreaterThan(beforeRefresh.expires_at);
-    expect(afterRefresh.access_token === beforeRefresh.access_token).toBe(
-      false
+    // Compare fingerprints so assertion failures cannot print session tokens.
+    expect(
+      createHash("sha256").update(afterRefresh.access_token).digest("hex")
+    ).not.toBe(
+      createHash("sha256").update(beforeRefresh.access_token).digest("hex")
     );
     logoutPage = await recoveredContext.newPage();
     await logoutPage.goto("/board");

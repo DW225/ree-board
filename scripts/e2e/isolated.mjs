@@ -63,6 +63,43 @@ export async function prepareImage(manifest, runCommand) {
   return image;
 }
 
+async function readGeneratedFiles(id, state, dockerApi) {
+  const name = state.Name.slice(1);
+  // The CLI copies gateway certificates into its writable layer, outside mounts.
+  // Keep this generated material in memory while moving the owned container.
+  const copiedFiles = [];
+  if (name.startsWith("supabase_kong_")) {
+    for (const value of state.Config.Env ?? []) {
+      const match =
+        /^KONG_(?:SSL_CERT|SSL_CERT_KEY|DECLARATIVE_CONFIG)=(\/home\/kong\/[a-zA-Z0-9_.-]+)$/.exec(
+          value
+        );
+      if (match)
+        copiedFiles.push({
+          directory: "/home/kong",
+          archive: await dockerApi(
+            "GET",
+            `/containers/${id}/archive?path=${encodeURIComponent(match[1])}`,
+            undefined,
+            200
+          ),
+        });
+    }
+  }
+  if (name.startsWith("supabase_db_")) {
+    copiedFiles.push({
+      directory: "/etc/postgresql-custom",
+      archive: await dockerApi(
+        "GET",
+        `/containers/${id}/archive?path=/etc/postgresql-custom/pgsodium_root.key`,
+        undefined,
+        200
+      ),
+    });
+  }
+  return copiedFiles;
+}
+
 export async function isolateServices(manifest, bootstrap, runCommand) {
   const env = cleanEnvironment();
   const directory = join(root, manifest.runDirectory);
@@ -162,38 +199,7 @@ export async function isolateServices(manifest, bootstrap, runCommand) {
       aliases.add(`auth-${manifest.runId}`);
     if (name.startsWith("supabase_inbucket_"))
       aliases.add(`mail-${manifest.runId}`);
-    // The CLI copies gateway certificates into its writable layer, outside mounts.
-    // Keep this generated material in memory while moving the owned container.
-    const copiedFiles = [];
-    if (name.startsWith("supabase_kong_")) {
-      for (const value of state.Config.Env ?? []) {
-        const match =
-          /^KONG_(?:SSL_CERT|SSL_CERT_KEY|DECLARATIVE_CONFIG)=(\/home\/kong\/[a-zA-Z0-9_.-]+)$/.exec(
-            value
-          );
-        if (match)
-          copiedFiles.push({
-            directory: "/home/kong",
-            archive: await dockerApi(
-              "GET",
-              `/containers/${id}/archive?path=${encodeURIComponent(match[1])}`,
-              undefined,
-              200
-            ),
-          });
-      }
-    }
-    if (name.startsWith("supabase_db_")) {
-      copiedFiles.push({
-        directory: "/etc/postgresql-custom",
-        archive: await dockerApi(
-          "GET",
-          `/containers/${id}/archive?path=/etc/postgresql-custom/pgsodium_root.key`,
-          undefined,
-          200
-        ),
-      });
-    }
+    const copiedFiles = await readGeneratedFiles(id, state, dockerApi);
     await exec(["rm", "--force", id]);
     const created = await dockerApi(
       "POST",
@@ -399,8 +405,10 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
-  main().catch((error) => {
+  try {
+    await main();
+  } catch (error) {
     console.error(error.message);
     process.exitCode = 1;
-  });
+  }
 }

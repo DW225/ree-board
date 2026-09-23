@@ -22,7 +22,7 @@ export function Captcha({
   onSuccess,
   onError,
   onExpire,
-}: CaptchaProps) {
+}: Readonly<CaptchaProps>) {
   const widget = useRef<TurnstileInstance>(null);
   const [status, setStatus] = useState("Ready");
   const local =
@@ -49,7 +49,7 @@ export function Captcha({
   return (
     <fieldset className="rounded border p-3 text-sm">
       <legend>Local test verification</legend>
-      <p role="status">{status}</p>
+      <output className="block">{status}</output>
       <button
         type="button"
         disabled={status === "Verified"}

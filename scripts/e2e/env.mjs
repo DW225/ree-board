@@ -21,6 +21,8 @@ import {
   validateLocalE2e,
 } from "../../lib/config/localE2e.ts";
 
+import * as isolatedTools from "./isolated.mjs";
+
 const exec = promisify(execFile);
 const root = resolve(import.meta.dirname, "../..");
 const sqlImage =
@@ -61,14 +63,7 @@ function safeLog(text) {
     .replace(/([?&](?:token_hash|token|code)=)[^\s&"']+/gi, "$1[redacted]");
 }
 
-export async function command(
-  file,
-  args,
-  env,
-  logDirectory,
-  timeout = 600_000,
-  signal
-) {
+export async function command(file, args, env, logDirectory, timeout, signal) {
   signal?.throwIfAborted();
   const child = spawnOwned(file, args, env);
   let stdout = "",
@@ -98,7 +93,7 @@ export async function command(
     failed = true;
   });
   const closed = new Promise((done) => child.once("close", done));
-  const timer = setTimeout(stop, timeout);
+  const timer = setTimeout(stop, timeout ?? 600_000);
   signal?.addEventListener("abort", stop, { once: true });
   if (signal?.aborted) stop();
   try {
@@ -126,8 +121,8 @@ export async function command(
   }
 }
 
-export async function waitFor(check, label, timeout = 120_000, signal) {
-  const end = Date.now() + timeout;
+export async function waitFor(check, label, timeout, signal) {
+  const end = Date.now() + (timeout ?? 120_000);
   while (Date.now() < end) {
     signal?.throwIfAborted();
     try {
@@ -201,7 +196,7 @@ export function spawnOwned(file, args, env) {
 }
 
 export async function stopChild(child) {
-  if (!child || child.exitCode !== null || child.signalCode !== null) return;
+  if (child?.exitCode !== null || child.signalCode !== null) return;
   const exited = new Promise((done) => child.once("exit", done));
   child.kill("SIGTERM");
   await exited;
@@ -304,7 +299,41 @@ async function removeOwnedServices(manifest) {
     );
 }
 
-async function start(slot, isolated = false, captchaScenario, ablySettings) {
+function localEnvironment(
+  manifest,
+  baseEnv,
+  status,
+  captchaScenario,
+  ablySettings
+) {
+  return {
+    ...(manifest.runtime === "container" ? {} : baseEnv),
+    NODE_ENV: "production",
+    APP_ENV: "local-e2e",
+    E2E_MANIFEST: JSON.stringify(manifest),
+    NEXT_PUBLIC_E2E_RUN_ID: manifest.runId,
+    NEXT_PUBLIC_SUPABASE_URL: manifest.supabaseOrigin,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+      status.PUBLISHABLE_KEY || status.ANON_KEY,
+    SUPABASE_SECRET_KEY: status.SECRET_KEY || status.SERVICE_ROLE_KEY,
+    TURSO_DATABASE_URL: manifest.libsqlOrigin,
+    TURSO_AUTH_TOKEN: "",
+    ABLY_API_KEY: "",
+    SENTRY_TOKEN: "",
+    SENTRY_AUTH_TOKEN: "",
+    NEXT_TELEMETRY_DISABLED: "1",
+    E2E_RELAY_TOKEN: randomBytes(32).toString("hex"),
+    NEXT_PUBLIC_E2E_REALTIME_MODE: ablySettings ? "ably" : "local",
+    ...ablySettings,
+    E2E_CAPTCHA_MODE: captchaScenario ? "test-keys" : "fixture",
+    E2E_CAPTCHA_SCENARIO: captchaScenario ?? "",
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: captchaScenario
+      ? "1x00000000000000000000AA"
+      : "local-e2e",
+  };
+}
+
+async function start(slot, isolated, captchaScenario, ablySettings) {
   if (Number(process.versions.node.split(".")[0]) < 24)
     throw new Error("Local E2E requires Node 24 or later");
   await assertCleanCheckout(root);
@@ -354,7 +383,7 @@ async function start(slot, isolated = false, captchaScenario, ablySettings) {
         await stopFaults?.();
         await stopChild(testChild);
         await stopChild(app);
-        if (relay) await relay.close();
+        await relay?.close();
         await removeOwnedServices(manifest);
         await rm(join(runDirectory, "env.json"), { force: true });
         await rm(join(runDirectory, "owner.json"), { force: true });
@@ -400,7 +429,6 @@ async function start(slot, isolated = false, captchaScenario, ablySettings) {
     ).trim();
     if (version !== "2.117.0")
       throw new Error("Use the pinned Supabase CLI 2.117.0");
-    const isolatedTools = isolated ? await import("./isolated.mjs") : undefined;
     const runnerImage = isolated
       ? await isolatedTools.prepareImage(manifest, runCommand)
       : undefined;
@@ -482,31 +510,13 @@ async function start(slot, isolated = false, captchaScenario, ablySettings) {
       status.API_URL !== localE2eManifest(manifest.runId, slot).supabaseOrigin
     )
       throw new Error("Supabase returned an unexpected local URL");
-    const env = {
-      ...(isolated ? {} : baseEnv),
-      NODE_ENV: "production",
-      APP_ENV: "local-e2e",
-      E2E_MANIFEST: JSON.stringify(manifest),
-      NEXT_PUBLIC_E2E_RUN_ID: manifest.runId,
-      NEXT_PUBLIC_SUPABASE_URL: manifest.supabaseOrigin,
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
-        status.PUBLISHABLE_KEY || status.ANON_KEY,
-      SUPABASE_SECRET_KEY: status.SECRET_KEY || status.SERVICE_ROLE_KEY,
-      TURSO_DATABASE_URL: manifest.libsqlOrigin,
-      TURSO_AUTH_TOKEN: "",
-      ABLY_API_KEY: "",
-      SENTRY_TOKEN: "",
-      SENTRY_AUTH_TOKEN: "",
-      NEXT_TELEMETRY_DISABLED: "1",
-      E2E_RELAY_TOKEN: randomBytes(32).toString("hex"),
-      NEXT_PUBLIC_E2E_REALTIME_MODE: ablySettings ? "ably" : "local",
-      ...(ablySettings ?? {}),
-      E2E_CAPTCHA_MODE: captchaScenario ? "test-keys" : "fixture",
-      E2E_CAPTCHA_SCENARIO: captchaScenario ?? "",
-      NEXT_PUBLIC_TURNSTILE_SITE_KEY: captchaScenario
-        ? "1x00000000000000000000AA"
-        : "local-e2e",
-    };
+    const env = localEnvironment(
+      manifest,
+      baseEnv,
+      status,
+      captchaScenario,
+      ablySettings
+    );
     validateLocalE2e(env);
     await writeFile(join(runDirectory, "env.json"), JSON.stringify(env), {
       mode: 0o600,
@@ -754,12 +764,28 @@ async function down(slot) {
       "The local supervisor is still active. Stop its terminal with Ctrl+C."
     );
   } catch (error) {
-    if (error.code !== "ENOENT" && error.code !== "ESRCH") throw error;
+    if (!["ENOENT", "ESRCH"].includes(error.code)) throw error;
   }
   await removeOwnedServices(manifest);
   await rm(join(directory, "env.json"), { force: true });
   await rm(join(directory, "owner.json"), { force: true });
   await rm(slotFile, { force: true });
+}
+
+function approvedAblySettings() {
+  const { ABLY_E2E_API_KEY, ABLY_E2E_KEY_ID } = process.env;
+  if (
+    !ABLY_E2E_API_KEY ||
+    !ABLY_E2E_KEY_ID ||
+    !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(ABLY_E2E_KEY_ID) ||
+    !ABLY_E2E_API_KEY.startsWith(`${ABLY_E2E_KEY_ID}:`) ||
+    ABLY_E2E_API_KEY.length <= ABLY_E2E_KEY_ID.length + 1
+  ) {
+    throw new Error(
+      "Set ABLY_E2E_API_KEY and ABLY_E2E_KEY_ID for a dedicated test app. No production-key fallback is allowed."
+    );
+  }
+  return { ABLY_E2E_API_KEY, ABLY_E2E_KEY_ID };
 }
 
 async function main() {
@@ -773,24 +799,16 @@ async function main() {
     throw new Error(
       "Use up, down, reset, test, captcha, or ably, with --slot 0"
     );
-  let ablySettings;
-  if (operation === "ably") {
-    const { ABLY_E2E_API_KEY, ABLY_E2E_KEY_ID } = process.env;
-    if (
-      !ABLY_E2E_API_KEY ||
-      !ABLY_E2E_KEY_ID ||
-      !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(ABLY_E2E_KEY_ID) ||
-      !ABLY_E2E_API_KEY.startsWith(`${ABLY_E2E_KEY_ID}:`) ||
-      ABLY_E2E_API_KEY.length <= ABLY_E2E_KEY_ID.length + 1
-    ) {
-      throw new Error(
-        "Set ABLY_E2E_API_KEY and ABLY_E2E_KEY_ID for a dedicated test app. No production-key fallback is allowed."
-      );
-    }
-    ablySettings = { ABLY_E2E_API_KEY, ABLY_E2E_KEY_ID };
-  }
+  const ablySettings =
+    operation === "ably" ? approvedAblySettings() : undefined;
   const scenarios =
     operation === "captcha" ? ["pass", "reject", "duplicate"] : [undefined];
+  const testConfigs = {
+    test: "playwright.local.config.ts",
+    captcha: "playwright.captcha.config.ts",
+    ably: "playwright.ably.config.ts",
+  };
+  const config = testConfigs[operation];
   for (const scenario of scenarios) {
     if (scenario) console.log(`Online Turnstile check: ${scenario}`);
     const run = await start(
@@ -800,14 +818,7 @@ async function main() {
       ablySettings
     );
     try {
-      if (!["test", "captcha", "ably"].includes(operation))
-        return await run.stoppedPromise;
-      const config =
-        operation === "captcha"
-          ? "playwright.captcha.config.ts"
-          : operation === "ably"
-            ? "playwright.ably.config.ts"
-            : "playwright.local.config.ts";
+      if (!config) return await run.stoppedPromise;
       const child =
         run.runner ??
         spawnOwned(
@@ -833,8 +844,10 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
-  main().catch((error) => {
+  try {
+    await main();
+  } catch (error) {
     console.error(error.message);
     process.exitCode = 1;
-  });
+  }
 }

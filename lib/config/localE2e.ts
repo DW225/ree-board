@@ -104,6 +104,30 @@ function requireOrigin(
     throw new Error(`Local E2E target mismatch: ${name}`);
 }
 
+function validateLocalRealtime(
+  env: Record<string, string | undefined>,
+  manifest: LocalE2eManifest
+) {
+  if (env.NEXT_PUBLIC_E2E_REALTIME_MODE === "ably") {
+    if (
+      manifest.runtime !== "host" ||
+      !env.ABLY_E2E_KEY_ID ||
+      !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(env.ABLY_E2E_KEY_ID) ||
+      !env.ABLY_E2E_API_KEY?.startsWith(`${env.ABLY_E2E_KEY_ID}:`) ||
+      env.ABLY_E2E_API_KEY.length <= env.ABLY_E2E_KEY_ID.length + 1
+    ) {
+      throw new Error("A dedicated approved Ably test key is required");
+    }
+  } else if (
+    (env.NEXT_PUBLIC_E2E_REALTIME_MODE &&
+      env.NEXT_PUBLIC_E2E_REALTIME_MODE !== "local") ||
+    env.ABLY_E2E_API_KEY ||
+    env.ABLY_E2E_KEY_ID
+  ) {
+    throw new Error("Ably test settings require the explicit online profile");
+  }
+}
+
 /** Call before constructing a server SDK. Errors deliberately exclude values. */
 export function validateLocalE2e(
   env: Record<string, string | undefined> = process.env
@@ -148,24 +172,7 @@ export function validateLocalE2e(
         `External credential is not allowed in local E2E: ${name}`
       );
   }
-  if (env.NEXT_PUBLIC_E2E_REALTIME_MODE === "ably") {
-    if (
-      manifest.runtime !== "host" ||
-      !env.ABLY_E2E_KEY_ID ||
-      !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(env.ABLY_E2E_KEY_ID) ||
-      !env.ABLY_E2E_API_KEY?.startsWith(`${env.ABLY_E2E_KEY_ID}:`) ||
-      env.ABLY_E2E_API_KEY.length <= env.ABLY_E2E_KEY_ID.length + 1
-    ) {
-      throw new Error("A dedicated approved Ably test key is required");
-    }
-  } else if (
-    (env.NEXT_PUBLIC_E2E_REALTIME_MODE &&
-      env.NEXT_PUBLIC_E2E_REALTIME_MODE !== "local") ||
-    env.ABLY_E2E_API_KEY ||
-    env.ABLY_E2E_KEY_ID
-  ) {
-    throw new Error("Ably test settings require the explicit online profile");
-  }
+  validateLocalRealtime(env, manifest);
   for (const name of [
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
     "SUPABASE_SECRET_KEY",

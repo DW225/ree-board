@@ -12,8 +12,9 @@ const mailList = z.object({ messages: z.array(summary) });
 async function list(recipient: string) {
   if (!recipient.endsWith("@ree-board.test"))
     throw new Error("Use a synthetic local recipient");
+  const query = encodeURIComponent(`to:${recipient}`);
   const response = await fetch(
-    `${run.mailOrigin}/api/v1/search?query=${encodeURIComponent(`to:${recipient}`)}`,
+    `${run.mailOrigin}/api/v1/search?query=${query}`,
     {
       redirect: "error",
       signal: AbortSignal.timeout(3000),

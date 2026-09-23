@@ -9,6 +9,43 @@ export async function startRelay(manifest, credential, onShutdown) {
   const channels = new Map();
   let failNextPublish = false;
   const expected = Buffer.from(`Bearer ${credential}`);
+  const disconnectSubscribers = () => {
+    for (const subscribers of channels.values())
+      for (const subscriber of subscribers) subscriber.end();
+  };
+  const publish = async (request, response, channel) => {
+    try {
+      const chunks = [];
+      let size = 0;
+      for await (const chunk of request) {
+        size += chunk.length;
+        if (size > 64 * 1024) {
+          response.writeHead(413).end();
+          return;
+        }
+        chunks.push(chunk);
+      }
+      const parsed = localMessageSchema.safeParse(
+        JSON.parse(Buffer.concat(chunks).toString("utf8"))
+      );
+      if (!parsed.success) {
+        response.writeHead(400).end();
+        return;
+      }
+      if (failNextPublish) {
+        failNextPublish = false;
+        response.writeHead(503).end();
+        return;
+      }
+      const data = `data: ${JSON.stringify(parsed.data)}\n\n`;
+      for (const subscriber of channels.get(channel) ?? []) {
+        if (!subscriber.write(data)) subscriber.end();
+      }
+      response.writeHead(200, { "Content-Type": "application/json" }).end("{}");
+    } catch {
+      if (!response.headersSent) response.writeHead(400).end();
+    }
+  };
   const server = createServer(
     { maxHeaderSize: 8192, requestTimeout: 10_000 },
     async (request, response) => {
@@ -31,8 +68,7 @@ export async function startRelay(manifest, credential, onShutdown) {
         return;
       }
       if (request.method === "POST" && request.url === "/disconnect") {
-        for (const subscribers of channels.values())
-          for (const subscriber of subscribers) subscriber.end();
+        disconnectSubscribers();
         response.writeHead(204).end();
         return;
       }
@@ -74,39 +110,7 @@ export async function startRelay(manifest, credential, onShutdown) {
         response.writeHead(405).end();
         return;
       }
-      try {
-        const chunks = [];
-        let size = 0;
-        for await (const chunk of request) {
-          size += chunk.length;
-          if (size > 64 * 1024) {
-            response.writeHead(413).end();
-            return;
-          }
-          chunks.push(chunk);
-        }
-        const parsed = localMessageSchema.safeParse(
-          JSON.parse(Buffer.concat(chunks).toString("utf8"))
-        );
-        if (!parsed.success) {
-          response.writeHead(400).end();
-          return;
-        }
-        if (failNextPublish) {
-          failNextPublish = false;
-          response.writeHead(503).end();
-          return;
-        }
-        const data = `data: ${JSON.stringify(parsed.data)}\n\n`;
-        for (const subscriber of channels.get(channel) ?? []) {
-          if (!subscriber.write(data)) subscriber.end();
-        }
-        response
-          .writeHead(200, { "Content-Type": "application/json" })
-          .end("{}");
-      } catch {
-        if (!response.headersSent) response.writeHead(400).end();
-      }
+      await publish(request, response, channel);
     }
   );
   await new Promise((ready, reject) => {
@@ -116,8 +120,7 @@ export async function startRelay(manifest, credential, onShutdown) {
   return {
     origin: `http://127.0.0.1:${server.address().port}`,
     async close() {
-      for (const subscribers of channels.values())
-        for (const subscriber of subscribers) subscriber.end();
+      disconnectSubscribers();
       server.closeAllConnections();
       await new Promise((done) => server.close(done));
     },
