@@ -161,16 +161,16 @@ export function validateLocalE2e(
     "Supabase"
   );
   requireOrigin(env.TURSO_DATABASE_URL, manifest.libsqlOrigin, "libSQL");
-  for (const name of [
+  const externalCredential = [
     "ABLY_API_KEY",
     "TURSO_AUTH_TOKEN",
     "SENTRY_TOKEN",
     "SENTRY_AUTH_TOKEN",
-  ]) {
-    if (env[name])
-      throw new Error(
-        `External credential is not allowed in local E2E: ${name}`
-      );
+  ].find((name) => env[name]);
+  if (externalCredential) {
+    throw new Error(
+      `External credential is not allowed in local E2E: ${externalCredential}`
+    );
   }
   validateLocalRealtime(env, manifest);
   for (const name of [
