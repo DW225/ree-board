@@ -19,7 +19,7 @@ jobs:
       - uses: docker/setup-docker-action@v5.5.0
         with:
           version: v29.4.0
-      - run: npm install --global --ignore-scripts pnpm@11.25.0
+      - run: corepack enable pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm test:e2e:local --slot 0
       - if: always()

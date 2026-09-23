@@ -2,7 +2,8 @@ FROM mcr.microsoft.com/playwright@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891
 ARG E2E_UID=1000
 ARG E2E_GID=1000
 WORKDIR /app
-RUN npm install --global --ignore-scripts pnpm@11.25.0
+ENV COREPACK_HOME=/opt/corepack
+RUN corepack enable pnpm
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY app/ ./app/
