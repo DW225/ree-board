@@ -8,6 +8,7 @@ import { EVENT_PREFIX } from "@/lib/utils/ably";
 import { useChannel } from "ably/react";
 import { useMemo } from "react";
 import { LocalPostChannel } from "./LocalPostChannel";
+import type { BoardInitialData } from "./PostProvider";
 
 interface PostChannelProps {
   boardId: string;
@@ -50,12 +51,24 @@ export function AblyPostChannel({
   return null;
 }
 
-function LocalBoardMessages({ boardId, userId }: Readonly<PostChannelProps>) {
+function LocalBoardMessages({
+  boardId,
+  userId,
+  initials,
+}: Readonly<PostChannelProps & { initials: BoardInitialData }>) {
   const dispatch = useMessageDispatcher(userId);
-  return <LocalPostChannel boardId={boardId} onMessage={dispatch} />;
+  return (
+    <LocalPostChannel
+      boardId={boardId}
+      onMessage={dispatch}
+      initials={initials}
+    />
+  );
 }
 
-export default function PostChannel(props: Readonly<PostChannelProps>) {
+export default function PostChannel(
+  props: Readonly<PostChannelProps & { initials: BoardInitialData }>
+) {
   return process.env.NEXT_PUBLIC_E2E_RUN_ID &&
     process.env.NEXT_PUBLIC_E2E_REALTIME_MODE !== "ably" ? (
     <LocalBoardMessages {...props} />

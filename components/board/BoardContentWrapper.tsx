@@ -106,7 +106,11 @@ export default async function BoardContentWrapper({
     <RTLProvider boardId={boardId}>
       <AnonymousModeProvider>
         <PostProvider initials={initialData} boardId={boardId}>
-          <PostChannel boardId={boardId} userId={userID} />
+          <PostChannel
+            boardId={boardId}
+            userId={userID}
+            initials={initialData}
+          />
           <div className="container mx-auto w-full max-w-full px-4">
             <div className="flex flex-wrap items-center justify-end gap-3 py-3">
               {viewOnly && (

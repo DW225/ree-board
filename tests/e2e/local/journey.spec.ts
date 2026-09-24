@@ -177,13 +177,55 @@ test("local confirmation, password login, board persistence and collaboration", 
     await expect(memberPage.getByTestId("local-realtime-status")).toHaveText(
       "Connected"
     );
+    const draft = "Keep this draft through reconnect";
+    await memberPage
+      .getByRole("button", { name: "Add a card", exact: true })
+      .first()
+      .click();
+    await memberPage
+      .getByPlaceholder("What went well this sprint?")
+      .fill(draft);
+    let resumeStream = () => {};
+    const reconnectGate = new Promise<void>((resolve) => {
+      resumeStream = resolve;
+    });
+    const streamPath = `**/api/e2e/realtime/${boardId}`;
+    await memberPage.route(streamPath, async (route) => {
+      await reconnectGate;
+      await route.continue();
+    });
     await relayFault("disconnect");
-    await expect(memberPage.getByTestId("local-realtime-status")).toHaveText(
-      "Reconnecting"
-    );
+    const duringDisconnect = `Saved while disconnected ${randomUUID()}`;
+    try {
+      await expect(memberPage.getByTestId("local-realtime-status")).toHaveText(
+        "Reconnecting"
+      );
+      await page
+        .getByPlaceholder("What went well this sprint?")
+        .fill(duringDisconnect);
+      await page.getByRole("button", { name: "Add card", exact: true }).click();
+      await expect(
+        page.getByTestId(/^post-/).filter({ hasText: duringDisconnect })
+      ).toBeVisible();
+      await expect(
+        page.getByPlaceholder("What went well this sprint?")
+      ).toBeEnabled();
+      await expect(
+        memberPage.getByText(duringDisconnect, { exact: true })
+      ).toHaveCount(0);
+    } finally {
+      resumeStream();
+    }
     await expect(memberPage.getByTestId("local-realtime-status")).toHaveText(
       "Connected"
     );
+    await expect(
+      memberPage.getByText(duringDisconnect, { exact: true })
+    ).toHaveCount(1);
+    await expect(
+      memberPage.getByPlaceholder("What went well this sprint?")
+    ).toHaveValue(draft);
+    await memberPage.unroute(streamPath);
 
     const failed = `Database unavailable ${randomUUID()}`;
     await page.getByPlaceholder("What went well this sprint?").fill(failed);
