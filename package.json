@@ -18,7 +18,14 @@
     "push:dev": "NODE_ENV=development drizzle-kit push",
     "bundle-stats": "node scripts/bundle-analysis.js",
     "build:stats": "pnpm run build && pnpm run bundle-stats",
-    "prepare": "husky"
+    "prepare": "husky",
+    "e2e:up": "node scripts/e2e/env.mjs up",
+    "e2e:down": "node scripts/e2e/env.mjs down",
+    "e2e:reset": "node scripts/e2e/env.mjs reset",
+    "test:e2e:local": "node scripts/e2e/env.mjs test",
+    "test:e2e:tools": "node --test scripts/e2e/*.check.mjs",
+    "test:e2e:captcha": "node scripts/e2e/env.mjs captcha",
+    "test:e2e:ably": "node scripts/e2e/env.mjs ably"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^3.1.0",
@@ -84,6 +91,7 @@
     "lint-staged": "^17.5.1",
     "postcss": "^8.5.28",
     "prettier": "3.9.8",
+    "supabase": "2.117.0",
     "tailwindcss": "^4.3.3",
     "ts-jest": "^29.4.12",
     "typescript": "^6.0.3",

@@ -1,0 +1,26 @@
+.git
+.git/**
+.env*
+**/.env*
+.e2e
+.next
+node_modules
+playwright/.auth
+test-results
+playwright-report
+.superpowers
+.codex
+.agents
+.vscode
+.idea
+docs
+.DS_Store
+*.tsbuildinfo
+
+# Local credentials and databases are never source inputs.
+**/*.pem
+**/*.key
+**/test.db*
+**/.vercel
+**/.claude
+**/.codex-log

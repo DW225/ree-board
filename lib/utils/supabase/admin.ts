@@ -1,3 +1,4 @@
+import { validateLocalE2e } from "@/lib/config/localE2e";
 import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import invariant from "tiny-invariant";
@@ -17,6 +18,7 @@ import invariant from "tiny-invariant";
  * @throws {Error} If required environment variables are missing
  */
 export function createAdminClient(): SupabaseClient {
+  validateLocalE2e();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const secretKey = process.env.SUPABASE_SECRET_KEY;
 

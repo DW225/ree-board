@@ -10,10 +10,7 @@ interface RTLProviderProps {
   children: ReactNode;
 }
 
-export default function RTLProvider({
-  boardId,
-  children,
-}: Readonly<RTLProviderProps>) {
+function AblyRTLProvider({ boardId, children }: Readonly<RTLProviderProps>) {
   const client = useMemo(
     () =>
       new Realtime({
@@ -36,4 +33,13 @@ export default function RTLProvider({
       </ChannelProvider>
     </AblyProvider>
   );
+}
+
+export default function RTLProvider(props: Readonly<RTLProviderProps>) {
+  if (
+    process.env.NEXT_PUBLIC_E2E_RUN_ID &&
+    process.env.NEXT_PUBLIC_E2E_REALTIME_MODE !== "ably"
+  )
+    return props.children;
+  return <AblyRTLProvider {...props} />;
 }

@@ -85,8 +85,12 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const shouldInjectToolbar = process.env.NODE_ENV === "development";
-  const shouldInjectSpeedInsights = process.env.NODE_ENV !== "development";
+  const shouldInjectToolbar =
+    process.env.APP_ENV !== "local-e2e" &&
+    process.env.NODE_ENV === "development";
+  const shouldInjectSpeedInsights =
+    process.env.APP_ENV !== "local-e2e" &&
+    process.env.NODE_ENV !== "development";
   return (
     <AuthProvider>
       <html lang="en">

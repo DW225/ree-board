@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import PostChannel from "./PostChannelComponent";
+import { AblyPostChannel as PostChannel } from "./PostChannelComponent";
 import { addPostTask, updatePostState } from "@/lib/signal/postSignals";
 import type * as React from "react";
 
@@ -23,6 +23,7 @@ jest.mock(
 jest.mock("ably/modular", () => ({ BaseRest: jest.fn(), FetchRequest: {} }), {
   virtual: true,
 });
+jest.mock("./PostProvider", () => ({ useVotedPosts: jest.fn() }));
 jest.mock("react", () => ({
   ...jest.requireActual<typeof React>("react"),
   useMemo: <T>(factory: () => T) => factory(),

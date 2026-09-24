@@ -1,3 +1,4 @@
+import { validateLocalE2e } from "@/lib/config/localE2e";
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
@@ -10,7 +11,7 @@ interface SessionUpdateResult {
 
 function getSafeRedirectUrl(
   redirectParam: string | null,
-  request: NextRequest,
+  request: NextRequest
 ): URL {
   const fallbackUrl = new URL("/board", request.url);
 
@@ -44,14 +45,15 @@ function getSafeRedirectUrl(
  * @returns The authenticated user and a response with updated cookies or redirect
  */
 export async function updateSession(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<SessionUpdateResult> {
+  validateLocalE2e();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   invariant(
     url && key,
-    "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in environment variables",
+    "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in environment variables"
   );
   let supabaseResponse = NextResponse.next({
     request,
@@ -66,13 +68,13 @@ export async function updateSession(
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value),
+          request.cookies.set(name, value)
         );
         supabaseResponse = NextResponse.next({
           request,
         });
         cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options),
+          supabaseResponse.cookies.set(name, value, options)
         );
       },
     },

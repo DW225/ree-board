@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { createAnonymousGuestSession } from "@/lib/actions/guest/action";
 import { processMagicLinkAction } from "@/lib/actions/link/action";
 import { createClient } from "@/lib/utils/supabase/client";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { Captcha, type CaptchaHandle } from "@/components/common/Captcha";
 import { Loader2, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -22,7 +22,7 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [inviteProcessed, setInviteProcessed] = useState(false);
-  const turnstileRef = useRef<TurnstileInstance>(null);
+  const turnstileRef = useRef<CaptchaHandle>(null);
   const supabase = useMemo(() => createClient(), []);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -155,7 +155,7 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
 
           {siteKey && (
             <div className="flex justify-center mb-4">
-              <Turnstile
+              <Captcha
                 ref={turnstileRef}
                 siteKey={siteKey}
                 onSuccess={(token) => setCaptchaToken(token)}

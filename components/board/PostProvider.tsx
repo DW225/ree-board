@@ -58,6 +58,7 @@ interface VotedPostsContextType {
   addVotedPost: (postId: Post["id"]) => void;
   removeVotedPost: (postId: Post["id"]) => void;
   hasVoted: (postId: Post["id"]) => boolean;
+  resetVotedPosts: (postIds: string[]) => void;
 }
 
 const VotedPostsContext = createContext<VotedPostsContextType | undefined>(
@@ -102,14 +103,20 @@ export const VotedPostsProvider: FC<VotedPostsProviderProps> = ({
     [votedPosts]
   );
 
+  const resetVotedPosts = useCallback(
+    (postIds: string[]) => setVotedPosts(() => new Set(postIds)),
+    [setVotedPosts]
+  );
+
   const value = useMemo(
     () => ({
       votedPosts,
       addVotedPost,
       removeVotedPost,
       hasVoted,
+      resetVotedPosts,
     }),
-    [votedPosts, addVotedPost, removeVotedPost, hasVoted]
+    [votedPosts, addVotedPost, removeVotedPost, hasVoted, resetVotedPosts]
   );
 
   return (
@@ -119,14 +126,16 @@ export const VotedPostsProvider: FC<VotedPostsProviderProps> = ({
   );
 };
 
+export interface BoardInitialData {
+  posts: Post[];
+  members: MemberSignal[];
+  votedPosts: string[];
+  actions: Task[];
+}
+
 interface PostProviderProps {
   children: ReactNode;
-  initials: {
-    posts: Post[];
-    members: MemberSignal[];
-    votedPosts: string[];
-    actions: Task[];
-  };
+  initials: BoardInitialData;
   boardId: string;
 }
 
@@ -148,9 +157,8 @@ const PostProvider: FC<PostProviderProps> = ({
     if (isDragInitialized.current) return;
 
     try {
-      const { monitorForElements } = await import(
-        "@atlaskit/pragmatic-drag-and-drop/element/adapter"
-      );
+      const { monitorForElements } =
+        await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
 
       const cleanup = monitorForElements({
         async onDrop(args) {
