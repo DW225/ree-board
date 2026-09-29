@@ -112,3 +112,24 @@ describe("withDbRetry", () => {
     expect(fn).toHaveBeenCalledTimes(3);
   });
 });
+
+describe("database URL validation", () => {
+  afterEach(() => jest.restoreAllMocks());
+  it.each([undefined, ""])(
+    "rejects missing or empty URLs before client creation (%s)",
+    (url) => {
+      jest.replaceProperty(process, "env", {
+        NODE_ENV: "production",
+        ...(url === undefined ? {} : { TURSO_DATABASE_URL: url }),
+      });
+      jest.resetModules();
+      const createClient = jest.fn();
+      jest.doMock("@libsql/client", () => ({ createClient }));
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      expect(() => require("./client")).toThrow(
+        "Missing TURSO_DATABASE_URL environment variable"
+      );
+      expect(createClient).not.toHaveBeenCalled();
+    }
+  );
+});
