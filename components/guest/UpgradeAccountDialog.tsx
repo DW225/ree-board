@@ -145,7 +145,12 @@ export function UpgradeAccountDialog({
               verification code to confirm your email.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSendOTP} className="space-y-4">
+          <form
+            onSubmit={(event) => {
+              void handleSendOTP(event);
+            }}
+            className="space-y-4"
+          >
             <div>
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -195,7 +200,12 @@ export function UpgradeAccountDialog({
             <strong>{email}</strong>
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleVerifyOTP} className="space-y-4">
+        <form
+          onSubmit={(event) => {
+            void handleVerifyOTP(event);
+          }}
+          className="space-y-4"
+        >
           {!emailVerified && (
             <div>
               <Label htmlFor="otp">Verification Code</Label>

@@ -150,7 +150,11 @@ export default function AuthCard() {
             siteKey={auth.siteKey}
             captchaToken={auth.captchaToken}
             turnstileRef={auth.turnstileRef}
-            onSubmit={auth.isSignUp ? auth.handleSignUp : auth.handleSignIn}
+            onSubmit={(event) => {
+              void (auth.isSignUp ? auth.handleSignUp : auth.handleSignIn)(
+                event
+              );
+            }}
             onNameChange={auth.setName}
             onEmailChange={auth.setEmail}
             onPasswordChange={auth.setPassword}
@@ -172,9 +176,11 @@ export default function AuthCard() {
             siteKey={auth.siteKey}
             captchaToken={auth.captchaToken}
             turnstileRef={auth.turnstileRef}
-            onSubmit={
-              auth.isOtpStage ? auth.handleVerifyOtp : auth.handleSendOtp
-            }
+            onSubmit={(event) => {
+              void (
+                auth.isOtpStage ? auth.handleVerifyOtp : auth.handleSendOtp
+              )(event);
+            }}
             onEmailChange={auth.setEmail}
             onOtpChange={otpControls.handleOtpChange}
             onOtpKeyDown={otpControls.handleOtpKeyDown}

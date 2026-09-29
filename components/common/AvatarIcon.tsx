@@ -31,7 +31,7 @@ const getInitials = (name: string | undefined): string => {
   } else {
     return (
       nameParts[0].charAt(0).toUpperCase() +
-      (nameParts?.at(-1)?.charAt(0).toUpperCase() ?? "")
+      (nameParts.at(-1)?.charAt(0).toUpperCase() ?? "")
     );
   }
 };

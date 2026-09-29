@@ -41,10 +41,11 @@ export default function MemberList({
   useSignals();
 
   const term = searchTerm.toLowerCase();
-  const members = membersSignal.value.filter((member) =>
-    !term ||
-    member.username.toLowerCase().includes(term) ||
-    member.email.toLowerCase().includes(term),
+  const members = membersSignal.value.filter(
+    (member) =>
+      !term ||
+      member.username.toLowerCase().includes(term) ||
+      member.email.toLowerCase().includes(term)
   );
   const canRemove = !viewOnly && handleRemoveMember !== undefined;
   const isSelectionMode = onSelect !== undefined;
@@ -85,7 +86,7 @@ export default function MemberList({
                 <span
                   className={cn(
                     "text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap",
-                    getRoleBadgeStyles(member.role),
+                    getRoleBadgeStyles(member.role)
                   )}
                 >
                   {roleDisplayName[member.role]}
@@ -94,7 +95,9 @@ export default function MemberList({
                 {!isSelectionMode && canRemove && !isOwner && (
                   <button
                     type="button"
-                    onClick={() => handleRemoveMember?.(member)}
+                    onClick={() => {
+                      handleRemoveMember(member);
+                    }}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-[#E2E8F0] bg-white text-xs font-medium text-[#EF4444] hover:bg-red-50 transition-colors"
                   >
                     <UserMinus className="size-3.5" />
@@ -127,7 +130,7 @@ export default function MemberList({
                   onClick={() => onSelect(member)}
                   className={cn(
                     "flex items-center justify-between gap-2 px-4 py-3 w-full text-left transition-colors",
-                    isSelected ? "bg-[#F8FAFC]" : "hover:bg-slate-50",
+                    isSelected ? "bg-[#F8FAFC]" : "hover:bg-slate-50"
                   )}
                 >
                   {rowContent}
