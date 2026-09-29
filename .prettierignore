@@ -1,3 +1,6 @@
 # Ignore artifacts:
 build
 coverage
+
+# Keep the dependency lockfile in the package manager format.
+pnpm-lock.yaml

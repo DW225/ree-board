@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { Captcha, type CaptchaHandle } from "@/components/common/Captcha";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import type { RefObject, SubmitEvent } from "react";
 import { GRADIENT_BTN } from "./constants";
@@ -16,7 +16,7 @@ interface PasswordFormProps {
   error: string;
   siteKey: string | undefined;
   captchaToken: string | null;
-  turnstileRef: RefObject<TurnstileInstance | null>;
+  turnstileRef: RefObject<CaptchaHandle | null>;
   onSubmit: (e: SubmitEvent) => void;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
@@ -157,7 +157,7 @@ export function PasswordForm({
       {/* CAPTCHA */}
       {siteKey && (
         <div className="flex justify-center">
-          <Turnstile
+          <Captcha
             ref={turnstileRef}
             siteKey={siteKey}
             onSuccess={onCaptchaSuccess}

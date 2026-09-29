@@ -1,3 +1,22 @@
+if (
+  (process.env.VERCEL || process.env.VERCEL_ENV) &&
+  /^(?:local-e2e|[123]x0+(?:AA|AB|BB|FF))$/.test(
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""
+  )
+) {
+  throw new Error("Test CAPTCHA keys cannot be deployed");
+}
+
+// Native TypeScript is needed only by the Node 24 local test runner.
+const localSettings =
+  process.env.APP_ENV === "local-e2e" ||
+  process.env.E2E_MANIFEST ||
+  process.env.E2E_CAPTCHA_MODE ||
+  process.env.NEXT_PUBLIC_E2E_RUN_ID;
+const localE2e = localSettings
+  ? require("./lib/config/localE2e.ts").validateLocalE2e()
+  : undefined;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -46,44 +65,53 @@ const nextConfig = {
   },
 };
 
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
+if (localE2e) {
+  module.exports = {
+    ...nextConfig,
+    distDir: localE2e.buildDirectory,
+    typescript: { tsconfigPath: `${localE2e.runDirectory}/tsconfig.json` },
+    images: { ...nextConfig.images, remotePatterns: [] },
+  };
+} else {
+  const withBundleAnalyzer = require("@next/bundle-analyzer")({
+    enabled: process.env.ANALYZE === "true",
+  });
 
-const withVercelToolbar = require("@vercel/toolbar/plugins/next")();
+  const withVercelToolbar = require("@vercel/toolbar/plugins/next")();
 
-module.exports = withVercelToolbar(withBundleAnalyzer(nextConfig));
+  module.exports = withVercelToolbar(withBundleAnalyzer(nextConfig));
 
-// Injected content via Sentry wizard below
+  // Injected content via Sentry wizard below
 
-const { withSentryConfig } = require("@sentry/nextjs/config");
+  const { withSentryConfig } = require("@sentry/nextjs/config");
 
-module.exports = withSentryConfig(module.exports, {
-  // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+  module.exports = withSentryConfig(module.exports, {
+    // For all available options, see:
+    // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
-  org: "tekdw225",
-  project: "ree-board",
-  authToken: process.env.SENTRY_TOKEN,
+    org: "tekdw225",
+    project: "ree-board",
+    authToken: process.env.SENTRY_TOKEN,
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+    // Only print logs for uploading source maps in CI
+    silent: !process.env.CI,
 
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+    // For all available options, see:
+    // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+    // Upload a larger set of source maps for prettier stack traces (increases build time)
+    widenClientFileUpload: true,
 
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: "/monitoring",
+    // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
+    // This can increase your server load as well as your hosting bill.
+    // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
+    // side errors will fail.
+    tunnelRoute: "/monitoring",
 
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  // Note: disableLogger is deprecated, use bundleSizeOptimizations.excludeDebugStatements instead
-  bundleSizeOptimizations: {
-    excludeDebugStatements: true,
-  },
-});
+    // Automatically tree-shake Sentry logger statements to reduce bundle size
+    // Note: disableLogger is deprecated, use bundleSizeOptimizations.excludeDebugStatements instead
+    bundleSizeOptimizations: {
+      excludeDebugStatements: true,
+    },
+  });
+}

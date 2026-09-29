@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/utils/supabase/client";
 import { PasswordSchema } from "@/lib/utils/validation/password";
-import type { TurnstileInstance } from "@marsidev/react-turnstile";
+import type { CaptchaHandle } from "@/components/common/Captcha";
 import { useRouter } from "next/navigation";
 import type { SubmitEvent } from "react";
 import { useMemo, useRef, useState } from "react";
@@ -23,7 +23,7 @@ export function useAuthForm(otpControls: {
   const [checkEmail, setCheckEmail] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  const turnstileRef = useRef<TurnstileInstance>(null);
+  const turnstileRef = useRef<CaptchaHandle>(null);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -162,23 +162,12 @@ export function useAuthForm(otpControls: {
     }
   };
 
-  const handleResendOtp = async () => {
+  const handleResendOtp = () => {
+    // A new email request needs a new CAPTCHA token. Reuse the normal send flow.
     otpControls.resetOtp();
     setError("");
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithOtp({ email });
-      if (error) {
-        setError(error.message);
-      } else {
-        otpControls.focusFirst();
-      }
-    } catch {
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    resetCaptcha();
+    setMagicLinkStage("email");
   };
 
   const handleVerifyOtp = async (e: SubmitEvent) => {

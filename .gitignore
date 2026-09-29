@@ -61,3 +61,7 @@ test.db*
 /playwright-report/
 /test-results/
 /tests/e2e/*-snapshots/*.png
+
+# Disposable local E2E runs, credentials, builds and reports
+/.e2e/
+/supabase/.temp/

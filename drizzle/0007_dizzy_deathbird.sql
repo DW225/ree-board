@@ -10,7 +10,7 @@ DROP INDEX "actions_board_id_index";--> statement-breakpoint
 DROP INDEX "action_board_id_user_id_post_id_unique";--> statement-breakpoint
 DROP INDEX "user_name_unique";--> statement-breakpoint
 DROP INDEX "user_email_unique";--> statement-breakpoint
-DROP INDEX "user_supabase_id_unique";--> statement-breakpoint
+DROP INDEX IF EXISTS "user_supabase_id_unique";--> statement-breakpoint
 DROP INDEX "user_name_index";--> statement-breakpoint
 DROP INDEX "votes_composite_index";--> statement-breakpoint
 DROP INDEX "vote_board_id_user_id_post_id_unique";--> statement-breakpoint
