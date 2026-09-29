@@ -1,5 +1,7 @@
 "use client";
 
+import { getSafeRedirectPath } from "@/lib/utils/redirect";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createAnonymousGuestSession } from "@/lib/actions/guest/action";
 import { processMagicLinkAction } from "@/lib/actions/link/action";
@@ -23,6 +25,7 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [inviteProcessed, setInviteProcessed] = useState(false);
   const turnstileRef = useRef<CaptchaHandle>(null);
+  const processingRef = useRef(false);
   const supabase = useMemo(() => createClient(), []);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -38,24 +41,35 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
   useEffect(() => {
     if (!token) return;
 
+    let cancelled = false;
     const checkAuth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        setAuthStatus("authenticated");
-      } else {
-        setAuthStatus("needs_guest");
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!cancelled) setAuthStatus(user ? "authenticated" : "needs_guest");
+      } catch {
+        if (!cancelled)
+          setError("Failed to check authentication. Please try again.");
       }
     };
 
-    checkAuth();
+    void checkAuth();
+    return () => {
+      cancelled = true;
+    };
   }, [token, supabase]);
 
   // Process invite when authenticated (or after guest session created)
   useEffect(() => {
-    if (!token || authStatus !== "authenticated" || inviteProcessed) return;
+    if (
+      !token ||
+      authStatus !== "authenticated" ||
+      inviteProcessed ||
+      processingRef.current
+    )
+      return;
+    processingRef.current = true;
 
     const processInvite = async () => {
       setInviteProcessed(true);
@@ -67,7 +81,7 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
 
         if (result.redirectUrl) {
           // Perform client-side navigation
-          globalThis.location.href = result.redirectUrl;
+          globalThis.location.assign(getSafeRedirectPath(result.redirectUrl));
         } else {
           // No redirect URL - show error
           setError(result.error || "An unexpected error occurred.");
@@ -81,14 +95,21 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
       }
     };
 
-    processInvite();
+    void processInvite();
   }, [token, authStatus, inviteProcessed]);
 
   // Handle guest session creation after CAPTCHA success
   useEffect(() => {
-    if (!token || authStatus !== "needs_guest" || !captchaToken || isProcessing)
+    if (
+      !token ||
+      authStatus !== "needs_guest" ||
+      !captchaToken ||
+      isProcessing ||
+      processingRef.current
+    )
       return;
 
+    processingRef.current = true;
     const createGuestAndProcess = async () => {
       setIsProcessing(true);
       setError(null);
@@ -114,11 +135,33 @@ export default function InvitePage({ params }: Readonly<InvitePageProps>) {
         setIsProcessing(false);
         turnstileRef.current?.reset();
         setCaptchaToken(null);
+      } finally {
+        processingRef.current = false;
       }
     };
 
-    createGuestAndProcess();
+    void createGuestAndProcess();
   }, [token, authStatus, captchaToken, isProcessing]);
+
+  if (error && authStatus !== "needs_guest") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br/srgb from-blue-50 to-indigo-100">
+        <Card className="w-full max-w-md p-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Cannot join board</h1>
+          <p role="alert" className="text-sm text-red-600 mb-4">
+            {error}
+          </p>
+          <Button
+            onClick={() => {
+              globalThis.location.reload();
+            }}
+          >
+            Try again
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   // Show loading while checking auth or processing
   if (authStatus === "checking" || !token) {

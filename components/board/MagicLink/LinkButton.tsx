@@ -60,7 +60,7 @@ export default function LinkButton({
   const [isCreating, setIsCreating] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [linkToRevoke, setLinkToRevoke] = useState<LinkWithCreator | null>(
-    null,
+    null
   );
   const [isRevoking, setIsRevoking] = useState(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -203,7 +203,7 @@ export default function LinkButton({
                                   "rounded-lg border border-[#E2E8F0] p-4 flex flex-col gap-3",
                                   section.isExpired
                                     ? "bg-white/70 opacity-75"
-                                    : "bg-[#F8FAFC]",
+                                    : "bg-[#F8FAFC]"
                                 )}
                               >
                                 <div className="flex items-center justify-between gap-2">
@@ -213,7 +213,7 @@ export default function LinkButton({
                                         "w-4 h-4 shrink-0",
                                         section.isExpired
                                           ? "text-[#94A3B8]"
-                                          : "text-[#10B981]",
+                                          : "text-[#10B981]"
                                       )}
                                     />
                                     <span className="text-[13px] font-semibold text-[#0F172A]">
@@ -224,7 +224,7 @@ export default function LinkButton({
                                         "rounded-full px-2 py-0.5 text-[11px] font-medium",
                                         section.isExpired
                                           ? "bg-[#F1F5F9] text-[#64748B]"
-                                          : "bg-[#DCFCE7] text-[#166534]",
+                                          : "bg-[#DCFCE7] text-[#166534]"
                                       )}
                                     >
                                       {section.isExpired ? "Expired" : "Active"}
@@ -233,7 +233,9 @@ export default function LinkButton({
                                   <div className="flex items-center gap-1.5 shrink-0">
                                     <button
                                       type="button"
-                                      onClick={() => handleCopyLink(link.token)}
+                                      onClick={() => {
+                                        void handleCopyLink(link.token);
+                                      }}
                                       disabled={
                                         link.token === "creating..." || isCopied
                                       }
@@ -378,7 +380,9 @@ export default function LinkButton({
                 {/* Create button */}
                 <button
                   type="button"
-                  onClick={handleCreateLink}
+                  onClick={() => {
+                    void handleCreateLink();
+                  }}
                   disabled={isCreating}
                   className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-[#0F172A] text-white text-sm font-medium hover:bg-[#1E293B] transition-colors disabled:opacity-60"
                 >
