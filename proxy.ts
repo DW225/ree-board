@@ -22,8 +22,8 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (publicPaths.includes(pathname)) {
-    // For public paths no need to check authentication
+  if (publicPaths.includes(pathname) || pathname.startsWith("/api/e2e/")) {
+    // Local E2E handlers reject production requests and check their own access.
     return NextResponse.next();
   }
 

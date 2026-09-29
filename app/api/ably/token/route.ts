@@ -1,3 +1,4 @@
+import { validateLocalE2e } from "@/lib/config/localE2e";
 import { getUserBySupabaseId } from "@/lib/db/user";
 import { createClient } from "@/lib/utils/supabase/server";
 import Ably from "ably";
@@ -20,6 +21,9 @@ export const revalidate = 0;
 
 export async function POST() {
   try {
+    const local = validateLocalE2e();
+    if (local && process.env.NEXT_PUBLIC_E2E_REALTIME_MODE !== "ably")
+      return new Response(null, { status: 404 });
     // Verify session (can't use verifySession() from DAL - redirect() doesn't work in API routes)
     const supabase = await createClient();
     const {
@@ -67,7 +71,9 @@ export async function POST() {
       );
     }
 
-    const ablyAPIKey = process.env.ABLY_API_KEY;
+    const ablyAPIKey = local
+      ? process.env.ABLY_E2E_API_KEY
+      : process.env.ABLY_API_KEY;
     if (!ablyAPIKey) {
       throw new Error("ABLY_API_KEY environment variable is not set");
     }

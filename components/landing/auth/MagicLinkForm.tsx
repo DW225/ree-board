@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { Captcha, type CaptchaHandle } from "@/components/common/Captcha";
 import { ArrowRight, Info, Mail } from "lucide-react";
 import type {
   ClipboardEvent,
@@ -21,7 +21,7 @@ interface MagicLinkFormProps {
   otpRefs: RefObject<(HTMLInputElement | null)[]>;
   siteKey: string | undefined;
   captchaToken: string | null;
-  turnstileRef: RefObject<TurnstileInstance | null>;
+  turnstileRef: RefObject<CaptchaHandle | null>;
   onSubmit: (e: SubmitEvent) => void;
   onEmailChange: (value: string) => void;
   onOtpChange: (index: number, value: string) => void;
@@ -103,7 +103,7 @@ export function MagicLinkForm({
       {/* CAPTCHA (email stage only) */}
       {siteKey && !isOtpStage && (
         <div className="flex justify-center">
-          <Turnstile
+          <Captcha
             ref={turnstileRef}
             siteKey={siteKey}
             onSuccess={onCaptchaSuccess}

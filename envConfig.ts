@@ -1,4 +1,5 @@
-import { loadEnvConfig } from '@next/env'
+import { loadEnvConfig } from "@next/env";
+import { validateLocalE2e } from "./lib/config/localE2e";
 
-const projectDir = process.cwd()
-loadEnvConfig(projectDir)
+if (!validateLocalE2e()) loadEnvConfig(process.cwd());
+validateLocalE2e();

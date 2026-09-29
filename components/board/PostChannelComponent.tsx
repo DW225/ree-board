@@ -7,39 +7,72 @@ import {
 import { EVENT_PREFIX } from "@/lib/utils/ably";
 import { useChannel } from "ably/react";
 import { useMemo } from "react";
+import { LocalPostChannel } from "./LocalPostChannel";
+import type { BoardInitialData } from "./PostProvider";
 
 interface PostChannelProps {
   boardId: string;
   userId: string;
 }
 
-export default function PostChannel({
+interface BoardMessage {
+  name?: string;
+  data?: unknown;
+  extras?: { headers?: { user?: string | null } };
+}
+
+function useMessageDispatcher(userId: string) {
+  const postProcessor = useMemo(() => createPostMessageProcessor(), []);
+  const taskProcessor = useMemo(() => createTaskMessageProcessor(), []);
+  return useMemo(
+    () => (message: BoardMessage) => {
+      const messageType = message.name;
+      if (messageType === undefined) return;
+      if (
+        message.extras?.headers?.user !== userId &&
+        messageType.startsWith(EVENT_PREFIX.POST)
+      ) {
+        postProcessor(messageType, message.data, userId);
+      }
+      if (messageType.startsWith(EVENT_PREFIX.ACTION)) {
+        taskProcessor(messageType, message.data, userId);
+      }
+    },
+    [postProcessor, taskProcessor, userId]
+  );
+}
+
+export function AblyPostChannel({
   boardId,
   userId,
 }: Readonly<PostChannelProps>) {
-  // Create message processors with memoization for performance
-  const postProcessor = useMemo(() => createPostMessageProcessor(), []);
-  const taskProcessor = useMemo(() => createTaskMessageProcessor(), []);
+  const dispatch = useMessageDispatcher(userId);
+  useChannel(`board:${boardId}`, dispatch);
+  return null;
+}
 
-  useChannel(`board:${boardId}`, (message) => {
-    const messageType = message.name;
-    if (messageType === undefined) return;
+function LocalBoardMessages({
+  boardId,
+  userId,
+  initials,
+}: Readonly<PostChannelProps & { initials: BoardInitialData }>) {
+  const dispatch = useMessageDispatcher(userId);
+  return (
+    <LocalPostChannel
+      boardId={boardId}
+      onMessage={dispatch}
+      initials={initials}
+    />
+  );
+}
 
-    if (message.extras?.headers?.user !== userId) {
-      if (messageType.startsWith(EVENT_PREFIX.POST)) {
-        // Process post updates and creations using new processor
-        postProcessor(messageType, message.data, userId);
-      } else if (messageType.startsWith(EVENT_PREFIX.MEMBER)) {
-        // Process member updates and creations
-        // TODO: Add member message processor when needed
-      }
-    }
-
-    if (messageType.startsWith(EVENT_PREFIX.ACTION)) {
-      // Process task updates and creations using new processor
-      taskProcessor(messageType, message.data, userId);
-    }
-  });
-
-  return <></>;
+export default function PostChannel(
+  props: Readonly<PostChannelProps & { initials: BoardInitialData }>
+) {
+  return process.env.NEXT_PUBLIC_E2E_RUN_ID &&
+    process.env.NEXT_PUBLIC_E2E_REALTIME_MODE !== "ably" ? (
+    <LocalBoardMessages {...props} />
+  ) : (
+    <AblyPostChannel {...props} />
+  );
 }

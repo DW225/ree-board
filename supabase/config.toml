@@ -1,0 +1,76 @@
+# This template is copied into an owned run directory by scripts/e2e/env.mjs.
+project_id = "__PROJECT__"
+
+[api]
+enabled = true
+port = __API_PORT__
+external_url = "__AUTH_ORIGIN__"
+
+[db]
+port = __DB_PORT__
+shadow_port = __SHADOW_PORT__
+major_version = 17
+
+[db.pooler]
+enabled = false
+
+[studio]
+enabled = false
+
+[inbucket]
+enabled = true
+port = __MAIL_PORT__
+smtp_port = __SMTP_PORT__
+pop3_port = __POP_PORT__
+
+[storage]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "__APP_ORIGIN__"
+additional_redirect_urls = ["__APP_ORIGIN__/api/auth/callback", "__APP_ORIGIN__/api/auth/confirm"]
+enable_signup = true
+enable_anonymous_sign_ins = true
+jwt_expiry = __JWT_EXPIRY__
+
+[auth.rate_limit]
+email_sent = 1000
+anonymous_users = 100
+sign_in_sign_ups = 100
+token_verifications = 100
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+max_frequency = "1s"
+otp_length = 6
+otp_expiry = __OTP_EXPIRY__
+
+[auth.email.template.confirmation]
+subject = "Ree Board: confirm email"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.magic_link]
+subject = "Ree Board: sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.recovery]
+subject = "Ree Board: reset password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Ree Board: confirm email change"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.captcha]
+enabled = __CAPTCHA_ENABLED__
+provider = "turnstile"
+secret = "__CAPTCHA_SECRET__"
+
+[analytics]
+enabled = false
+
+[edge_runtime]
+enabled = false

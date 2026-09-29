@@ -1,16 +1,19 @@
+import { validateLocalE2e } from "@/lib/config/localE2e";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
+const localE2e = validateLocalE2e();
 const dbUrl =
-  process.env.NODE_ENV === "development"
+  localE2e?.libsqlOrigin ??
+  (process.env.NODE_ENV === "development"
     ? "http://127.0.0.1:8080"
-    : process.env.TURSO_DATABASE_URL!;
+    : process.env.TURSO_DATABASE_URL!);
 
 if (dbUrl == undefined) {
   throw new Error("Missing TURSO_DATABASE_URL environment variable");
 }
 const dbAuthToken =
-  process.env.NODE_ENV === "development"
+  localE2e || process.env.NODE_ENV === "development"
     ? undefined
     : process.env.TURSO_AUTH_TOKEN;
 
@@ -34,7 +37,7 @@ export function isTransientError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   const msg = error.message.toUpperCase();
   return TRANSIENT_ERROR_PATTERNS.some((pattern) =>
-    msg.includes(pattern.toUpperCase()),
+    msg.includes(pattern.toUpperCase())
   );
 }
 
@@ -53,7 +56,7 @@ export async function withDbRetry<T>(fn: () => Promise<T>): Promise<T> {
       }
       console.warn(
         `DB operation failed (attempt ${attempt}/${DB_MAX_RETRIES}). Retrying in ${delay}ms...`,
-        error instanceof Error ? error.message : error,
+        error instanceof Error ? error.message : error
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
       delay *= 2;

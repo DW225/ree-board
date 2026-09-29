@@ -26,6 +26,16 @@ ree-board is a collaborative retrospective board application.
 - `pnpm push:dev`: push schema to the local development database
 - `pnpm push`: push schema to the configured production database
 
+## Local E2E
+
+- `pnpm test:e2e:local --slot 0`: start fresh local services, build the app, run Chromium, and tear down.
+- `pnpm e2e:up --slot 0`: keep local services open for agent browser work.
+- `pnpm e2e:down --slot 0` and `pnpm e2e:reset --slot 0`: stop or replace only that run.
+- `pnpm test:e2e:captcha --slot 1`: check real Turnstile with official test keys.
+- `pnpm test:e2e:ably --slot 2`: check a dedicated Ably test app; requires its approved key and key ID.
+- Use Node 24+, Docker 29+, a clean worktree without Next `.env` files, and a separate browser context/profile per run. Use different worktrees and slots for concurrent agents.
+- Read `tests/e2e/README.md` for setup and the current coverage/isolation limits. Never use production services for E2E.
+
 ## Required Checks
 
 - Run `pnpm lint` after TypeScript or React edits.
@@ -93,6 +103,7 @@ Use specialized review for:
 - Do not overwrite unrelated user changes.
 
 <!-- sonar:begin:codex-secrets-on-read -->
+
 # SonarQube secrets scanning for files protocol
 
 Before reading any file in this workspace, scan it for secrets with the deterministic scanner:
@@ -106,4 +117,5 @@ If the command reports that the file contains a secret, **do not read the file**
 1. Inform the user that the file appears to contain a secret or credential and that reading it would expose the value in chat history, logs, and any downstream telemetry.
 2. Advise them to rotate the leaked credential at its source of truth and remove it from the file.
 3. Do not proceed with the original request until the secret has been removed.
+
 <!-- sonar:end:codex-secrets-on-read -->
