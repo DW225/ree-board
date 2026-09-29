@@ -15,7 +15,13 @@ import type { Post } from "@/lib/types/post";
 import type { User } from "@/lib/types/user";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import invariant from "tiny-invariant";
 import { useAnonymousMode } from "../AnonymousModeProvider";
@@ -34,8 +40,8 @@ interface PostCardProps {
   onUpdate: (
     id: Post["id"],
     originalContent: Post["content"],
-    newContent: Post["content"],
-  ) => void;
+    newContent: Post["content"]
+  ) => void | Promise<void>;
   userId: User["id"];
   accentColor?: string;
 }
@@ -143,30 +149,31 @@ function PostCard({
           });
 
           // Make the post a drop target for merging (only if not in view-only mode)
-          if (!viewOnly) {
-            cleanupDrop = dropTargetForElements({
-              element: postCardEl,
-              canDrop: ({ source }) => {
-                // Can only drop posts, and not the same post on itself
-                return (
-                  source.data.type === "post" &&
-                  source.data.id !== post.id &&
-                  source.data.boardId === post.boardId
-                );
-              },
-              getData: () => ({ type: "post-merge-target", targetPost: getCurrentPost() }),
-              onDragEnter: () => setIsDropTarget(true),
-              onDragLeave: () => setIsDropTarget(false),
-              onDrop: ({ source }) => {
-                setIsDropTarget(false);
-                const sourcePost = source.data.post as EnrichedPost;
-                if (sourcePost) {
-                  setSourcePostForMerge(sourcePost);
-                  setShowMergeDialog(true);
-                }
-              },
-            });
-          }
+          cleanupDrop = dropTargetForElements({
+            element: postCardEl,
+            canDrop: ({ source }) => {
+              // Can only drop posts, and not the same post on itself
+              return (
+                source.data.type === "post" &&
+                source.data.id !== post.id &&
+                source.data.boardId === post.boardId
+              );
+            },
+            getData: () => ({
+              type: "post-merge-target",
+              targetPost: getCurrentPost(),
+            }),
+            onDragEnter: () => setIsDropTarget(true),
+            onDragLeave: () => setIsDropTarget(false),
+            onDrop: ({ source }) => {
+              setIsDropTarget(false);
+              const sourcePost = source.data.post as EnrichedPost;
+              if (sourcePost) {
+                setSourcePostForMerge(sourcePost);
+                setShowMergeDialog(true);
+              }
+            },
+          });
 
           isInitialized = true;
           return true;
@@ -178,14 +185,13 @@ function PostCard({
         }
       };
 
-      const handleInteraction = async () => {
-        if (isInitialized || isInitializing) return;
-
-        const didInitialize = await initializeDragAndDrop();
-        if (!didInitialize) return;
-
-        postCardEl.removeEventListener("mouseenter", handleInteraction);
-        postCardEl.removeEventListener("touchstart", handleInteraction);
+      const handleInteraction = () => {
+        if (isInitialized || isInitializing || cancelled) return;
+        void initializeDragAndDrop().then((didInitialize) => {
+          if (!didInitialize) return;
+          postCardEl.removeEventListener("mouseenter", handleInteraction);
+          postCardEl.removeEventListener("touchstart", handleInteraction);
+        });
       };
 
       postCardEl.addEventListener("mouseenter", handleInteraction, {

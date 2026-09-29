@@ -7,6 +7,7 @@ import { PostType } from "@/lib/constants/post";
 import { memberSignalInitial } from "@/lib/signal/memberSignals";
 import {
   initializePostSignals,
+  postsSignal,
   updatePostType,
 } from "@/lib/signal/postSignals";
 import type { MemberSignal } from "@/lib/types/member";
@@ -20,10 +21,17 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
-import invariant from "tiny-invariant";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const dragSourceSchema = z.object({
+  type: z.literal("post"),
+  id: z.string(),
+  boardId: z.string(),
+});
+const columnSchema = z.object({ postType: z.enum(PostType) });
 
 interface AddPostFormContextType {
   openFormId: string | null;
@@ -144,80 +152,89 @@ const PostProvider: FC<PostProviderProps> = ({
   initials,
   boardId,
 }) => {
-  const dragMonitorRef = useRef<(() => void) | null>(null);
-  const isDragInitialized = useRef(false);
-
   useEffectOnce(() => {
     initializePostSignals(initials.posts, initials.actions);
     memberSignalInitial(initials.members);
   });
 
-  // Lazy load drag-and-drop functionality
-  const initializeDragAndDrop = useCallback(async () => {
-    if (isDragInitialized.current) return;
-
-    try {
-      const { monitorForElements } =
-        await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
-
-      const cleanup = monitorForElements({
-        async onDrop(args) {
-          const { location, source } = args;
-          if (!location.current.dropTargets.length) {
-            return;
-          }
-          const postId = source.data.id;
-          invariant(typeof postId === "string");
-          const originalType = source.data.originalType;
-          invariant(typeof originalType === "number");
-
-          if (location.current.dropTargets.length === 1) {
-            const [destinationColumnRecord] = location.current.dropTargets;
-            const destinationPostType = destinationColumnRecord.data.postType;
-            invariant(typeof destinationPostType === "number");
-
-            const postTypeKey = Object.keys(PostType)[
-              Object.values(PostType).indexOf(destinationPostType)
-            ] as keyof typeof PostType;
-
-            updatePostType(postId, PostType[postTypeKey]);
-
-            await UpdatePostTypeAction(postId, boardId, PostType[postTypeKey]);
-          }
-        },
-      });
-
-      dragMonitorRef.current = cleanup;
-      isDragInitialized.current = true;
-    } catch (error) {
-      console.error("Failed to initialize drag and drop:", error);
-    }
-  }, [boardId]);
-
-  // Initialize drag-and-drop on first user interaction
   useEffect(() => {
-    const handleFirstInteraction = () => {
-      initializeDragAndDrop();
-      // Remove listeners after first interaction
-      document.removeEventListener("mousedown", handleFirstInteraction);
-      document.removeEventListener("touchstart", handleFirstInteraction);
+    let cancelled = false;
+    let initializing = false;
+    let cleanup: (() => void) | undefined;
+    const pendingPosts = new Set<string>();
+
+    const saveMove = async (previous: Post, destinationType: PostType) => {
+      const postId = previous.id;
+      try {
+        await UpdatePostTypeAction(postId, boardId, destinationType);
+      } catch (error) {
+        console.error("Failed to move post:", error);
+        toast.error("Failed to move post");
+        // Revert only this field; retain newer content and type changes.
+        if (
+          postsSignal.value.find((post) => post.id === postId)?.type ===
+          destinationType
+        ) {
+          updatePostType(postId, previous.type);
+        }
+      } finally {
+        pendingPosts.delete(postId);
+      }
     };
 
+    const initializeDragAndDrop = async () => {
+      if (initializing || cleanup) return;
+      initializing = true;
+      try {
+        const { monitorForElements } =
+          await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
+        if (cancelled) return;
+
+        cleanup = monitorForElements({
+          onDrop({ location, source }) {
+            if (location.current.dropTargets.length !== 1) return;
+            const parsedSource = dragSourceSchema.safeParse(source.data);
+            const destination = columnSchema.safeParse(
+              location.current.dropTargets[0].data
+            );
+            if (!parsedSource.success || !destination.success) return;
+            const { id: postId, boardId: sourceBoardId } = parsedSource.data;
+            if (sourceBoardId !== boardId || pendingPosts.has(postId)) return;
+            const previous = postsSignal.value.find(
+              (post) => post.id === postId && post.boardId === boardId
+            );
+            if (!previous || previous.type === destination.data.postType)
+              return;
+
+            pendingPosts.add(postId);
+            updatePostType(postId, destination.data.postType);
+            void saveMove(previous, destination.data.postType);
+          },
+        });
+        document.removeEventListener("mousedown", handleFirstInteraction);
+        document.removeEventListener("touchstart", handleFirstInteraction);
+      } catch (error) {
+        console.error("Failed to initialize drag and drop:", error);
+      } finally {
+        initializing = false;
+      }
+    };
+    const handleFirstInteraction = () => {
+      void initializeDragAndDrop();
+    };
     document.addEventListener("mousedown", handleFirstInteraction, {
       passive: true,
     });
     document.addEventListener("touchstart", handleFirstInteraction, {
       passive: true,
     });
-
     return () => {
+      cancelled = true;
       document.removeEventListener("mousedown", handleFirstInteraction);
       document.removeEventListener("touchstart", handleFirstInteraction);
-      if (dragMonitorRef.current) {
-        dragMonitorRef.current();
-      }
+      cleanup?.();
     };
-  }, [initializeDragAndDrop]);
+  }, [boardId]);
 
   return (
     <VotedPostsProvider initial={{ votedPosts: initials.votedPosts }}>
