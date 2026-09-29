@@ -32,7 +32,7 @@ export function ChangePasswordSection() {
     setError("");
   }
 
-  const handleSubmit = async (e: SubmitEvent) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     setError("");
 

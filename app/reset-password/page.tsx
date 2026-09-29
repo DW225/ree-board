@@ -143,7 +143,12 @@ export default function ResetPasswordPage() {
           </h1>
           <p className="text-slate-600 mb-6">Enter your new password below.</p>
 
-          <form onSubmit={handleResetPassword} className="space-y-4">
+          <form
+            onSubmit={(event) => {
+              void handleResetPassword(event);
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="password" className="text-slate-700">
                 New Password
