@@ -10,7 +10,8 @@ import {
 import { membersSignal } from "@/lib/signal/memberSignals";
 import type { MemberSignal } from "@/lib/types/member";
 import { Search, X } from "lucide-react";
-import { useState } from "react";
+import { toast } from "sonner";
+import { useRef, useState } from "react";
 
 interface AssignTaskDialogProps {
   isOpen: boolean;
@@ -28,18 +29,36 @@ export function AssignTaskDialog({
 }: Readonly<AssignTaskDialogProps>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMember, setSelectedMember] = useState<MemberSignal | null>(
-    null,
+    null
   );
+  const assigningRef = useRef(false);
   const [isAssigning, setIsAssigning] = useState(false);
 
-  const [previous, setPrevious] = useState({ isOpen: false, currentAssigneeId });
-  if (isOpen !== previous.isOpen || currentAssigneeId !== previous.currentAssigneeId) {
-    setPrevious({ isOpen, currentAssigneeId });
+  const [wasOpen, setWasOpen] = useState(false);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (isOpen) {
       setSearchTerm("");
-      setSelectedMember(membersSignal.value.find(m => m.userId === currentAssigneeId) ?? null);
+      setSelectedMember(
+        membersSignal.value.find((m) => m.userId === currentAssigneeId) ?? null
+      );
     }
   }
+
+  const handleAssign = async () => {
+    if (!selectedMember || assigningRef.current) return;
+    assigningRef.current = true;
+    setIsAssigning(true);
+    try {
+      await onAssign(selectedMember);
+      onClose();
+    } catch {
+      toast.error("Failed to assign task");
+    } finally {
+      assigningRef.current = false;
+      setIsAssigning(false);
+    }
+  };
 
   return (
     <Dialog
@@ -104,7 +123,7 @@ export function AssignTaskDialog({
             onSelect={(member) => {
               if (isAssigning) return;
               setSelectedMember(
-                selectedMember?.userId === member.userId ? null : member,
+                selectedMember?.userId === member.userId ? null : member
               );
             }}
             className="flex-1"
@@ -123,15 +142,8 @@ export function AssignTaskDialog({
           </button>
           <button
             type="button"
-            onClick={async () => {
-              if (!selectedMember) return;
-              setIsAssigning(true);
-              try {
-                await onAssign(selectedMember);
-                onClose();
-              } finally {
-                setIsAssigning(false);
-              }
+            onClick={() => {
+              void handleAssign();
             }}
             disabled={!selectedMember || isAssigning}
             className="flex items-center justify-center h-[38px] px-[18px] rounded-lg bg-[#6366F1] text-white text-sm font-semibold hover:bg-[#4F46E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

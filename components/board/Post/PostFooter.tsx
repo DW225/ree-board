@@ -37,7 +37,7 @@ const TASK_STATE_BADGE_STYLES: Record<Task["state"], string> = {
 
 const renderAssigneeTooltip = (
   user: { name?: string } | undefined,
-  avatarContent: ReactNode,
+  avatarContent: ReactNode
 ): ReactNode => (
   <>
     <TooltipTrigger asChild>{avatarContent}</TooltipTrigger>
@@ -82,12 +82,12 @@ export const PostFooter = memo(function PostFooter({
         toast.success("Task assigned");
       } catch (error) {
         console.error("Error assigning task:", error);
-        toast.error("Failed to assign task");
         // Rollback optimistic update
         assignTask(postId, oldAssigned, boardId);
+        throw error;
       }
     },
-    [post.id, post.boardId, post.task?.userId],
+    [post.id, post.boardId, post.task?.userId]
   );
 
   return (
@@ -141,7 +141,9 @@ export const PostFooter = memo(function PostFooter({
                 ? "text-blue-500"
                 : "text-[#94A3B8] hover:text-[#64748B]"
             } ${viewOnly || isVoting ? "cursor-default pointer-events-none opacity-60" : ""}`}
-            onClick={handleVote}
+            onClick={() => {
+              void handleVote();
+            }}
             disabled={viewOnly || isVoting}
             aria-label={
               hasVoted(post.id) ? "Remove vote" : "Vote for this post"
