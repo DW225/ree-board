@@ -125,6 +125,26 @@ test("local confirmation, password login, board persistence and collaboration", 
     .getByRole("button")
     .filter({ hasText: member.email })
     .click();
+  await serviceFault("sql", "stop");
+  try {
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Assign Task", exact: true })
+      .click();
+    await expect(
+      page.getByText("Failed to assign task", { exact: true })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("dialog", { name: "Assign Task", exact: true })
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("dialog")
+        .getByRole("button", { name: "Assign Task", exact: true })
+    ).toBeEnabled();
+  } finally {
+    await serviceFault("sql", "start");
+  }
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Assign Task", exact: true })
