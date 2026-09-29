@@ -21,7 +21,9 @@ import useSWR from "swr";
  */
 export function useMagicLinks(boardId: string) {
   const [now, setNow] = useState(Date.now);
-  useInterval(() => { setNow(Date.now()); }, 60_000);
+  useInterval(() => {
+    setNow(Date.now());
+  }, 60_000);
   const { data, error, isLoading, mutate } = useSWR<GetLinksResponse>(
     boardId ? `/api/board/${boardId}/links` : null,
     fetcher,
@@ -37,7 +39,9 @@ export function useMagicLinks(boardId: string) {
   const links = (data?.links ?? []).map((link) => ({
     ...link,
     expiresIn: getTimeUntilExpiration(link.expiresAt, now),
-    isExpired: link.isExpired || (link.expiresAt !== null && new Date(link.expiresAt).getTime() <= now),
+    isExpired:
+      link.isExpired ||
+      (link.expiresAt !== null && new Date(link.expiresAt).getTime() <= now),
   }));
 
   /**
@@ -168,8 +172,7 @@ export function useMagicLinks(boardId: string) {
    * Generates the full URL for a magic link token
    */
   const getLinkUrl = (token: string): string => {
-    const baseUrl =
-      globalThis.window === undefined ? "" : globalThis.location.origin;
+    const baseUrl = "window" in globalThis ? globalThis.location.origin : "";
     return `${baseUrl}/invite/${token}`;
   };
 
