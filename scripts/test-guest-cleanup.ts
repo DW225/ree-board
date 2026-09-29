@@ -92,7 +92,9 @@ async function testGuestCleanup() {
     for (const guest of testGuests) {
       const user = await getUserByUserID(guest.id);
       if (user) {
-        console.log(`✓ Found: ${guest.name} (${guest.isExpired ? 'expired' : 'active'})`);
+        console.log(
+          `✓ Found: ${guest.name} (${guest.isExpired ? "expired" : "active"})`
+        );
       } else {
         console.log(`✗ Not found: ${guest.name}`);
       }
@@ -209,4 +211,4 @@ async function testGuestCleanup() {
 }
 
 // Run the test
-testGuestCleanup();
+void testGuestCleanup();

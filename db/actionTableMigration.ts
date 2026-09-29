@@ -11,9 +11,9 @@ async function main() {
   const dbUrl =
     process.env.NODE_ENV === "development"
       ? "http://127.0.0.1:8080"
-      : process.env.TURSO_DATABASE_URL!;
+      : process.env.TURSO_DATABASE_URL;
 
-  if (dbUrl == undefined) {
+  if (!dbUrl) {
     throw new Error("Missing TURSO_DATABASE_URL environment variable");
   }
 

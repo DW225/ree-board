@@ -9,9 +9,11 @@ function databaseSettings() {
   if (process.env.NODE_ENV === "development") {
     return { dbCredentials: { url: "file:test.db" }, verbose: true };
   }
+  const url = process.env.TURSO_DATABASE_URL;
+  if (!url) throw new Error("Missing TURSO_DATABASE_URL environment variable");
   return {
     dbCredentials: {
-      url: process.env.TURSO_DATABASE_URL!,
+      url,
       authToken: process.env.TURSO_AUTH_TOKEN,
     },
   };
