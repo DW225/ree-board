@@ -1,3 +1,4 @@
+import MergePostDialog from "@/components/board/MergePostDialog";
 import AnonymousModeProvider from "@/components/board/AnonymousModeProvider";
 import BoardColumn from "@/components/board/BoardColumn";
 import PostProvider from "@/components/board/PostProvider";
@@ -167,7 +168,20 @@ function Editor() {
   );
 }
 let fixture = <Editor />;
-if (params.get("review") === "expiration") {
+if (params.get("review") === "merge") {
+  fixture = (
+    <>
+      <MergePostDialog
+        isOpen
+        onClose={() => undefined}
+        targetPost={{ ...post, type: Number(params.get("type")) as PostType }}
+        sourcePost={{ ...post, id: "mock-source", content: "Second post" }}
+        boardId="mock"
+      />
+      <Toaster />
+    </>
+  );
+} else if (params.get("review") === "expiration") {
   fixture = (
     <>
       <GuestBanner expiresAt={new Date(Date.now() + 30_000)} />

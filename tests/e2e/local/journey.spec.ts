@@ -684,3 +684,49 @@ test("anonymous invite uses local CAPTCHA and server actions still reject guest 
     sql.close();
   }
 });
+
+test("dragged posts merge once with the keyboard and persist after reload", async ({
+  page,
+}) => {
+  await signUp(page);
+  const boardPath = await createBoard(page, `Merge board ${randomUUID()}`);
+  const first = `First merge post ${randomUUID()}`;
+  const second = `Second merge post ${randomUUID()}`;
+  await page
+    .getByRole("button", { name: "Add a card", exact: true })
+    .first()
+    .click();
+  for (const content of [first, second]) {
+    await page.getByPlaceholder("What went well this sprint?").fill(content);
+    await page.getByRole("button", { name: "Add card", exact: true }).click();
+    await expect(
+      page.getByTestId(/^post-/).filter({ hasText: content })
+    ).toBeVisible();
+  }
+  const source = page.getByTestId(/^post-/).filter({ hasText: second });
+  const target = page.getByTestId(/^post-/).filter({ hasText: first });
+  await target.hover();
+  await source.hover();
+  await expect(source).toHaveAttribute("draggable", "true");
+  await source.dragTo(target);
+  const dialog = page.getByRole("dialog", { name: "Merge Posts", exact: true });
+  await expect(dialog).toBeVisible();
+  const merged = `Merged once ${randomUUID()}`;
+  await dialog.getByRole("textbox").fill(merged);
+  await dialog.getByRole("textbox").press("Control+Enter");
+  await expect(dialog).toBeHidden();
+  await expect(page.getByTestId(/^post-/)).toHaveCount(1);
+  await page.reload();
+  await expect(page.getByTestId(/^post-/)).toHaveCount(1);
+  await expect(page.getByText(merged, { exact: true })).toBeVisible();
+  const sql = createSqlClient({ url: run.libsqlOrigin });
+  try {
+    const rows = await sql.execute({
+      sql: "SELECT content FROM post WHERE board_id = ?",
+      args: [boardPath.split("/").at(-1)!],
+    });
+    expect(rows.rows).toEqual([{ content: merged }]);
+  } finally {
+    sql.close();
+  }
+});

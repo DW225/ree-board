@@ -33,37 +33,37 @@ interface MergePostDialogProps {
 }
 
 // Full Tailwind class strings must be present as literals for the build scanner.
-const POST_ACCENT_BG: Record<Post["type"], string> = {
-  [PostType.went_well]: "bg-[#10B981]",
-  [PostType.to_improvement]: "bg-[#EF4444]",
-  [PostType.to_discuss]: "bg-[#F59E0B]",
-  [PostType.action_item]: "bg-[#8B5CF6]",
-};
+const POST_ACCENT_BG = new Map<Post["type"], string>([
+  [PostType.went_well, "bg-[#10B981]"],
+  [PostType.to_improvement, "bg-[#EF4444]"],
+  [PostType.to_discuss, "bg-[#F59E0B]"],
+  [PostType.action_item, "bg-[#8B5CF6]"],
+]);
 
-const POST_ACCENT_TEXT: Record<Post["type"], string> = {
-  [PostType.went_well]: "text-[#10B981]",
-  [PostType.to_improvement]: "text-[#EF4444]",
-  [PostType.to_discuss]: "text-[#F59E0B]",
-  [PostType.action_item]: "text-[#8B5CF6]",
-};
+const POST_ACCENT_TEXT = new Map<Post["type"], string>([
+  [PostType.went_well, "text-[#10B981]"],
+  [PostType.to_improvement, "text-[#EF4444]"],
+  [PostType.to_discuss, "text-[#F59E0B]"],
+  [PostType.action_item, "text-[#8B5CF6]"],
+]);
 
 function getPostAccentBg(type: Post["type"]): string {
-  return POST_ACCENT_BG[type] ?? "bg-[#94A3B8]";
+  return POST_ACCENT_BG.get(type) ?? "bg-[#94A3B8]";
 }
 
 function getPostAccentText(type: Post["type"]): string {
-  return POST_ACCENT_TEXT[type] ?? "text-[#94A3B8]";
+  return POST_ACCENT_TEXT.get(type) ?? "text-[#94A3B8]";
 }
 
-const POST_LABELS: Record<Post["type"], string> = {
-  [PostType.went_well]: "Went Well",
-  [PostType.to_improvement]: "To Improve",
-  [PostType.to_discuss]: "To Discuss",
-  [PostType.action_item]: "Action Item",
-};
+const POST_LABELS = new Map<Post["type"], string>([
+  [PostType.went_well, "Went Well"],
+  [PostType.to_improvement, "To Improve"],
+  [PostType.to_discuss, "To Discuss"],
+  [PostType.action_item, "Action Item"],
+]);
 
 function getPostLabel(type: Post["type"]): string {
-  return POST_LABELS[type] ?? type;
+  return POST_LABELS.get(type) ?? String(type);
 }
 
 /** Renders the dialog used to merge one board post into another. */
@@ -77,6 +77,7 @@ export default function MergePostDialog({
   const [mergedContent, setMergedContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
+  const submittingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Calculate estimated vote count for preview
@@ -115,6 +116,7 @@ export default function MergePostDialog({
   }, [isOpen, targetPost.content, sourcePost.content]);
 
   const handleMerge = useCallback(async () => {
+    if (submittingRef.current) return;
     if (!mergedContent.trim()) {
       toast.error("Merged content cannot be empty");
       return;
@@ -125,6 +127,7 @@ export default function MergePostDialog({
       return;
     }
 
+    submittingRef.current = true;
     setIsSubmitting(true);
     const sourcePostIds = [sourcePost.id];
     let rollbackData;
@@ -168,6 +171,7 @@ export default function MergePostDialog({
         });
       }
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }, [mergedContent, targetPost.id, sourcePost.id, boardId, onClose]);
@@ -180,7 +184,7 @@ export default function MergePostDialog({
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !isSubmitting) {
         e.preventDefault();
         e.stopPropagation();
-        handleMerge();
+        void handleMerge();
       }
     },
     [onClose, handleMerge, isSubmitting]
@@ -337,7 +341,9 @@ export default function MergePostDialog({
             </Button>
             <Button
               type="button"
-              onClick={handleMerge}
+              onClick={() => {
+                void handleMerge();
+              }}
               disabled={isSubmitting || !mergedContent.trim()}
               className="rounded-lg bg-[#6366F1] hover:bg-[#4F46E5] text-white px-[18px] gap-1.5"
             >
