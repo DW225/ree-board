@@ -60,14 +60,14 @@ export default function BoardColumn({
   const columnRef = useRef<HTMLDivElement>(null);
   const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
   const filteredPosts = useComputed(() =>
-    sortedPostsSignal.value.filter((post) => post.type === postType),
+    sortedPostsSignal.value.filter((post) => post.type === postType)
   );
 
   const animatedPosts: Signal<AnimatedPost[]> = useComputed(() =>
     filteredPosts.value.map((post) => ({
       id: post.id,
       isRemoving: false,
-    })),
+    }))
   );
 
   const handlePostDelete = useCallback(
@@ -81,14 +81,14 @@ export default function BoardColumn({
         console.error("Failed to delete post:", error);
       }
     },
-    [boardId],
+    [boardId]
   );
 
   const handlePostUpdate = useCallback(
     async (
       id: Post["id"],
       originalContent: Post["content"],
-      newContent: Post["content"],
+      newContent: Post["content"]
     ) => {
       try {
         // Update the post content in the local state optimistically
@@ -105,7 +105,7 @@ export default function BoardColumn({
         throw error;
       }
     },
-    [boardId],
+    [boardId]
   );
 
   useEffect(() => {
@@ -113,6 +113,7 @@ export default function BoardColumn({
       const columnEl = columnRef.current;
       invariant(columnEl, "columnEl is null");
 
+      let cancelled = false;
       let cleanup: (() => void) | undefined;
       let isInitializing = false;
       let isInitialized = false;
@@ -125,6 +126,7 @@ export default function BoardColumn({
           const { dropTargetForElements } =
             await import("@atlaskit/pragmatic-drag-and-drop/element/adapter");
 
+          if (cancelled) return false;
           cleanup = dropTargetForElements({
             element: columnEl,
             getData: () => ({ postType }),
@@ -150,14 +152,13 @@ export default function BoardColumn({
       };
 
       // Initialize on hover or first interaction with the column
-      const handleInteraction = async () => {
-        if (isInitialized || isInitializing) return;
-
-        const didInitialize = await initializeDropTarget();
-        if (!didInitialize) return;
-
-        columnEl.removeEventListener("mouseenter", handleInteraction);
-        columnEl.removeEventListener("touchstart", handleInteraction);
+      const handleInteraction = () => {
+        if (isInitialized || isInitializing || cancelled) return;
+        void initializeDropTarget().then((didInitialize) => {
+          if (!didInitialize) return;
+          columnEl.removeEventListener("mouseenter", handleInteraction);
+          columnEl.removeEventListener("touchstart", handleInteraction);
+        });
       };
 
       columnEl.addEventListener("mouseenter", handleInteraction, {
@@ -168,6 +169,7 @@ export default function BoardColumn({
       });
 
       return () => {
+        cancelled = true;
         columnEl.removeEventListener("mouseenter", handleInteraction);
         columnEl.removeEventListener("touchstart", handleInteraction);
         if (cleanup) {
@@ -207,7 +209,7 @@ export default function BoardColumn({
       userId,
       handlePostDelete,
       accentColor,
-    ],
+    ]
   );
 
   // Use accentColor prop when provided; fall back to Tailwind class from the legacy map.

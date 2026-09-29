@@ -52,7 +52,7 @@ interface PostHeaderProps {
   onUpdate: (
     id: Post["id"],
     originalContent: Post["content"],
-    newContent: Post["content"],
+    newContent: Post["content"]
   ) => void | Promise<void>;
 }
 
@@ -70,17 +70,15 @@ export const PostHeader = memo(function PostHeader({
   const focusRef = useRef<HTMLElement>(null);
 
   const handleEdit = useCallback(async (): Promise<boolean> => {
-    if (onUpdate) {
-      try {
-        const currentContent =
-          postsSignal.value.find((p) => p.id === post.id)?.content ??
-          post.content;
-        await onUpdate(post.id, currentContent, message);
-      } catch (error) {
-        console.error("Error saving post:", error);
-        toast.error("Failed to save post");
-        return false;
-      }
+    try {
+      const currentContent =
+        postsSignal.value.find((p) => p.id === post.id)?.content ??
+        post.content;
+      await onUpdate(post.id, currentContent, message);
+    } catch (error) {
+      console.error("Error saving post:", error);
+      toast.error("Failed to save post");
+      return false;
     }
     return true;
   }, [onUpdate, post.id, post.content, message]);
@@ -106,7 +104,7 @@ export const PostHeader = memo(function PostHeader({
         }
       }
     },
-    [post.id, post.task?.state, post.boardId],
+    [post.id, post.task?.state, post.boardId]
   );
 
   function handleDialogItemSelect() {
