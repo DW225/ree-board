@@ -195,6 +195,10 @@ export default function LinkButton({
                         <div className="flex flex-col gap-3">
                           {section.links.map((link) => {
                             const isCopied = copiedToken === link.token;
+                            const expirationText =
+                              link.expiresIn === "never"
+                                ? "Never expires"
+                                : `Expires in ${link.expiresIn}`;
 
                             return (
                               <div
@@ -267,11 +271,7 @@ export default function LinkButton({
                                   </code>
                                 </div>
                                 <p className="text-[11px] text-[#94A3B8]">
-                                  {link.isExpired
-                                    ? "Expired"
-                                    : link.expiresIn === "never"
-                                      ? "Never expires"
-                                      : `Expires in ${link.expiresIn}`}
+                                  {link.isExpired ? "Expired" : expirationText}
                                 </p>
                               </div>
                             );

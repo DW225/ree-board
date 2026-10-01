@@ -12,7 +12,7 @@ async function changeVote(
   boardId: Board["id"],
   operation: "upvote" | "downvote"
 ): Promise<number> {
-  return db.transaction(async (tx) => {
+  return await db.transaction(async (tx) => {
     const postCondition = and(
       eq(postTable.id, postId),
       eq(postTable.boardId, boardId)

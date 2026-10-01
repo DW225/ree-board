@@ -36,20 +36,7 @@ const BoardListItem: FC<BoardListItemProps> = ({ board, isOwner = false }) => {
 
   return (
     <>
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={handleClick}
-        onKeyDown={(e) => {
-          if (e.currentTarget !== e.target) return;
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleClick();
-          }
-        }}
-        className="flex h-14 w-full overflow-hidden rounded-xl bg-white border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.08)] cursor-pointer transition-shadow duration-200 hover:shadow-md text-left"
-        aria-label={`Open board: ${board.title}`}
-      >
+      <div className="relative flex h-14 w-full overflow-hidden rounded-xl bg-white border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.08)] cursor-pointer transition-shadow duration-200 hover:shadow-md text-left">
         {/* Accent stripe */}
         <div className={`w-1 shrink-0 self-stretch ${accentClass}`} />
 
@@ -57,7 +44,14 @@ const BoardListItem: FC<BoardListItemProps> = ({ board, isOwner = false }) => {
         <div className="flex flex-1 items-center gap-4 px-4 min-w-0">
           <div className="flex flex-col flex-1 min-w-0">
             <h2 className="text-[14px] font-semibold text-[#0F172A] leading-snug truncate">
-              {board.title}
+              <button
+                type="button"
+                onClick={handleClick}
+                aria-label={`Open board: ${board.title}`}
+                className="w-full truncate text-left cursor-pointer after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-slate-500 focus-visible:after:ring-inset"
+              >
+                {board.title}
+              </button>
             </h2>
             <p className="text-[11px] text-[#94A3B8]">
               {formatCreatedDate(board.createdAt)}
@@ -75,7 +69,7 @@ const BoardListItem: FC<BoardListItemProps> = ({ board, isOwner = false }) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 shrink-0 rounded text-[#94A3B8] hover:text-slate-500 hover:bg-slate-100"
+                    className="relative z-10 h-6 w-6 shrink-0 rounded text-[#94A3B8] hover:text-slate-500 hover:bg-slate-100"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <MoreHorizontal className="h-4 w-4" />

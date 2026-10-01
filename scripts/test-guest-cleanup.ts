@@ -20,6 +20,79 @@ interface TestGuest {
   isExpired: boolean;
 }
 
+async function verifyCleanupResults(testGuests: TestGuest[]) {
+  let expiredStillExist = 0;
+  let activeDeleted = 0;
+
+  for (const guest of testGuests) {
+    const user = await getUserByUserID(guest.id);
+
+    if (guest.isExpired) {
+      // Expired guests should be deleted
+      if (user) {
+        console.log(`✗ FAIL: Expired guest still exists: ${guest.name}`);
+        expiredStillExist++;
+      } else {
+        console.log(`✓ PASS: Expired guest deleted: ${guest.name}`);
+      }
+    } else if (user) {
+      console.log(`✓ PASS: Active guest preserved: ${guest.name}`);
+    } else {
+      console.log(`✗ FAIL: Active guest was deleted: ${guest.name}`);
+      activeDeleted++;
+    }
+  }
+  return { expiredStillExist, activeDeleted };
+}
+
+function logTestResults(
+  deletedCount: number,
+  expiredStillExist: number,
+  activeDeleted: number
+) {
+  console.log("");
+  console.log("=".repeat(60));
+  console.log("Test Results:");
+  console.log("=".repeat(60));
+
+  const allTestsPassed = expiredStillExist === 0 && activeDeleted === 0;
+
+  if (allTestsPassed) {
+    console.log("✓ ALL TESTS PASSED");
+    console.log(`  - ${deletedCount} expired guests deleted`);
+    console.log("  - 2 active guests preserved");
+    console.log("  - No false positives");
+  } else {
+    console.log("✗ TESTS FAILED");
+    if (expiredStillExist > 0) {
+      console.log(`  - ${expiredStillExist} expired guests NOT deleted`);
+    }
+    if (activeDeleted > 0) {
+      console.log(`  - ${activeDeleted} active guests incorrectly deleted`);
+    }
+  }
+
+  console.log("");
+  return allTestsPassed;
+}
+
+async function cleanupTestGuests(
+  testGuests: TestGuest[],
+  continueOnError = false
+) {
+  for (const guest of testGuests) {
+    try {
+      const user = await getUserByUserID(guest.id);
+      if (!user) continue;
+      await deleteUser(guest.id);
+      console.log(`✓ Cleaned up: ${guest.name}`);
+    } catch (error) {
+      if (!continueOnError) throw error;
+      console.error(`✗ Failed to cleanup ${guest.name}:`, error);
+    }
+  }
+}
+
 async function testGuestCleanup() {
   console.log("=".repeat(60));
   console.log("Guest Cleanup Job - Test Script");
@@ -118,66 +191,19 @@ async function testGuestCleanup() {
     console.log("Step 4: Verifying cleanup results...");
     console.log("");
 
-    let expiredStillExist = 0;
-    let activeDeleted = 0;
-
-    for (const guest of testGuests) {
-      const user = await getUserByUserID(guest.id);
-
-      if (guest.isExpired) {
-        // Expired guests should be deleted
-        if (user) {
-          console.log(`✗ FAIL: Expired guest still exists: ${guest.name}`);
-          expiredStillExist++;
-        } else {
-          console.log(`✓ PASS: Expired guest deleted: ${guest.name}`);
-        }
-      } else {
-        // Active guests should remain
-        if (user) {
-          console.log(`✓ PASS: Active guest preserved: ${guest.name}`);
-        } else {
-          console.log(`✗ FAIL: Active guest was deleted: ${guest.name}`);
-          activeDeleted++;
-        }
-      }
-    }
-
-    console.log("");
-    console.log("=".repeat(60));
-    console.log("Test Results:");
-    console.log("=".repeat(60));
-
-    const allTestsPassed = expiredStillExist === 0 && activeDeleted === 0;
-
-    if (allTestsPassed) {
-      console.log("✓ ALL TESTS PASSED");
-      console.log(`  - ${deletedCount} expired guests deleted`);
-      console.log("  - 2 active guests preserved");
-      console.log("  - No false positives");
-    } else {
-      console.log("✗ TESTS FAILED");
-      if (expiredStillExist > 0) {
-        console.log(`  - ${expiredStillExist} expired guests NOT deleted`);
-      }
-      if (activeDeleted > 0) {
-        console.log(`  - ${activeDeleted} active guests incorrectly deleted`);
-      }
-    }
-
-    console.log("");
+    const { expiredStillExist, activeDeleted } =
+      await verifyCleanupResults(testGuests);
+    const allTestsPassed = logTestResults(
+      deletedCount,
+      expiredStillExist,
+      activeDeleted
+    );
 
     // Step 5: Cleanup test data
     console.log("Step 5: Cleaning up test data...");
     console.log("");
 
-    for (const guest of testGuests) {
-      const user = await getUserByUserID(guest.id);
-      if (user) {
-        await deleteUser(guest.id);
-        console.log(`✓ Cleaned up: ${guest.name}`);
-      }
-    }
+    await cleanupTestGuests(testGuests);
 
     console.log("");
     console.log("Test script completed successfully!");
@@ -194,17 +220,7 @@ async function testGuestCleanup() {
 
     // Try to cleanup test data even on error
     console.log("Attempting to clean up test guests...");
-    for (const guest of testGuests) {
-      try {
-        const user = await getUserByUserID(guest.id);
-        if (user) {
-          await deleteUser(guest.id);
-          console.log(`✓ Cleaned up: ${guest.name}`);
-        }
-      } catch (cleanupError) {
-        console.error(`✗ Failed to cleanup ${guest.name}:`, cleanupError);
-      }
-    }
+    await cleanupTestGuests(testGuests, true);
 
     process.exit(1);
   }
