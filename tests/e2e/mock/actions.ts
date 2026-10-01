@@ -31,9 +31,8 @@ export const UpdatePostTypeAction = (
   _boardId: string,
   type: Post["type"]
 ) => request("type", { id, type });
-export const MergePostsAction = async () => {
-  throw new Error("Merge persistence is outside this fixture");
-};
+export const MergePostsAction = () =>
+  Promise.reject(new Error("Merge persistence is outside this fixture"));
 export const authedPostActionStateUpdate = (action: unknown) =>
   request("status", action);
 export const authedPostAssign = (action: unknown) => request("assign", action);
@@ -43,14 +42,10 @@ export const DownVotePostAction = (id: string) => request("vote", id);
 export const authedCreateAction = (action: unknown) =>
   request("create-task", action);
 
-export const upgradeGuestAccount = async () => ({
-  success: true,
-  needsOtp: true,
-});
-export const verifyGuestUpgradeOTP = async () => ({
-  success: false,
-  error: "Mock verification only",
-});
+export const upgradeGuestAccount = () =>
+  Promise.resolve({ success: true, needsOtp: true });
+export const verifyGuestUpgradeOTP = () =>
+  Promise.resolve({ success: false, error: "Mock verification only" });
 export const getBoardsWhereUserIsAdminAction = async () =>
   (await fetch("/mock/boards")).json();
 export const getMembersFromBoardWithExclusionAction = async (boardId: string) =>

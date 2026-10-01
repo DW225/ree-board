@@ -36,8 +36,7 @@ export default function MagicLinkManager({
   const linkToRevoke = links.find((link) => link.id === linkToRevokeId);
   const [isRevoking, setIsRevoking] = useState(false);
 
-
-  const handleRevoke = async (link: LinkWithCreator) => {
+  const handleRevoke = (link: LinkWithCreator) => {
     setLinkToRevokeId(link.id);
   };
 
@@ -262,7 +261,12 @@ export default function MagicLinkManager({
       </div>
 
       {/* Revoke Confirmation Dialog */}
-      <Dialog open={!!linkToRevoke} onOpenChange={() => { setLinkToRevokeId(null); }}>
+      <Dialog
+        open={!!linkToRevoke}
+        onOpenChange={() => {
+          setLinkToRevokeId(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Revoke Magic Link</DialogTitle>
@@ -301,7 +305,9 @@ export default function MagicLinkManager({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setLinkToRevokeId(null); }}
+              onClick={() => {
+                setLinkToRevokeId(null);
+              }}
               disabled={isRevoking}
             >
               Cancel

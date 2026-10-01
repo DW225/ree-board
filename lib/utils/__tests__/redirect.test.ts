@@ -45,57 +45,27 @@ describe("SafeRedirectPathSchema", () => {
   });
 
   describe("invalid paths - open redirect attacks", () => {
-    it("should reject absolute HTTP URLs", () => {
-      const result = SafeRedirectPathSchema.safeParse("http://evil.com");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject absolute HTTPS URLs", () => {
-      const result = SafeRedirectPathSchema.safeParse("https://evil.com");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject protocol-relative URLs", () => {
-      const result = SafeRedirectPathSchema.safeParse("//evil.com");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject protocol-relative URLs with paths", () => {
-      const result = SafeRedirectPathSchema.safeParse("//evil.com/steal");
+    it.each([
+      "http://evil.com",
+      "https://evil.com",
+      "//evil.com",
+      "//evil.com/steal",
+    ])("rejects %p", (path) => {
+      const result = SafeRedirectPathSchema.safeParse(path);
       expect(result.success).toBe(false);
     });
   });
 
   describe("invalid paths - protocol injection", () => {
-    it("should reject javascript: protocol", () => {
-      const result = SafeRedirectPathSchema.safeParse("javascript:alert(1)");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject javascript: protocol with capitalization", () => {
-      const result = SafeRedirectPathSchema.safeParse("JavaScript:alert(1)");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject data: URLs", () => {
-      const result = SafeRedirectPathSchema.safeParse(
-        "data:text/html,<script>alert(1)</script>"
-      );
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject file: URLs", () => {
-      const result = SafeRedirectPathSchema.safeParse("file:///etc/passwd");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject vbscript: protocol", () => {
-      const result = SafeRedirectPathSchema.safeParse("vbscript:msgbox(1)");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject vbscript: protocol with capitalization", () => {
-      const result = SafeRedirectPathSchema.safeParse("VBScript:msgbox(1)");
+    it.each([
+      "javascript:alert(1)",
+      "JavaScript:alert(1)",
+      "data:text/html,<script>alert(1)</script>",
+      "file:///etc/passwd",
+      "vbscript:msgbox(1)",
+      "VBScript:msgbox(1)",
+    ])("rejects %p", (path) => {
+      const result = SafeRedirectPathSchema.safeParse(path);
       expect(result.success).toBe(false);
     });
   });
@@ -122,22 +92,13 @@ describe("SafeRedirectPathSchema", () => {
   });
 
   describe("invalid paths - empty or malformed", () => {
-    it("should reject empty strings", () => {
-      const result = SafeRedirectPathSchema.safeParse("");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject paths not starting with /", () => {
-      const result = SafeRedirectPathSchema.safeParse("dashboard");
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject paths with embedded protocol", () => {
-      const result = SafeRedirectPathSchema.safeParse(
-        "/path?url=http://evil.com"
-      );
-      expect(result.success).toBe(false);
-    });
+    it.each(["", "dashboard", "/path?url=http://evil.com"])(
+      "rejects %p",
+      (path) => {
+        const result = SafeRedirectPathSchema.safeParse(path);
+        expect(result.success).toBe(false);
+      }
+    );
   });
 });
 

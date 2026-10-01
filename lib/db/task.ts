@@ -7,7 +7,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "./client";
 
 export async function createTask(action: NewTask) {
-  return db.transaction(async (trx) => {
+  return await db.transaction(async (trx) => {
     const [post] = await trx
       .select({ id: postTable.id })
       .from(postTable)

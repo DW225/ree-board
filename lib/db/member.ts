@@ -131,7 +131,7 @@ export const bulkAddMembers = async (
 ) => {
   if (members.length === 0) return [];
 
-  return (trx ?? db)
+  return await (trx ?? db)
     .insert(memberTable)
     .values(members)
     .onConflictDoNothing()
