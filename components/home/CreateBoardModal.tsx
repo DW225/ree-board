@@ -127,7 +127,13 @@ export default function CreateBoardModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && isPending) return;
+        setOpen(nextOpen);
+      }}
+    >
       <DialogContent className="sm:max-w-[520px] p-0 gap-0 rounded-xl border border-[#E2E8F0] shadow-lg overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-5 border-b border-[#E2E8F0]">
