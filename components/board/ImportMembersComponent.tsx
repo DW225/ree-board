@@ -20,7 +20,7 @@ import {
   getBoardsWhereUserIsAdminAction,
   getMembersFromBoardWithExclusionAction,
 } from "@/lib/actions/member/action";
-import { Role } from "@/lib/constants/role";
+import { Role, roleDisplayName } from "@/lib/constants/role";
 import { addMember } from "@/lib/signal/memberSignals";
 import type { Board } from "@/lib/types/board";
 import { Check, Upload, Users } from "lucide-react";
@@ -66,31 +66,11 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
-function getRoleBadgeStyle(role: Role) {
-  switch (role) {
-    case Role.owner:
-      return "bg-[#F0FDF4] text-[#16A34A]";
-    case Role.member:
-      return "bg-[#EEF2FF] text-[#6366F1]";
-    case Role.guest:
-      return "bg-[#F1F5F9] text-[#475569]";
-    default:
-      return "bg-[#F1F5F9] text-[#475569]";
-  }
-}
-
-function getRoleLabel(role: Role) {
-  switch (role) {
-    case Role.owner:
-      return "owner";
-    case Role.member:
-      return "member";
-    case Role.guest:
-      return "guest";
-    default:
-      return "unknown";
-  }
-}
+const ROLE_BADGE_STYLES = new Map<Role, string>([
+  [Role.owner, "bg-[#F0FDF4] text-[#16A34A]"],
+  [Role.member, "bg-[#EEF2FF] text-[#6366F1]"],
+  [Role.guest, "bg-[#F1F5F9] text-[#475569]"],
+]);
 
 /** Renders the workflow for importing members from another board. */
 export default function ImportMembersComponent({
@@ -348,18 +328,16 @@ export default function ImportMembersComponent({
 
               {/* Member Rows */}
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {isLoading && (
+                {isLoading ? (
                   <div className="flex items-center justify-center h-32">
                     <p className="text-sm text-[#94A3B8]">Loading members...</p>
                   </div>
-                )}
-                {!isLoading && boardMembers.length === 0 && (
+                ) : boardMembers.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-32 text-[#94A3B8]">
                     <Users className="size-8 mb-2" />
                     <p className="text-sm">No members found in this board</p>
                   </div>
-                )}
-                {!isLoading &&
+                ) : (
                   boardMembers.map((member, index) => {
                     const isSelected = selectedMembers.has(member.id);
                     return (
@@ -406,13 +384,15 @@ export default function ImportMembersComponent({
 
                         {/* Role Badge */}
                         <span
-                          className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-medium ${getRoleBadgeStyle(member.role)}`}
+                          className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-medium ${ROLE_BADGE_STYLES.get(member.role) ?? "bg-[#F1F5F9] text-[#475569]"}`}
                         >
-                          {getRoleLabel(member.role)}
+                          {roleDisplayName[member.role]?.toLowerCase() ??
+                            "unknown"}
                         </span>
                       </button>
                     );
-                  })}
+                  })
+                )}
               </div>
 
               {/* Selection count */}
