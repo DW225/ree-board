@@ -127,14 +127,77 @@ At an unchanged total of 325 files, at least **19** of the 51 complex files must
 
 **Update:** This plan with the new analyzed SHA and before/after values.
 
-- [ ] Run the full Jest checks and `pnpm test:e2e:local --slot 0` on the combined implementation. Confirm the local merge/persistence and two-session collaboration flows. Report any service checks that remain unavailable.
-- [ ] Obtain Codacy results for the implementation branch or PR after its analysis completes. Verify its analyzed SHA before comparing it with this baseline. Use `codacy repository --output json` for the default-branch snapshot and `codacy ls --path . --search . --branch <branch> --sort complexity --direction desc --output json` for the file list. Check extensionless files separately.
-- [ ] Record dashboard percentage, absolute count above 20, deleted complex files, and the summed scores across every changed source file. Keep tests and tools in the inventory. Do not claim a score reduction from lint alone.
+- [x] Run the full Jest checks and `pnpm test:e2e:local --slot 0` on the combined implementation. Confirm the local merge/persistence and two-session collaboration flows. Report any service checks that remain unavailable.
+- [x] Obtain Codacy results for the implementation branch or PR after its analysis completes. Verify its analyzed SHA before comparing it with this baseline. Use `codacy repository --output json` for the default-branch snapshot and `codacy ls --path . --search . --branch <branch> --sort complexity --direction desc --output json` for the file list. Check extensionless files separately.
+- [x] Record dashboard percentage, absolute count above 20, deleted complex files, and the summed scores across every changed source file. Keep tests and tools in the inventory. Do not claim a score reduction from lint alone.
 - [ ] Continue with application files from the inventory while the goal remains unmet. Inspect `MergePostDialog.tsx` (48), `LinkButton.tsx` (43), `PostCard.tsx` (40), `useMagicLinks.ts` (38), and `boardSignals.ts` (36) next. Give each batch a concrete caller map, behavior checks, and measured result before selecting the following batch.
 - [ ] Review `MagicLinkManager.tsx` separately: it has no application caller but has live expiration tests in the mock editor. Replace that fixture with coverage of the active `LinkButton` flow before proposing removal. Retain expiry and open-dialog contracts; do not delete tests just to delete the component.
 - [ ] Keep auth, guest actions, database files, and local service tools for separate small batches with the required specialized review. Keep their input checks, authorization, transaction, and isolation behavior. A high file score alone is not evidence of a defect.
 - [ ] Review complex test files only for repeated setup or branching that hides their assertions. Use `it.each`/`test.each` for equivalent cases where useful. Keep independent scenarios and their failure checks. Do not promise that every useful test file will fall below 20.
 - [ ] Close this work only when Codacy reports at most 10% at the verified final commit and the behavior checks pass. If the remaining score comes from valid independent cases, present that evidence before proposing a separate metric-policy decision. Do not relax the goal silently.
+
+## First-pass result — 2026-10-03
+
+**Status:** Tasks 1–5 are complete. Task 6 measurement is complete for this batch; the 10% goal and further batches remain open. [Draft PR #1050](https://github.com/DW225/ree-board/pull/1050) contains the changes. Do not treat the passing PR gate as completion of the repository complexity goal.
+
+Codacy analyzed implementation commit `1c1ec2825a1e0301feb190334d4b2dad642dd6e0`. Its PR result reports no new issues, a complexity delta of -35, and six fewer duplicate blocks. These PR deltas differ from the complete file-score comparison below; the complete comparison includes the deleted component. The [branch dashboard](https://app.codacy.com/gh/DW225/ree-board/dashboard?branch=refactor%2Fcodacy-complexity) still reports **15% complexity**, against the unchanged **10%** goal. Duplication is 11%, down from 12%.
+
+| Measure                                                              | Baseline | First pass |
+| -------------------------------------------------------------------- | -------: | ---------: |
+| Files with a score above 20                                          |       51 |         50 |
+| Application files above 20                                           |       30 |         28 |
+| Test files above 20                                                  |       17 |         18 |
+| Tool files above 20                                                  |        4 |          4 |
+| Listed files, including the extensionless Dockerfile                 |      325 |        326 |
+| Sum of all numeric file scores                                       |     3149 |       3084 |
+| Sum across all changed code/test files                               |      501 |        436 |
+| Sum across the six changed application files, including the deletion |      341 |        246 |
+
+The member store fell below the limit, and the unused invite component was deleted. `review-state.spec.ts` rose from 18 to 22 after adding the requested member-preservation checks. Those checks remain. Tests add independent cases, so their aggregate file score does not by itself identify difficult application logic.
+
+| Changed code/test file                             | Before |   After |
+| -------------------------------------------------- | -----: | ------: |
+| `components/board/BoardColumn.tsx`                 |     43 |      38 |
+| `components/board/ImportMembersComponent.tsx`      |     68 |      59 |
+| `components/board/MagicLink/MagicLinkCreator.tsx`  |     27 | Deleted |
+| `lib/realtime/messageProcessors.ts`                |     68 |      65 |
+| `lib/realtime/__tests__/messageProcessors.test.ts` |     51 |      64 |
+| `lib/signal/memberSignals.ts`                      |     53 |       4 |
+| `lib/signal/memberSignals.test.ts`                 | Absent |       2 |
+| `lib/signal/postSignals.ts`                        |     82 |      80 |
+| `lib/signal/postSignals.test.ts`                   |      7 |      18 |
+| `tests/e2e/mock/actions.ts`                        |     19 |      19 |
+| `tests/e2e/review-state.spec.ts`                   |     18 |      22 |
+| `tests/e2e/tailwind-v4.spec.ts`                    |     65 |      65 |
+
+Filename-ordered Codacy queries returned 324 unique dotted filenames at baseline and 325 on the branch. The separate `scripts/e2e` listing confirmed the extensionless Dockerfile has no complexity score. Complexity-ordered pagination repeated one baseline row and omitted an unchanged file; the stable filename ordering resolved that discrepancy. The plan document has no complexity score.
+
+**Combined verification:** 420 Jest tests, lint, and TypeScript passed. All 15 member browser checks passed. The board suite passed 44 checks with 16 intended browser-specific skips; all 36 image references matched. The isolated local run passed all six journeys, including real local Auth, persisted board edits, two-session delivery, guest mutation rejection, and keyboard merge/reload. Runtime network-denial checks passed. These local results do not verify live Ably, hosted Auth, or Turso Cloud. Current Codacy coverage remains unavailable.
+
+The specialized realtime review and the fresh whole-branch review found no introduced defects. The whole-branch reviewer confirmed all five behavior-preservation focus areas and found no callers of the removed exports or component.
+
+## Next measured batch
+
+The first pass does not justify a promise that small edits alone will reach 10%. At a fixed 326 files, a strict 10% ratio allows at most 32 complex files; 18 more would need to leave the current group. Keep the goal open and measure each following batch. Do not split files just to alter the denominator.
+
+| Inspected area and callers                                                                                | Next change to assess                                                                                                                                                    | Required behavior checks                                                                                                                            |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BoardColumn` and `PostCard`, used by the board UI                                                        | Reuse their repeated lazy drag/drop initialization only if one small shared lifecycle removes real duplicate code. Both currently need cancellation, retry, and cleanup. | Unmount while import is pending, failed initialization followed by retry, same-board rules, guest mode, vote updates, and drag/merge browser cases. |
+| `boardSignals`, used by `BoardList`, `DashboardSearch`, `FilterPanel`, and board create/edit/delete flows | Combine the repeated created/updated date comparator. Keep all live filters and mutation operations.                                                                     | Both dates, invalid dates, title order, both directions, date/status/text filter combinations, reset, and create/edit/delete state.                 |
+| `useMagicLinks`, used by `LinkButton` and the legacy test fixture                                         | Remove the unused role-filter utility after another caller check; assess shared request/error handling only with failure and optimistic-state checks.                    | Creation and revocation success/failure, expired and non-expiring links, timer updates, and clipboard failure.                                      |
+| `LinkButton`, the active invite UI                                                                        | Cover this active UI before replacing the legacy `MagicLinkManager` fixture. Consolidate repeated loading guards only if display order stays the same.                   | Expiry while dialogs stay open, role/expiry inputs, create/revoke pending and failure states, copy feedback, and open-form retention.               |
+| `MergePostDialog`, opened by `PostCard`                                                                   | Retain its content checks, submit lock, keyboard controls, and rollback. No further deletion is supported by this inspection.                                            | Existing type/colour, preview, failure/draft, and isolated merge/persistence checks.                                                                |
+
+`MagicLinkManager` remains because live expiration tests use it. Its current expiry/revoke presentation differs from `LinkButton`; replacing that coverage is a separate behavior decision, not a safe blind deletion. Auth, database, guest actions, and local service tools remain separate batches with their required reviews.
+
+## Execution decisions and existing risks
+
+- Retained all live member aliases and added a state test before deletion. Cost if the test misses a case: a UI-specific regression; the member browser checks reduce that risk.
+- Used tests that pass on the original behavior, then deliberate temporary mutations to prove detection. Cost: untested branches can still escape a mutation check.
+- Recorded completed verification instead of rerunning it only to use the task-ledger helper. Cost: the command evidence must remain clear in this record.
+- Ran lint after browser tests after their temporary-folder cleanup interrupted one concurrent scan. The sequential run passed without a source change.
+- Retained the existing whole-map merge rollback. A failed merge can still overwrite concurrent task/vote changes; review that defect separately with a concurrent-update regression test.
+- Retained the unchanged `PostHeader` state-rollback path. Its existing `if (oldState)` skips state `0`; a failed status request can leave the displayed state wrong until refresh. Fix that separately with a failed-update-from-pending test. This batch did not introduce the defect.
 
 ## Complete inventory above 20
 
