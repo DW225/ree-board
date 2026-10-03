@@ -180,39 +180,26 @@ export const assignTask = (
 ) => {
   const currentTasks = tasksSignal.value;
   const existingTask = currentTasks[postId];
-
   if (existingTask) {
     tasksSignal.value = {
       ...currentTasks,
-      [postId]: {
-        ...existingTask,
-        userId,
-        updatedAt: new Date(),
-      },
+      [postId]: { ...existingTask, userId, updatedAt: new Date() },
     };
-  } else {
-    // Find the post to get its boardId
-    const post = postsSignal.value.find((p) => p.id === postId);
-    if (!post) {
-      console.error(`No post found for ID ${postId}`);
-      toast.error("Failed to find the post to assign a task");
-      return;
-    }
-    const newTask: Task = {
-      id: nanoid(),
-      postId,
-      boardId: boardId || post?.boardId || "",
-      userId,
-      state: TaskState.pending,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    tasksSignal.value = {
-      ...currentTasks,
-      [postId]: newTask,
-    };
+    return;
   }
+
+  const post = postsSignal.value.find((p) => p.id === postId);
+  if (!post) {
+    console.error(`No post found for ID ${postId}`);
+    toast.error("Failed to find the post to assign a task");
+    return;
+  }
+  addPostTask({
+    id: nanoid(),
+    postId,
+    boardId: boardId || post.boardId || "",
+    userId,
+  });
 };
 
 export const updatePostState = (
@@ -222,39 +209,26 @@ export const updatePostState = (
 ) => {
   const currentTasks = tasksSignal.value;
   const existingTask = currentTasks[postId];
-
   if (existingTask) {
     tasksSignal.value = {
       ...currentTasks,
-      [postId]: {
-        ...existingTask,
-        state,
-        updatedAt: new Date(),
-      },
+      [postId]: { ...existingTask, state, updatedAt: new Date() },
     };
-  } else {
-    // Find the post to get its boardId
-    const post = postsSignal.value.find((p) => p.id === postId);
-    if (!post) {
-      console.error(`No post found for ID ${postId}`);
-      toast.error("Failed to update post state");
-      return;
-    }
-    const newTask: Task = {
-      id: nanoid(),
-      postId,
-      boardId: boardId || post?.boardId || "",
-      userId: null,
-      state,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    tasksSignal.value = {
-      ...currentTasks,
-      [postId]: newTask,
-    };
+    return;
   }
+
+  const post = postsSignal.value.find((p) => p.id === postId);
+  if (!post) {
+    console.error(`No post found for ID ${postId}`);
+    toast.error("Failed to update post state");
+    return;
+  }
+  addPostTask({
+    id: nanoid(),
+    postId,
+    boardId: boardId || post.boardId || "",
+    state,
+  });
 };
 
 /**
