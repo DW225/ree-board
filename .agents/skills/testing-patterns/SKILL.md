@@ -1,6 +1,6 @@
 ---
 name: testing-patterns
-description: Jest testing strategies, test organization, factory patterns for test data, mocking strategies for authentication and external services, real-time message processor testing, test-driven development workflow, unit vs integration testing, fake timer usage for time-dependent tests, and testing best practices for ree-board project
+description: Use when writing, changing, reviewing, auditing, or removing tests in ree-board, including Jest tests, test infrastructure, mocks, server actions, realtime processors, React components, and local E2E coverage.
 ---
 
 # Testing Patterns
@@ -9,7 +9,8 @@ description: Jest testing strategies, test organization, factory patterns for te
 
 Activate this skill when:
 
-- Writing new tests
+- Writing or changing tests
+- Reviewing, auditing, or removing tests
 - Setting up test infrastructure
 - Mocking external dependencies
 - Testing server actions
@@ -18,11 +19,23 @@ Activate this skill when:
 - Implementing test-driven development
 - Debugging failing tests
 
+## Test Value Checklist
+
+- Name the observable contract, credible defect, and coverage gap. Extend an existing case when it covers the same risk.
+- Test through the production entry point. Avoid test-only hooks, copied implementation assertions, and mocks that produce the behavior under test. `not.toThrow()` alone does not prove a state change.
+- Confirm that a regression test fails before the fix and passes after it, for the intended reason. Negative cases must reach the intended guard.
+- Before removal, inspect the full test, production flow, all callers, history, and CI routing. Record the test path/name, defect detected, retained proof or obsolete contract, risk, and validation command. Keep uncertain candidates.
+- Keep independent security, storage, migration, public configuration, and accessibility checks. Slow or static tests can be valid. Investigate failing baselines instead of deleting them.
+- A mocked call proves dispatch only. Local relay and CAPTCHA fixtures do not prove real Ably or Cloudflare behavior. Keep distinct service checks.
+- Audit requests produce findings. Edit only within the authorized scope; do not aim for a deletion count.
+- Run the focused Jest test and required `AGENTS.md` checks. For E2E, follow `tests/e2e/README.md`; never use production services. Report checks run and remaining gaps.
+
 ## Core Patterns
 
 ### Test Organization
 
 **File Structure:**
+
 ```text
 lib/
 ├── actions/
@@ -39,6 +52,7 @@ lib/
 ```
 
 **Naming Convention:**
+
 - Unit tests: `<filename>.test.ts`
 - Test directories: `__tests__/`
 
@@ -47,11 +61,11 @@ lib/
 **Arrange, Act, Assert:**
 
 ```typescript
-describe('createPost', () => {
-  it('should create a post with valid data', async () => {
+describe("createPost", () => {
+  it("should create a post with valid data", async () => {
     // Arrange
-    const boardId = 'board-123';
-    const content = 'Test post';
+    const boardId = "board-123";
+    const content = "Test post";
     const type = PostType.went_well;
 
     // Act
@@ -109,28 +123,28 @@ describe("createPost", () => {
 
 ```typescript
 // __tests__/factories/postFactory.ts
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
 export const createMockPost = (overrides?: Partial<Post>): Post => ({
   id: nanoid(),
-  boardId: 'board-123',
-  userId: 'user-123',
-  content: 'Test post content',
+  boardId: "board-123",
+  userId: "user-123",
+  content: "Test post content",
   type: PostType.went_well,
   voteCount: 0,
   createdAt: new Date(),
-  ...overrides
+  ...overrides,
 });
 
 export const createMockPosts = (count: number): Post[] =>
   Array.from({ length: count }, () => createMockPost());
 
 // Usage in tests
-it('filters posts by type', () => {
+it("filters posts by type", () => {
   postsSignal.value = [
     createMockPost({ type: PostType.went_well }),
     createMockPost({ type: PostType.to_improvement }),
-    createMockPost({ type: PostType.went_well })
+    createMockPost({ type: PostType.went_well }),
   ];
 
   expect(postsByTypeSignal.value[PostType.went_well]).toHaveLength(2);
@@ -146,57 +160,68 @@ it('filters posts by type', () => {
 import { processPostMessage } from "../messageProcessors";
 import { EVENT_TYPE } from "@/lib/utils/ably";
 
-describe('Message Processors', () => {
+describe("Message Processors", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();  // ✅ Use fake timers for time-dependent tests
+    jest.useFakeTimers(); // ✅ Use fake timers for time-dependent tests
   });
 
   afterEach(() => {
     jest.useRealTimers();
   });
 
-  it('processes valid messages', () => {
+  it("forwards valid content updates to the signal handler", () => {
     const validMessage = {
-      id: 'post-123',
-      content: 'Updated content',
+      id: "post-123",
+      content: "Updated content",
       type: 0,
-      author: 'user-123',
-      boardId: 'board-123',
+      author: "user-123",
+      boardId: "board-123",
       voteCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    expect(() =>
-      processPostMessage(EVENT_TYPE.POST.UPDATE_CONTENT, validMessage, 'user-123')
-    ).not.toThrow();
+    processPostMessage(
+      EVENT_TYPE.POST.UPDATE_CONTENT,
+      validMessage,
+      "user-123"
+    );
+
+    expect(mockPostSignals.updatePostContent).toHaveBeenCalledWith(
+      "post-123",
+      "Updated content"
+    );
   });
 
-  it('ignores stale vote messages', () => {
+  it("ignores stale vote messages", () => {
     const staleMessage = {
-      id: 'post-123',
-      operation: 'upvote',
-      userId: 'user-123',
-      timestamp: Date.now() - 35000  // 35 seconds ago
+      id: "post-123",
+      operation: "upvote",
+      userId: "user-123",
+      timestamp: Date.now() - 35000, // 35 seconds ago
     };
 
-    processPostMessage(EVENT_TYPE.POST.UPVOTE, staleMessage, 'user-456');
+    processPostMessage(EVENT_TYPE.POST.UPVOTE, staleMessage, "user-456");
 
     expect(mockPostSignals.incrementPostVoteCount).not.toHaveBeenCalled();
   });
 
-  it('validates message structure', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+  it("validates message structure", () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
     const invalidMessage = {
       // Missing required fields
     };
 
-    processPostMessage(EVENT_TYPE.POST.UPDATE_CONTENT, invalidMessage, 'user-123');
+    processPostMessage(
+      EVENT_TYPE.POST.UPDATE_CONTENT,
+      invalidMessage,
+      "user-123"
+    );
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Invalid post data for UPDATE_CONTENT'),
+      expect.stringContaining("Invalid post data for UPDATE_CONTENT"),
       expect.objectContaining({ details: expect.any(Array) })
     );
 
@@ -210,23 +235,25 @@ describe('Message Processors', () => {
 **Reset Signal State:**
 
 ```typescript
-import { postsSignal, postsByTypeSignal } from '@/lib/signal/postSignals';
-import { createMockPost } from './factories/postFactory';
+import { postsSignal, postsByTypeSignal } from "@/lib/signal/postSignals";
+import { createMockPost } from "./factories/postFactory";
 
-describe('Post Signals', () => {
+describe("Post Signals", () => {
   beforeEach(() => {
     // ✅ Reset signals before each test
     postsSignal.value = [];
   });
 
-  it('filters posts correctly', () => {
+  it("filters posts correctly", () => {
     postsSignal.value = [
       createMockPost({ type: PostType.went_well }),
-      createMockPost({ type: PostType.to_improvement })
+      createMockPost({ type: PostType.to_improvement }),
     ];
 
     expect(postsByTypeSignal.value[PostType.went_well]).toHaveLength(1);
-    expect(postsByTypeSignal.value[PostType.went_well][0].type).toBe(PostType.went_well);
+    expect(postsByTypeSignal.value[PostType.went_well][0].type).toBe(
+      PostType.went_well
+    );
   });
 });
 ```
@@ -237,28 +264,28 @@ describe('Post Signals', () => {
 
 ```typescript
 // Mock Ably
-jest.mock('ably/react', () => ({
+jest.mock("ably/react", () => ({
   useChannel: jest.fn(() => ({
     channel: {
       publish: jest.fn(),
       subscribe: jest.fn(),
-      unsubscribe: jest.fn()
-    }
+      unsubscribe: jest.fn(),
+    },
   })),
-  useConnectionStateListener: jest.fn()
+  useConnectionStateListener: jest.fn(),
 }));
 
-it('processes update-content messages', () => {
+it("processes update-content messages", () => {
   const message = createMockPost({
-    id: 'post-123',
-    content: 'New content',
+    id: "post-123",
+    content: "New content",
   });
 
-  processPostMessage(EVENT_TYPE.POST.UPDATE_CONTENT, message, 'user-123');
+  processPostMessage(EVENT_TYPE.POST.UPDATE_CONTENT, message, "user-123");
 
   expect(mockPostSignals.updatePostContent).toHaveBeenCalledWith(
-    'post-123',
-    'New content'
+    "post-123",
+    "New content"
   );
 });
 ```
@@ -267,20 +294,20 @@ it('processes update-content messages', () => {
 
 ```typescript
 // Mock Drizzle
-jest.mock('@/db', () => ({
+jest.mock("@/db", () => ({
   db: {
     query: {
       postTable: {
         findFirst: jest.fn(),
-        findMany: jest.fn()
-      }
+        findMany: jest.fn(),
+      },
     },
     insert: jest.fn(() => ({
       values: jest.fn(() => ({
-        returning: jest.fn()
-      }))
-    }))
-  }
+        returning: jest.fn(),
+      })),
+    })),
+  },
 }));
 ```
 
@@ -289,20 +316,20 @@ jest.mock('@/db', () => ({
 **Pattern with Promises:**
 
 ```typescript
-it('handles async server action', async () => {
-  const result = await createPost('board-1', 'Content', PostType.went_well);
+it("handles async server action", async () => {
+  const result = await createPost("board-1", "Content", PostType.went_well);
 
   expect(result).toBeDefined();
   expect(result.id).toBeTruthy();
 });
 
-it('handles async errors', async () => {
+it("handles async errors", async () => {
   // Mock failure
-  jest.spyOn(db, 'insert').mockRejectedValue(new Error('DB Error'));
+  jest.spyOn(db, "insert").mockRejectedValue(new Error("DB Error"));
 
   await expect(
-    createPost('board-1', 'Content', PostType.went_well)
-  ).rejects.toThrow('DB Error');
+    createPost("board-1", "Content", PostType.went_well)
+  ).rejects.toThrow("DB Error");
 });
 ```
 
@@ -311,26 +338,28 @@ it('handles async errors', async () => {
 ### ❌ Not Cleaning Up Mocks
 
 **Bad:**
+
 ```typescript
-describe('Tests', () => {
-  it('test 1', () => {
-    jest.spyOn(console, 'log').mockImplementation();
+describe("Tests", () => {
+  it("test 1", () => {
+    jest.spyOn(console, "log").mockImplementation();
     // ❌ Never restored
   });
 
-  it('test 2', () => {
+  it("test 2", () => {
     // console.log still mocked!
   });
 });
 ```
 
 **Good:**
+
 ```typescript
-describe('Tests', () => {
-  it('test 1', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+describe("Tests", () => {
+  it("test 1", () => {
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation();
     // test code
-    consoleSpy.mockRestore();  // ✅ Cleaned up
+    consoleSpy.mockRestore(); // ✅ Cleaned up
   });
 
   // OR use afterEach
@@ -343,43 +372,47 @@ describe('Tests', () => {
 ### ❌ Testing Implementation Details
 
 **Bad:**
+
 ```typescript
-it('uses Array.filter internally', () => {
-  const filterSpy = jest.spyOn(Array.prototype, 'filter');
+it("uses Array.filter internally", () => {
+  const filterSpy = jest.spyOn(Array.prototype, "filter");
   filterPosts(posts, PostType.went_well);
-  expect(filterSpy).toHaveBeenCalled();  // ❌ Tests implementation
+  expect(filterSpy).toHaveBeenCalled(); // ❌ Tests implementation
 });
 ```
 
 **Good:**
+
 ```typescript
-it('returns only went_well posts', () => {
+it("returns only went_well posts", () => {
   const filtered = filterPosts(posts, PostType.went_well);
-  expect(filtered.every(p => p.type === PostType.went_well)).toBe(true);  // ✅ Tests behavior
+  expect(filtered.every((p) => p.type === PostType.went_well)).toBe(true); // ✅ Tests behavior
 });
 ```
 
 ### ❌ Not Using Fake Timers for Time-Dependent Tests
 
 **Bad:**
+
 ```typescript
-it('filters stale messages', async () => {
+it("filters stale messages", async () => {
   const oldMessage = { timestamp: Date.now() - 35000 };
   // ❌ Test depends on real time passage
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
   expect(isStale(oldMessage)).toBe(true);
 });
 ```
 
 **Good:**
+
 ```typescript
-it('filters stale messages', () => {
+it("filters stale messages", () => {
   jest.useFakeTimers();
   const now = Date.now();
   const oldMessage = { timestamp: now - 35000 };
 
   jest.setSystemTime(now);
-  expect(isStale(oldMessage)).toBe(true);  // ✅ Deterministic
+  expect(isStale(oldMessage)).toBe(true); // ✅ Deterministic
 
   jest.useRealTimers();
 });
@@ -388,36 +421,38 @@ it('filters stale messages', () => {
 ### ❌ Shared State Between Tests
 
 **Bad:**
-```typescript
-let sharedState = [];  // ❌ Shared between tests
 
-it('test 1', () => {
+```typescript
+let sharedState = []; // ❌ Shared between tests
+
+it("test 1", () => {
   sharedState.push(1);
   expect(sharedState).toHaveLength(1);
 });
 
-it('test 2', () => {
+it("test 2", () => {
   // Fails because sharedState has item from test 1
   expect(sharedState).toHaveLength(0);
 });
 ```
 
 **Good:**
+
 ```typescript
-describe('Tests', () => {
+describe("Tests", () => {
   let testState: number[];
 
   beforeEach(() => {
-    testState = [];  // ✅ Reset before each test
+    testState = []; // ✅ Reset before each test
   });
 
-  it('test 1', () => {
+  it("test 1", () => {
     testState.push(1);
     expect(testState).toHaveLength(1);
   });
 
-  it('test 2', () => {
-    expect(testState).toHaveLength(0);  // ✅ Passes
+  it("test 2", () => {
+    expect(testState).toHaveLength(0); // ✅ Passes
   });
 });
 ```
@@ -433,6 +468,7 @@ describe('Tests', () => {
 ## Project-Specific Context
 
 ### Key Files
+
 - `jest.config.js` - Jest configuration
 - `lib/realtime/__tests__/` - Message processor tests
 - `lib/utils/md5.test.ts` - Example utility test
@@ -442,11 +478,11 @@ describe('Tests', () => {
 ```javascript
 // jest.config.js
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
+  preset: "ts-jest",
+  testEnvironment: "node",
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1'
-  }
+    "^@/(.*)$": "<rootDir>/$1",
+  },
 };
 ```
 
@@ -469,8 +505,9 @@ pnpm test --coverage
 ### Common Test Patterns in Project
 
 **Message Processor Test:**
+
 ```typescript
-describe('processPostMessage', () => {
+describe("processPostMessage", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
@@ -480,16 +517,19 @@ describe('processPostMessage', () => {
     jest.useRealTimers();
   });
 
-  it('processes valid message', () => {
+  it("forwards a valid content update to the signal handler", () => {
     const message = createValidMessage();
-    expect(() =>
-      processPostMessage(EVENT_TYPE.POST.UPDATE_CONTENT, message, "user-123")
-    ).not.toThrow();
+    processPostMessage(EVENT_TYPE.POST.UPDATE_CONTENT, message, "user-123");
+    expect(mockPostSignals.updatePostContent).toHaveBeenCalledWith(
+      message.id,
+      message.content
+    );
   });
 });
 ```
 
 **Server Action Test:**
+
 ```typescript
 const mockVerifiedSession = (overrides = {}) => {
   mockVerifySession.mockResolvedValue({
@@ -501,7 +541,7 @@ const mockVerifiedSession = (overrides = {}) => {
   });
 };
 
-describe('createPost', () => {
+describe("createPost", () => {
   beforeEach(() => {
     mockVerifiedSession({ userId: "user-123" });
   });
@@ -510,7 +550,7 @@ describe('createPost', () => {
     jest.restoreAllMocks();
   });
 
-  it('creates post', async () => {
+  it("creates post", async () => {
     const post = await createPost(boardId, content, type);
     expect(post).toBeDefined();
   });
@@ -519,4 +559,4 @@ describe('createPost', () => {
 
 ---
 
-**Last Updated:** 2026-01-10
+**Last Updated:** 2026-10-02

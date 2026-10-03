@@ -63,7 +63,6 @@ jest.mock("@/lib/signal/postSignals", () => ({
 // Import the functions we'll create
 import {
   createMessageProcessor,
-  MESSAGE_STALENESS_THRESHOLD,
   processPostMessage,
   processTaskMessage,
   type PostMessageData,
@@ -215,11 +214,42 @@ describe("Message Processors", () => {
     describe("Vote events", () => {
       const currentUserId = "user-1";
       const otherUserId = "user-2";
-      const currentTime = Date.now();
+      const currentTime = Date.parse("2026-10-02T00:00:00Z");
 
       beforeEach(() => {
         jest.setSystemTime(currentTime);
       });
+
+      it.each([
+        {
+          eventType: EVENT_TYPE.POST.UPVOTE,
+          operation: "upvote",
+          handler: mockPostSignals.incrementPostVoteCount,
+        },
+        {
+          eventType: EVENT_TYPE.POST.DOWNVOTE,
+          operation: "downvote",
+          handler: mockPostSignals.decrementPostVoteCount,
+        },
+      ])(
+        "accepts $operation at 30 seconds and ignores it one millisecond later",
+        ({ eventType, operation, handler }) => {
+          const message = {
+            id: "post-1",
+            operation,
+            userId: otherUserId,
+            timestamp: currentTime - 30_000,
+          };
+
+          processPostMessage(eventType, message, currentUserId);
+          expect(handler).toHaveBeenCalledWith("post-1");
+          expect(handler).toHaveBeenCalledTimes(1);
+
+          jest.advanceTimersByTime(1);
+          processPostMessage(eventType, message, currentUserId);
+          expect(handler).toHaveBeenCalledTimes(1);
+        }
+      );
 
       describe("POST_UPVOTE events", () => {
         it("should increment vote count for other user's vote", () => {
@@ -256,44 +286,6 @@ describe("Message Processors", () => {
           );
 
           expect(mockPostSignals.incrementPostVoteCount).not.toHaveBeenCalled();
-        });
-
-        it("should ignore stale messages (>30 seconds old)", () => {
-          const staleTimestamp = currentTime - 35000; // 35 seconds ago
-          const messageData: VoteMessageData = {
-            id: "post-1",
-            operation: "upvote",
-            userId: otherUserId,
-            timestamp: staleTimestamp,
-          };
-
-          processPostMessage(
-            EVENT_TYPE.POST.UPVOTE,
-            messageData,
-            currentUserId
-          );
-
-          expect(mockPostSignals.incrementPostVoteCount).not.toHaveBeenCalled();
-        });
-
-        it("should process recent messages (within 30 seconds)", () => {
-          const recentTimestamp = currentTime - 25000; // 25 seconds ago
-          const messageData: VoteMessageData = {
-            id: "post-1",
-            operation: "upvote",
-            userId: otherUserId,
-            timestamp: recentTimestamp,
-          };
-
-          processPostMessage(
-            EVENT_TYPE.POST.UPVOTE,
-            messageData,
-            currentUserId
-          );
-
-          expect(mockPostSignals.incrementPostVoteCount).toHaveBeenCalledWith(
-            "post-1"
-          );
         });
 
         it("should handle missing timestamp gracefully", () => {
@@ -564,27 +556,6 @@ describe("Message Processors", () => {
         "test-event",
         "valid-data"
       );
-    });
-  });
-
-  describe("Message staleness configuration", () => {
-    it("should use configurable staleness threshold", () => {
-      // This test ensures we use the exported constant
-      const currentTime = Date.now();
-
-      jest.setSystemTime(currentTime);
-
-      const staleTimestamp = currentTime - MESSAGE_STALENESS_THRESHOLD - 1000;
-      const messageData: VoteMessageData = {
-        id: "post-1",
-        operation: "upvote",
-        userId: "other-user",
-        timestamp: staleTimestamp,
-      };
-
-      processPostMessage(EVENT_TYPE.POST.UPVOTE, messageData, "current-user");
-
-      expect(mockPostSignals.incrementPostVoteCount).not.toHaveBeenCalled();
     });
   });
 });

@@ -15,6 +15,7 @@ COPY drizzle/ ./drizzle/
 COPY public/ ./public/
 COPY scripts/e2e/ ./scripts/e2e/
 COPY tests/e2e/local/ ./tests/e2e/local/
+COPY tests/helpers/ ./tests/helpers/
 COPY drizzle.config.ts envConfig.ts instrumentation-client.ts instrumentation.ts next.config.js postcss.config.mjs proxy.ts sentry.edge.config.ts sentry.server.config.ts playwright.local.config.ts tsconfig.json ./
 # Match the non-root host owner of the private bind-mounted run directory.
 RUN mkdir /home/e2e && chown "${E2E_UID}:${E2E_GID}" /app /home/e2e

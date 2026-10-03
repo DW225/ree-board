@@ -1,37 +1,21 @@
 /// <reference types="jest" />
+import type * as TestDatabase from "@/tests/helpers/database";
 import { Role } from "@/lib/constants/role";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db/client";
 import { DownVotePostAction, UpVotePostAction } from "./action";
-import type * as Libsql from "@libsql/client";
-import type * as Drizzle from "drizzle-orm/libsql";
 import type * as Crypto from "node:crypto";
-import type * as Fs from "node:fs";
-import type * as Os from "node:os";
-import type * as Path from "node:path";
 
 jest.mock("@/lib/dal", () => ({ verifySession: jest.fn() }));
 jest.mock("@/lib/utils/logger", () => ({ logger: { debug: jest.fn() } }));
 jest.mock("nanoid", () => ({
   nanoid: () => jest.requireActual<typeof Crypto>("node:crypto").randomUUID(),
 }));
-jest.mock("@/lib/db/client", () => {
-  const { createClient } = jest.requireActual<typeof Libsql>("@libsql/client");
-  const { drizzle } = jest.requireActual<typeof Drizzle>("drizzle-orm/libsql");
-  const { mkdtempSync, rmSync } = jest.requireActual<typeof Fs>("node:fs");
-  const { tmpdir } = jest.requireActual<typeof Os>("node:os");
-  const { join } = jest.requireActual<typeof Path>("node:path");
-  const directory = mkdtempSync(join(tmpdir(), "ree-board-vote-"));
-  const client = createClient({ url: `file:${join(directory, "test.db")}` });
-  afterAll(() => {
-    client.close();
-    rmSync(directory, { recursive: true });
-  });
-  return {
-    db: drizzle(client),
-    withDbRetry: <T>(operation: () => Promise<T>) => operation(),
-  };
-});
+jest.mock("@/lib/db/client", () =>
+  jest
+    .requireActual<typeof TestDatabase>("@/tests/helpers/database")
+    .createTestDatabase()
+);
 
 const mockPublish = jest.fn();
 const mockChannel = jest.fn<{ publish: typeof mockPublish }, [string]>(() => ({

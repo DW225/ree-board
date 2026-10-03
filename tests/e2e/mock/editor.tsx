@@ -85,6 +85,7 @@ const initials = {
   actions: [],
 };
 
+/** Renders the board fixture used by browser interaction checks. */
 function Editor() {
   const [role, setRole] = useState("member");
   const [deleted, setDeleted] = useState(false);
@@ -167,13 +168,14 @@ function Editor() {
     </AnonymousModeProvider>
   );
 }
-let fixture = <Editor />;
-if (params.get("review") === "merge") {
-  fixture = (
+/** Tracks dialog closure so failed-merge checks can detect an unwanted close. */
+function MergeFixture() {
+  const [isOpen, setIsOpen] = useState(true);
+  return (
     <>
       <MergePostDialog
-        isOpen
-        onClose={() => undefined}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
         targetPost={{ ...post, type: Number(params.get("type")) as PostType }}
         sourcePost={{ ...post, id: "mock-source", content: "Second post" }}
         boardId="mock"
@@ -181,6 +183,11 @@ if (params.get("review") === "merge") {
       <Toaster />
     </>
   );
+}
+
+let fixture = <Editor />;
+if (params.get("review") === "merge") {
+  fixture = <MergeFixture />;
 } else if (params.get("review") === "expiration") {
   fixture = (
     <>
