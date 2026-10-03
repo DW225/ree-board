@@ -159,6 +159,7 @@ it("rolls back a failed move while retaining a newer content edit", async () => 
   );
   await start();
   drop(1);
+  expect(postsSignal.value[0].type).toBe(1);
   updatePostContent("post", "Newer content");
   rejectSave(new Error("offline"));
   await flush();

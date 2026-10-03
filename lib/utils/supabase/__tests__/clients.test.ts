@@ -1,4 +1,6 @@
 /// <reference types="jest" />
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 /**
  * Validation tests for Supabase client utilities
  *
@@ -71,17 +73,6 @@ describe("Supabase Client Utilities", () => {
       expect(() => createAdminClient()).toThrow(/Missing.*SUPABASE_SECRET_KEY/);
     });
 
-    it("should create admin client when all environment variables are present", async () => {
-      process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
-      process.env.SUPABASE_SECRET_KEY = "test-secret-key";
-
-      const { createAdminClient } = await import("../admin");
-      const client = createAdminClient();
-
-      expect(client).toBeDefined();
-      expect(client.auth).toBeDefined();
-    });
-
     it("should create admin client successfully when all credentials are provided", async () => {
       process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
       process.env.SUPABASE_SECRET_KEY = "test-secret-key";
@@ -103,9 +94,14 @@ describe("Supabase Client Utilities", () => {
         "SUPABASE_SECRET_KEY",
       ];
 
-      // This test documents which environment variables are required
+      const template = readFileSync(
+        resolve(__dirname, "../../../../.env.example"),
+        "utf8"
+      );
       requiredVars.forEach((varName) => {
-        expect(varName).toBeTruthy();
+        expect(
+          template.split(/\r?\n/).some((line) => line.startsWith(`${varName}=`))
+        ).toBe(true);
       });
     });
   });
