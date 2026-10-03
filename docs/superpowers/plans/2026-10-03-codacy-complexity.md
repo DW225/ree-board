@@ -69,11 +69,11 @@ At an unchanged total of 325 files, at least **19** of the 51 complex files must
 **Modify:** `lib/signal/postSignals.ts`, `lib/signal/postSignals.test.ts`.
 **Interfaces:** Preserve `assignTask(postId: Post["id"], userId: Task["userId"], boardId?: string)` and `updatePostState(postId: Post["id"], state: Task["state"], boardId?: string)`. Reuse `addPostTask(task: NewTask)`.
 
-- [ ] Add a compact table of behavior cases through the two public operations: update an existing task, create a missing task for an existing post, and reject a missing post. Assert retained task ID, creation time, unchanged state/assignee, board-ID fallback, and the visible failure message. Run these characterization cases before editing and confirm that they pass.
-- [ ] Keep the existing-task update and its `updatedAt` change. For the missing-task path, keep the post lookup and error return, then call `addPostTask` with the generated ID and the requested fields. Remove the two copied task-construction and record-assignment blocks. Keep the current board-ID fallback semantics and different error messages.
-- [ ] Run `pnpm test --runInBand --runTestsByPath lib/signal/postSignals.test.ts components/board/Post/AssignTaskDialog.test.tsx components/board/PostChannelComponent.test.ts`, then the global TypeScript and full Jest checks.
-- [ ] Retain the existing duplicate-create and merge/rollback tests. Do not change merge concurrency behavior in this cleanup. In particular, rollback currently restores complete task and vote maps; review any change to that behavior as a separate defect fix.
-- [ ] Commit as `refactor: reuse post task initialization`.
+- [x] Add a compact table of behavior cases through the two public operations: update an existing task, create a missing task for an existing post, and reject a missing post. Assert retained task ID, creation time, unchanged state/assignee, board-ID fallback, and the visible failure message. Run these characterization cases before editing and confirm that they pass.
+- [x] Keep the existing-task update and its `updatedAt` change. For the missing-task path, keep the post lookup and error return, then call `addPostTask` with the generated ID and the requested fields. Remove the two copied task-construction and record-assignment blocks. Keep the current board-ID fallback semantics and different error messages.
+- [x] Run `pnpm test --runInBand --runTestsByPath lib/signal/postSignals.test.ts components/board/Post/AssignTaskDialog.test.tsx components/board/PostChannelComponent.test.ts`, then the global TypeScript and full Jest checks.
+- [x] Retain the existing duplicate-create and merge/rollback tests. Do not change merge concurrency behavior in this cleanup. In particular, rollback currently restores complete task and vote maps; review any change to that behavior as a separate defect fix.
+- [x] Commit as `refactor: reuse post task initialization`.
 
 **Expected result:** Fewer repeated branches in the highest-scoring file, with no new helper framework or signal store.
 
@@ -83,13 +83,13 @@ At an unchanged total of 325 files, at least **19** of the 51 complex files must
 **Reuse:** `lib/realtime/types.ts`, `components/board/PostChannelComponent.tsx`.
 **Interfaces:** Preserve `processPostMessage`, `processTaskMessage`, `createMessageProcessor`, `createPostMessageProcessor`, and `createTaskMessageProcessor` with their existing signatures.
 
-- [ ] Extend the existing test file through the public factory functions. Cover both JSON strings and objects, malformed JSON, arrays/null, schema failure, default vote count, unknown events, and a handler failure. Assert dispatch or absence of a state update, not only `not.toThrow()`.
-- [ ] Add the missing merge event and `updatePost` mock to the test setup. Check a valid merge, an invalid embedded post, and timestamps at 30,000 and 30,001 ms. Retain the existing own-vote and vote-age cases. These cases must pass before the refactor; investigate an existing failure separately.
-- [ ] Replace the four copied Zod error-formatting bodies with one private `validateMessage<T>(schema: z.ZodType<T>, rawData: unknown, label: string): ValidationResult<T>`. Keep schema selection and the existing error labels at the call sites. Use the parsed output, including defaults.
-- [ ] Remove the second full-post parse in ADD and MERGE after the complete schema has already succeeded. Keep the full schema at each incoming-data boundary; do not replace it with a cast.
-- [ ] In task processing, recognize supported events, then perform the common task validation once. Retain the distinct CREATE fields, null-assignee handling, valid state value `0`, and unknown-event warning.
-- [ ] Run `pnpm test --runInBand --runTestsByPath lib/realtime/__tests__/messageProcessors.test.ts components/board/PostChannelComponent.test.ts`, then the global TypeScript and full Jest checks. Obtain the security review required for realtime changes.
-- [ ] Commit as `refactor: remove repeated realtime validation`.
+- [x] Extend the existing test file through the public factory functions. Cover both JSON strings and objects, malformed JSON, arrays/null, schema failure, default vote count, unknown events, and a handler failure. Assert dispatch or absence of a state update, not only `not.toThrow()`.
+- [x] Add the missing merge event and `updatePost` mock to the test setup. Check a valid merge, an invalid embedded post, and timestamps at 30,000 and 30,001 ms. Retain the existing own-vote and vote-age cases. These cases must pass before the refactor; investigate an existing failure separately.
+- [x] Replace the four copied Zod error-formatting bodies with one private `validateMessage<T>(schema: z.ZodType<T>, rawData: unknown, label: string): ValidationResult<T>`. Keep schema selection and the existing error labels at the call sites. Use the parsed output, including defaults.
+- [x] Remove the second full-post parse in ADD and MERGE after the complete schema has already succeeded. Keep the full schema at each incoming-data boundary; do not replace it with a cast.
+- [x] In task processing, recognize supported events, then perform the common task validation once. Retain the distinct CREATE fields, null-assignee handling, valid state value `0`, and unknown-event warning.
+- [x] Run `pnpm test --runInBand --runTestsByPath lib/realtime/__tests__/messageProcessors.test.ts components/board/PostChannelComponent.test.ts`, then the global TypeScript and full Jest checks. Obtain the security review required for realtime changes.
+- [x] Commit as `refactor: remove repeated realtime validation`.
 
 **Expected result:** Lower aggregate complexity and less duplicate code. Keep the existing event switch unless measurement and readability justify another change.
 
@@ -99,13 +99,15 @@ At an unchanged total of 325 files, at least **19** of the 51 complex files must
 **Reuse tests:** `tests/e2e/review-state.spec.ts`, `lib/actions/member/action.test.ts`.
 **Interfaces:** Preserve `ImportMembersProps`, all three member server-action calls, the request counter, and the returned-member reconciliation.
 
-- [ ] Run the existing import browser cases before editing. They already cover zero/partial saved members and stale success/failure after close and reopen. Extend those cases only for a missing contract: owner-to-member request mapping, selection clearing on a new source board, and loading/empty display.
-- [ ] Reuse `roleDisplayName` from `lib/constants/role.ts` for the role label, retaining lowercase text and the unknown-role fallback. Replace the style switch with a local `Map<Role, string>` and the existing guest-style fallback. Keep full Tailwind classes as literals.
-- [ ] Replace the three separate member-list rendering guards with one loading/empty/list branch. Keep the same buttons, labels, disabled states, and selection updates. Keep the request counter checks in success, error, and finalization paths.
-- [ ] Run `pnpm test:e2e:mock tests/e2e/review-state.spec.ts --grep 'member'` and `pnpm test --runInBand --runTestsByPath lib/actions/member/action.test.ts`, plus lint and TypeScript. Do not report the mock fixture as proof of real authorization.
-- [ ] Commit as `refactor: simplify member import presentation`.
+- [x] Run the existing import browser cases before editing. They already cover zero/partial saved members and stale success/failure after close and reopen. Extend those cases only for a missing contract: owner-to-member request mapping, selection clearing on a new source board, and loading/empty display.
+- [x] Reuse `roleDisplayName` from `lib/constants/role.ts` for the role label, retaining lowercase text and the unknown-role fallback. Replace the style switch with a local `Map<Role, string>` and the existing guest-style fallback. Keep full Tailwind classes as literals.
+- [x] Replace the three separate member-list rendering guards with one loading/empty/list branch. Keep the same buttons, labels, disabled states, and selection updates. Keep the request counter checks in success, error, and finalization paths.
+- [x] Run `pnpm test:e2e:mock tests/e2e/review-state.spec.ts --grep 'member'` and `pnpm test --runInBand --runTestsByPath lib/actions/member/action.test.ts`, plus lint and TypeScript. Do not report the mock fixture as proof of real authorization.
+- [x] Commit as `refactor: simplify member import presentation`.
 
 **Expected result:** Remove repeated display decisions in the 68-point component. Do not split the workflow into several files solely to cross the threshold. Measure this small pass before deciding on a larger change.
+
+**Verification through Task 4:** Task updates retained IDs and dates (25 focused tests; 402 full Jest tests). Realtime processing passed 51 focused tests, 420 full Jest tests, and a specialized security review. Member import passed 15 browser checks across Chromium, Firefox, and WebKit, plus 20 member-action tests. Lint and TypeScript passed for each task. Deliberate task-ID, stale-boundary, and owner-role mutations were detected and restored.
 
 ## Task 5: Remove the redundant board render model
 
@@ -113,11 +115,13 @@ At an unchanged total of 325 files, at least **19** of the 51 complex files must
 **Reuse tests:** `tests/e2e/tailwind-v4.spec.ts`, `components/board/PostProvider.test.tsx`.
 **Interfaces:** Preserve `BoardColumnProps` and the `PostCard` callbacks.
 
-- [ ] Run the existing board mock tests before editing. They cover read-only and empty states, edit failure/retry, dragging after a vote update, and merge preview. Add a post-order assertion to an existing case if it is not already present.
-- [ ] Remove `AnimatedPost`, `animatedPosts`, and the second per-item search in `filteredPosts`. Every derived row has `isRemoving: false`, and no code changes it. Render `filteredPosts.value` directly with the same keys, wrapper animation classes, and callbacks. This also removes the repeated linear search.
-- [ ] Keep the lazy drop-target setup, cancellation flag, cleanup, board check, and failure handling. These branches control real behavior and are not deletion targets.
-- [ ] Run `pnpm test:e2e:mock tests/e2e/tailwind-v4.spec.ts`, `pnpm test --runInBand --runTestsByPath components/board/PostProvider.test.tsx`, lint, and TypeScript. If required reference images are absent, use the documented baseline download procedure.
-- [ ] Commit as `refactor: render board posts directly`.
+- [x] Run the existing board mock tests before editing. They cover read-only and empty states, edit failure/retry, dragging after a vote update, and merge preview. Add a post-order assertion to an existing case if it is not already present.
+- [x] Remove `AnimatedPost`, `animatedPosts`, and the second per-item search in `filteredPosts`. Every derived row has `isRemoving: false`, and no code changes it. Render `filteredPosts.value` directly with the same keys, wrapper animation classes, and callbacks. This also removes the repeated linear search.
+- [x] Keep the lazy drop-target setup, cancellation flag, cleanup, board check, and failure handling. These branches control real behavior and are not deletion targets.
+- [x] Run `pnpm test:e2e:mock tests/e2e/tailwind-v4.spec.ts`, `pnpm test --runInBand --runTestsByPath components/board/PostProvider.test.tsx`, lint, and TypeScript. If required reference images are absent, use the documented baseline download procedure.
+- [x] Commit as `refactor: render board posts directly`.
+
+**Verification for Task 5:** The unchanged and refactored board browser suites each passed 44 checks with 16 intended skips. All 36 reference images matched. The new post-order assertion passed in all three browsers and detected a temporary reversal. Provider tests (15), lint, and TypeScript passed.
 
 ## Task 6: Measure the first pass and choose the next batch
 
