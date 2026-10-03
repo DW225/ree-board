@@ -9,6 +9,7 @@ jest.mock("@/lib/utils/ably", () => ({
   EVENT_TYPE: {
     POST: {
       ADD: "POST_ADD",
+      MERGE: "POST_MERGE",
       UPDATE_CONTENT: "POST_UPDATE_CONTENT",
       DELETE: "POST_DELETE",
       UPDATE_TYPE: "POST_UPDATE_TYPE",
@@ -34,6 +35,7 @@ import { EVENT_TYPE } from "@/lib/utils/ably";
 // Mock the signal functions
 const mockPostSignals = {
   addPost: jest.fn(),
+  updatePost: jest.fn(),
   removePost: jest.fn(),
   updatePostContent: jest.fn(),
   updatePostType: jest.fn(),
@@ -50,6 +52,7 @@ const mockTaskSignals = {
 // Mock dependencies
 jest.mock("@/lib/signal/postSignals", () => ({
   addPost: mockPostSignals.addPost,
+  updatePost: mockPostSignals.updatePost,
   removePost: mockPostSignals.removePost,
   updatePostContent: mockPostSignals.updatePostContent,
   updatePostType: mockPostSignals.updatePostType,
@@ -63,6 +66,8 @@ jest.mock("@/lib/signal/postSignals", () => ({
 // Import the functions we'll create
 import {
   createMessageProcessor,
+  createPostMessageProcessor,
+  createTaskMessageProcessor,
   processPostMessage,
   processTaskMessage,
   type PostMessageData,
@@ -557,5 +562,147 @@ describe("Message Processors", () => {
         "valid-data"
       );
     });
+  });
+});
+
+describe("public message processor factories", () => {
+  const now = Date.parse("2026-10-03T00:00:00Z");
+  const post = {
+    id: "target",
+    content: "Merged content",
+    type: PostType.went_well,
+    author: null,
+    boardId: "board-a",
+    createdAt: "2026-10-01T00:00:00Z",
+    updatedAt: "2026-10-02T00:00:00Z",
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+    jest.setSystemTime(now);
+    jest.spyOn(console, "error").mockImplementation(() => undefined);
+    jest.spyOn(console, "warn").mockImplementation(() => undefined);
+  });
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.useRealTimers();
+  });
+
+  it.each(["object", "json"])(
+    "adds validated %s posts with the default vote count",
+    (format) => {
+      createPostMessageProcessor()(
+        EVENT_TYPE.POST.ADD,
+        format === "json" ? JSON.stringify(post) : post,
+        "viewer"
+      );
+      expect(mockPostSignals.addPost).toHaveBeenCalledWith({
+        ...post,
+        voteCount: 0,
+      });
+    }
+  );
+
+  it.each(["{", "[]", "null", null, [], 42, {}])(
+    "rejects invalid data %p without changing post or task state",
+    (data) => {
+      createPostMessageProcessor()(EVENT_TYPE.POST.ADD, data, "viewer");
+      createTaskMessageProcessor()(EVENT_TYPE.ACTION.CREATE, data, "viewer");
+      expect(mockPostSignals.addPost).not.toHaveBeenCalled();
+      expect(mockTaskSignals.addPostTask).not.toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    { age: 30_000, applied: 1 },
+    { age: 30_001, applied: 0 },
+  ])("applies $applied merge events at age $age", ({ age, applied }) => {
+    const message = {
+      targetPostId: "target",
+      sourcePostIds: ["source"],
+      mergedPost: post,
+      uniqueVoteCount: 0,
+      deletedPostIds: ["source"],
+      timestamp: now - age,
+    };
+    createPostMessageProcessor()(
+      EVENT_TYPE.POST.MERGE,
+      JSON.stringify(message),
+      "viewer"
+    );
+    expect(mockPostSignals.updatePost).toHaveBeenCalledTimes(applied);
+    expect(mockPostSignals.removePost).toHaveBeenCalledTimes(applied);
+    if (applied) {
+      expect(mockPostSignals.updatePost).toHaveBeenCalledWith("target", {
+        ...post,
+        voteCount: 0,
+      });
+      expect(mockPostSignals.removePost).toHaveBeenCalledWith("source");
+    }
+  });
+
+  it("rejects a merge with an invalid embedded post before deleting sources", () => {
+    createPostMessageProcessor()(
+      EVENT_TYPE.POST.MERGE,
+      {
+        targetPostId: "target",
+        sourcePostIds: ["source"],
+        mergedPost: { ...post, content: "" },
+        uniqueVoteCount: 0,
+        deletedPostIds: ["source"],
+        timestamp: now,
+      },
+      "viewer"
+    );
+    expect(mockPostSignals.updatePost).not.toHaveBeenCalled();
+    expect(mockPostSignals.removePost).not.toHaveBeenCalled();
+  });
+
+  it.each(["object", "json"])(
+    "accepts task state zero in %s data",
+    (format) => {
+      const message = { postId: "target", state: TaskState.pending };
+      createTaskMessageProcessor()(
+        EVENT_TYPE.ACTION.STATE_UPDATE,
+        format === "json" ? JSON.stringify(message) : message,
+        "viewer"
+      );
+      expect(mockTaskSignals.updatePostState).toHaveBeenCalledWith(
+        "target",
+        TaskState.pending
+      );
+    }
+  );
+
+  it.each([
+    { data: { postId: "target", id: "task" }, event: EVENT_TYPE.ACTION.CREATE },
+    {
+      data: { postId: "target", boardId: "board-a" },
+      event: EVENT_TYPE.ACTION.CREATE,
+    },
+    { data: { postId: "target" }, event: EVENT_TYPE.ACTION.STATE_UPDATE },
+  ])("rejects required task fields missing from $data", ({ event, data }) => {
+    createTaskMessageProcessor()(event, data, "viewer");
+    expect(mockTaskSignals.addPostTask).not.toHaveBeenCalled();
+    expect(mockTaskSignals.updatePostState).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalled();
+  });
+
+  it("keeps unknown-event warnings and contains a handler failure", () => {
+    createPostMessageProcessor()("UNKNOWN_POST", {}, "viewer");
+    createTaskMessageProcessor()("UNKNOWN_TASK", {}, "viewer");
+    expect(console.warn).toHaveBeenCalledTimes(2);
+    expect(mockPostSignals.addPost).not.toHaveBeenCalled();
+    expect(mockTaskSignals.addPostTask).not.toHaveBeenCalled();
+    mockPostSignals.addPost.mockImplementationOnce(() => {
+      throw new Error("handler failed");
+    });
+    createPostMessageProcessor()(EVENT_TYPE.POST.ADD, post, "viewer");
+    expect(console.error).toHaveBeenCalledWith(
+      "handler failed",
+      expect.objectContaining({ eventType: EVENT_TYPE.POST.ADD })
+    );
   });
 });
