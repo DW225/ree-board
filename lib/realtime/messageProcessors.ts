@@ -94,7 +94,9 @@ const PostMergeMessageSchema = z.object({
     .number()
     .int()
     .nonnegative({ message: "Unique vote count must be non-negative" }),
-  deletedPostIds: z.array(z.string().min(1, { message: "Deleted post ID is required" })),
+  deletedPostIds: z.array(
+    z.string().min(1, { message: "Deleted post ID is required" })
+  ),
   timestamp: z.number().positive({ message: "Timestamp must be positive" }),
 });
 
@@ -156,114 +158,68 @@ function safeParseData<T>(data: string | unknown): ValidationResult<T> {
   return { success: true, data: data as T };
 }
 
-/**
- * Type predicate to check if data is a valid post
- */
-function isValidPost(data: unknown): data is Post {
-  const result = PostMessageSchema.safeParse(data);
-  return result.success;
+/** Validates a payload and preserves the existing error details. */
+function validateMessage<T>(
+  schema: z.ZodType<T>,
+  rawData: unknown,
+  label: string
+): ValidationResult<T> {
+  const result = schema.safeParse(rawData);
+  if (result.success) return { success: true, data: result.data };
+
+  const errors = result.error.issues;
+  const errorMessage = errors
+    .map((err) => `${err.path.join(".")}: ${err.message}`)
+    .join(", ");
+  return {
+    success: false,
+    error: {
+      message: `${label} validation failed: ${errorMessage}`,
+      details: errors,
+    },
+  };
 }
 
-/**
- * Validates post message data using Zod schema with type predicates
- */
+function validatePostData(
+  rawData: unknown,
+  requireComplete: true
+): ValidationResult<Post>;
+function validatePostData(
+  rawData: unknown,
+  requireComplete?: false
+): ValidationResult<PostMessageData>;
 function validatePostData(
   rawData: unknown,
   requireComplete = false
 ): ValidationResult<PostMessageData> {
   const schema = requireComplete ? PostMessageSchema : PartialPostMessageSchema;
-  const result = schema.safeParse(rawData);
-
-  if (!result.success) {
-    const errors = result.error.issues || [];
-    const errorMessage = errors
-      .map((err) => `${err.path.join(".")}: ${err.message}`)
-      .join(", ");
-
-    return {
-      success: false,
-      error: {
-        message: `Post validation failed: ${errorMessage}`,
-        details: errors,
-      },
-    };
-  }
-
-  return { success: true, data: result.data as PostMessageData };
+  return validateMessage(
+    schema,
+    rawData,
+    "Post"
+  ) as ValidationResult<PostMessageData>;
 }
 
-/**
- * Validates vote message data using Zod schema
- */
 function validateVoteData(rawData: unknown): ValidationResult<VoteMessageData> {
-  const result = VoteMessageSchema.safeParse(rawData);
-
-  if (!result.success) {
-    const errors = result.error.issues || [];
-    const errorMessage = errors
-      .map((err) => `${err.path.join(".")}: ${err.message}`)
-      .join(", ");
-
-    return {
-      success: false,
-      error: {
-        message: `Vote validation failed: ${errorMessage}`,
-        details: errors,
-      },
-    };
-  }
-
-  return { success: true, data: result.data as VoteMessageData };
+  return validateMessage(VoteMessageSchema, rawData, "Vote");
 }
 
-/**
- * Validates task message data
- */
 function validateTaskData(rawData: unknown): ValidationResult<TaskMessageData> {
-  const result = TaskMessageSchema.safeParse(rawData);
-
-  if (!result.success) {
-    const errors = result.error.issues || [];
-    const errorMessage = errors
-      .map((err) => `${err.path.join(".")}: ${err.message}`)
-      .join(", ");
-
-    return {
-      success: false,
-      error: {
-        message: `Task validation failed: ${errorMessage}`,
-        details: errors,
-      },
-    };
-  }
-
-  return { success: true, data: result.data as TaskMessageData };
+  return validateMessage(
+    TaskMessageSchema,
+    rawData,
+    "Task"
+  ) as ValidationResult<TaskMessageData>;
 }
 
-/**
- * Validates merge message data using Zod schema
- */
 function validateMergeData(
   rawData: unknown
 ): ValidationResult<PostMergeMessageData> {
-  const result = PostMergeMessageSchema.safeParse(rawData);
-
-  if (!result.success) {
-    const errors = result.error.issues || [];
-    const errorMessage = errors
-      .map((err) => `${err.path.join(".")}: ${err.message}`)
-      .join(", ");
-
-    return {
-      success: false,
-      error: {
-        message: `Merge validation failed: ${errorMessage}`,
-        details: errors,
-      },
-    };
-  }
-
-  return { success: true, data: result.data as PostMergeMessageData };
+  return validateMessage(
+    PostMergeMessageSchema,
+    rawData,
+    "Merge"
+  ) as ValidationResult<PostMergeMessageData>;
 }
 
 /**
@@ -311,19 +267,16 @@ function handlePostAdd(eventType: string, messageData: unknown): void {
     return;
   }
 
-  if (isValidPost(validation.data)) {
-    addPost(validation.data);
-  } else {
-    console.error("Post validation passed but type predicate failed", {
-      messageData,
-    });
-  }
+  addPost(validation.data);
 }
 
 /**
  * Handler for POST.UPDATE_CONTENT events
  */
-function handlePostUpdateContent(eventType: string, messageData: unknown): void {
+function handlePostUpdateContent(
+  eventType: string,
+  messageData: unknown
+): void {
   const validation = validatePostData(messageData, false);
   if (!validation.success) {
     const error = createProcessingError(
@@ -450,17 +403,9 @@ function handlePostMerge(eventType: string, messageData: unknown): void {
     return;
   }
 
-  // Update the target post with merged data
-  if (isValidPost(mergeData.mergedPost)) {
-    updatePost(mergeData.targetPostId, mergeData.mergedPost);
-    // Remove source posts from state
-    for (const postId of mergeData.deletedPostIds) {
-      removePost(postId);
-    }
-  } else {
-    console.error("Merged post validation failed", {
-      mergedPost: mergeData.mergedPost,
-    });
+  updatePost(mergeData.targetPostId, mergeData.mergedPost);
+  for (const postId of mergeData.deletedPostIds) {
+    removePost(postId);
   }
 }
 
@@ -525,38 +470,42 @@ export function processPostMessage(
   }
 }
 
-/**
- * Process task-related messages
- */
+const taskEventNames = new Map<string, string>([
+  [EVENT_TYPE.ACTION.CREATE, "CREATE"],
+  [EVENT_TYPE.ACTION.ASSIGN, "ASSIGN"],
+  [EVENT_TYPE.ACTION.STATE_UPDATE, "STATE_UPDATE"],
+]);
+
+/** Process task-related messages after one common validation step. */
 export function processTaskMessage(
   eventType: string,
   messageData: unknown
 ): void {
   try {
+    const eventName = taskEventNames.get(eventType);
+    if (!eventName) {
+      console.warn(`Unknown task event type: ${eventType}`);
+      return;
+    }
+
+    const validation = validateTaskData(messageData);
+    if (!validation.success) {
+      const error = createProcessingError(
+        `Invalid task data for ${eventName}: ${validation.error.message}`,
+        eventType,
+        messageData
+      );
+      console.error(error.message, { details: validation.error.details });
+      return;
+    }
+    const taskData = validation.data;
+
     switch (eventType) {
       case EVENT_TYPE.ACTION.CREATE: {
-        const validation = validateTaskData(messageData);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid task data for CREATE: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-
-        const taskData = validation.data;
         if (!taskData.id || !taskData.boardId) {
-          const error = createProcessingError(
-            "Task CREATE requires id and boardId",
-            eventType,
-            messageData
-          );
-          console.error(error.message);
+          console.error("Task CREATE requires id and boardId");
           return;
         }
-
         addPostTask({
           id: taskData.id,
           postId: taskData.postId,
@@ -564,59 +513,16 @@ export function processTaskMessage(
         });
         break;
       }
-
-      case EVENT_TYPE.ACTION.ASSIGN: {
-        const validation = validateTaskData(messageData);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid task data for ASSIGN: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-
-        const taskData = validation.data;
+      case EVENT_TYPE.ACTION.ASSIGN:
         assignTask(taskData.postId, taskData.userId ?? null);
         break;
-      }
-
-      case EVENT_TYPE.ACTION.STATE_UPDATE: {
-        const validation = validateTaskData(messageData);
-        if (!validation.success) {
-          const error = createProcessingError(
-            `Invalid task data for STATE_UPDATE: ${validation.error.message}`,
-            eventType,
-            messageData
-          );
-          console.error(error.message, { details: validation.error.details });
-          return;
-        }
-
-        const taskData = validation.data;
+      case EVENT_TYPE.ACTION.STATE_UPDATE:
         if (taskData.state === undefined) {
-          const error = createProcessingError(
-            "Task STATE_UPDATE requires state field",
-            eventType,
-            messageData
-          );
-          console.error(error.message);
+          console.error("Task STATE_UPDATE requires state field");
           return;
         }
-
         updatePostState(taskData.postId, taskData.state);
         break;
-      }
-
-      default: {
-        const unknownError = createProcessingError(
-          `Unknown task event type: ${eventType}`,
-          eventType,
-          messageData
-        );
-        console.warn(unknownError.message);
-      }
     }
   } catch (error) {
     const processingError = createProcessingError(
@@ -741,6 +647,5 @@ export type {
   ProcessingError,
   TaskMessageData,
   ValidationResult,
-  VoteMessageData
+  VoteMessageData,
 } from "./types";
-
