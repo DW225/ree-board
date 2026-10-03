@@ -69,20 +69,6 @@ export const sortedPostsSignal = computed(() => {
   return sortedPosts;
 });
 
-export const postsByTypeSignal = computed(() => {
-  const posts = enrichedPostsSignal.value;
-  return posts.reduce(
-    (acc, post) => {
-      if (!acc[post.type]) {
-        acc[post.type] = [];
-      }
-      acc[post.type].push(post);
-      return acc;
-    },
-    {} as Record<Post["type"], typeof posts>
-  );
-});
-
 // Initialization function
 export const initializePostSignals = (posts: Post[], tasks: Task[]) => {
   batch(() => {
@@ -397,21 +383,6 @@ export const updatePost = (postId: Post["id"], updatedPost: Post) => {
   votesSignal.value = {
     ...votesSignal.value,
     [postId]: updatedPost.voteCount,
-  };
-};
-
-/**
- * Updates the vote count for a specific post.
- * @param postId - The ID of the post
- * @param newVoteCount - The new vote count value
- */
-export const updatePostVoteCount = (
-  postId: Post["id"],
-  newVoteCount: number
-) => {
-  votesSignal.value = {
-    ...votesSignal.value,
-    [postId]: newVoteCount,
   };
 };
 
