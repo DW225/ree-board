@@ -228,6 +228,11 @@ test("mock status submenu, post entry, empty and read-only states", async ({
   await expect(
     page.getByText("New baseline card", { exact: true })
   ).toHaveCount(1);
+  await expect(page.getByTestId(/^post-/)).toHaveText([
+    /New baseline card/,
+    /Migration baseline post/,
+    /Heading/,
+  ]);
   await page.goto("/board/mock?guest");
   await expect(page.getByTestId("post-mock-post")).toBeVisible();
   await expect(
