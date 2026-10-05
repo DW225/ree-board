@@ -168,10 +168,24 @@ for (const imported of [0, 1]) {
       .click();
     await page.getByRole("combobox").click();
     await page.getByRole("option", { name: "Source Board" }).click();
+    await expect(page.getByRole("button", { name: /Member A/ })).toContainText(
+      "owner"
+    );
+    await expect(page.getByRole("button", { name: /Member B/ })).toContainText(
+      "member"
+    );
     await page.getByRole("button", { name: "Select all", exact: true }).click();
+    const importRequest = page.waitForRequest("**/mock/import");
     await page
       .getByRole("button", { name: "Import 2 Members", exact: true })
       .click();
+    expect((await importRequest).postDataJSON()).toEqual({
+      boardId: "mock",
+      members: [
+        { userId: "user-a", role: 1 },
+        { userId: "user-b", role: 1 },
+      ],
+    });
     await expect(page.getByRole("dialog")).toBeHidden();
     await expect(page.getByText("Member A", { exact: true })).toHaveCount(
       imported
@@ -256,3 +270,68 @@ for (const staleResult of ["success", "failure"]) {
     ).toHaveCount(0);
   });
 }
+
+test("member selection clears when a new source board loads and is empty", async ({
+  page,
+}) => {
+  await page.route("**/mock/boards", (route) =>
+    route.fulfill({
+      json: [
+        { id: "a", title: "Board A" },
+        { id: "b", title: "Board B" },
+      ],
+    })
+  );
+  const emptyRequest = Promise.withResolvers<Route>();
+  await page.route("**/mock/members", (route) => {
+    if (route.request().postData() === "b") {
+      emptyRequest.resolve(route);
+      return;
+    }
+    return route.fulfill({
+      json: [
+        {
+          id: "guest-a",
+          userId: "user-a",
+          role: 2,
+          username: "Guest A",
+          email: "a@example.invalid",
+          boardId: "a",
+          boardTitle: "Board A",
+        },
+      ],
+    });
+  });
+  await page.goto("/board/mock?review=members");
+  await page.getByRole("button", { name: "Import from Other Boards" }).click();
+  await page.getByRole("combobox").click();
+  await page.getByRole("option", { name: "Board A" }).click();
+  const guest = page.getByRole("button", { name: /Guest A/ });
+  await expect(guest).toContainText("guest");
+  await guest.click();
+  await expect(
+    page.getByRole("button", { name: "Import 1 Member", exact: true })
+  ).toBeEnabled();
+  await page.getByRole("combobox").click();
+  await page.getByRole("option", { name: "Board B" }).click();
+  const pending = await emptyRequest.promise;
+  await expect(
+    page.getByText("Loading members...", { exact: true })
+  ).toBeVisible();
+  await expect(guest).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Import 0 Members", exact: true })
+  ).toBeDisabled();
+  await expect(page.getByRole("combobox")).toBeDisabled();
+  await pending.fulfill({ json: [] });
+  await expect(
+    page.getByText("No members found in this board", { exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByText("Loading members...", { exact: true })
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Import 0 Members", exact: true })
+  ).toBeDisabled();
+  await expect(page.getByRole("combobox")).toBeEnabled();
+});
