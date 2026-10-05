@@ -50,8 +50,14 @@ export const getBoardsWhereUserIsAdminAction = async () =>
   (await fetch("/mock/boards")).json();
 export const getMembersFromBoardWithExclusionAction = async (boardId: string) =>
   (await fetch("/mock/members", { method: "POST", body: boardId })).json();
-export const bulkImportMembersAction = async () => {
-  const response = await fetch("/mock/import", { method: "POST" });
+export const bulkImportMembersAction = async (
+  boardId: string,
+  members: unknown
+) => {
+  const response = await fetch("/mock/import", {
+    method: "POST",
+    body: JSON.stringify({ boardId, members }),
+  });
   if (!response.ok) throw new Error("Mock import failed");
   return response.json();
 };
