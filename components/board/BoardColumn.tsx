@@ -11,7 +11,6 @@ import {
   updatePostContent,
 } from "@/lib/signal/postSignals";
 import type { Post } from "@/lib/types/post";
-import type { Signal } from "@preact/signals-react";
 import { useComputed } from "@preact/signals-react";
 import { useSignals } from "@preact/signals-react/runtime";
 import dynamic from "next/dynamic";
@@ -35,11 +34,6 @@ interface BoardColumnProps {
   accentColor?: string;
 }
 
-interface AnimatedPost {
-  id: string;
-  isRemoving: boolean;
-}
-
 const COLUMN_ACCENT_CLASS: Record<PostType, string> = {
   [PostType.went_well]: "bg-emerald-500",
   [PostType.to_improvement]: "bg-red-500",
@@ -61,13 +55,6 @@ export default function BoardColumn({
   const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
   const filteredPosts = useComputed(() =>
     sortedPostsSignal.value.filter((post) => post.type === postType)
-  );
-
-  const animatedPosts: Signal<AnimatedPost[]> = useComputed(() =>
-    filteredPosts.value.map((post) => ({
-      id: post.id,
-      isRemoving: false,
-    }))
   );
 
   const handlePostDelete = useCallback(
@@ -181,28 +168,22 @@ export default function BoardColumn({
 
   const renderPosts = useMemo(
     () =>
-      animatedPosts.value.map((animatedPost) => {
-        const post = filteredPosts.value.find((p) => p.id === animatedPost.id);
-        if (!post) return null;
-
-        return (
-          <div
-            key={post.id}
-            className={"animate-in fade-in slide-in-from-bottom-5 duration-300"}
-          >
-            <PostCard
-              post={post}
-              onDelete={viewOnly ? undefined : () => handlePostDelete(post.id)}
-              viewOnly={viewOnly}
-              onUpdate={handlePostUpdate}
-              userId={userId}
-              accentColor={accentColor}
-            />
-          </div>
-        );
-      }),
+      filteredPosts.value.map((post) => (
+        <div
+          key={post.id}
+          className={"animate-in fade-in slide-in-from-bottom-5 duration-300"}
+        >
+          <PostCard
+            post={post}
+            onDelete={viewOnly ? undefined : () => handlePostDelete(post.id)}
+            viewOnly={viewOnly}
+            onUpdate={handlePostUpdate}
+            userId={userId}
+            accentColor={accentColor}
+          />
+        </div>
+      )),
     [
-      animatedPosts.value,
       filteredPosts.value,
       viewOnly,
       handlePostUpdate,
