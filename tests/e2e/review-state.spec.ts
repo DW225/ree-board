@@ -369,7 +369,10 @@ test("member role controls keep the saved role after failure and allow retry", a
   await page.unroute("**/mock/member-role");
   await page.route("**/mock/member-role", (route) =>
     route.fulfill({
-      json: { id: "alex-membership", userId: "alex", role: 0 },
+      json: {
+        ok: true,
+        member: { id: "alex-membership", userId: "alex", role: 0 },
+      },
     })
   );
   await role.click();
@@ -381,5 +384,18 @@ test("member role controls keep the saved role after failure and allow retry", a
     .first()
     .click();
   await page.getByRole("button", { name: "View board members" }).click();
+  await expect(role).toHaveText("Owner");
+  await page.unroute("**/mock/member-role");
+  await page.route("**/mock/member-role", (route) =>
+    route.fulfill({
+      json: { ok: false, error: "The board must have at least one owner." },
+    })
+  );
+  await role.click();
+  await page.getByRole("option", { name: "Guest", exact: true }).click();
+  await expect(
+    page.getByText("The board must have at least one owner.")
+  ).toBeVisible();
+  await expect(role).toBeEnabled();
   await expect(role).toHaveText("Owner");
 });

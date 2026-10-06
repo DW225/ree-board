@@ -57,12 +57,13 @@ beforeEach(() => {
     .mockImplementation(async (boardId) =>
       boardId === "source"
         ? [
+            sourceMember("actor", Role.owner),
             sourceMember("user", Role.guest),
             sourceMember("source-owner", Role.owner),
             sourceMember("added", Role.member),
             sourceMember("skipped", Role.guest),
           ]
-        : []
+        : [sourceMember("actor", Role.owner)]
     );
   jest.mocked(verifySession).mockResolvedValue({
     isAuth: true,
@@ -126,9 +127,10 @@ it.each([Role.member, Role.guest])(
     });
     jest
       .mocked(fetchMembersByBoardID)
-      .mockImplementation(async (boardId) =>
-        boardId === "source" ? [sourceMember("user", role)] : []
-      );
+      .mockImplementation(async (boardId) => [
+        sourceMember("actor", Role.owner),
+        ...(boardId === "source" ? [sourceMember("user", role)] : []),
+      ]);
     await bulkImportMembersAction(" board ", " source ", [" user "]);
     expect(bulkAddMembers).toHaveBeenCalledWith(
       [{ id: "new-member", userId: "user", boardId: "board", role }],
@@ -257,6 +259,7 @@ it("returns no members when all selected users already belong to the board", asy
   jest
     .mocked(fetchMembersByBoardID)
     .mockImplementation(async (boardId) => [
+      sourceMember("actor", Role.owner),
       sourceMember("user", boardId === "source" ? Role.guest : Role.member),
     ]);
   await expect(

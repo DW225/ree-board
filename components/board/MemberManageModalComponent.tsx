@@ -130,21 +130,16 @@ export default function MemberManageModalComponent({
     roleUpdatePending.current = true;
     setUpdatingMemberId(member.id);
     try {
-      const updated = await updateMemberRoleAction(
-        boardId,
-        member.userId,
-        role
-      );
-      updateMemberRole(updated.id, updated.role);
+      const result = await updateMemberRoleAction(boardId, member.userId, role);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      updateMemberRole(result.member.id, result.member.role);
       toast.success("Member role updated.");
       router.refresh();
     } catch (error) {
-      const message =
-        error instanceof Error &&
-        error.message === "The board must have at least one owner."
-          ? error.message
-          : "Could not update member role. Please try again.";
-      toast.error(message);
+      toast.error("Could not update member role. Please try again.");
       console.error(error);
     } finally {
       roleUpdatePending.current = false;

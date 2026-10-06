@@ -94,6 +94,7 @@ export const removeMemberFromBoardAction = async (
   );
 };
 
+/** Returns expected role-change rejections as data for the client. */
 export const updateMemberRoleAction = async (
   boardId: Board["id"],
   userId: User["id"],
@@ -111,7 +112,12 @@ export const updateMemberRoleAction = async (
         updatedUserId: data.userId,
         role: data.role,
       });
-      return updateMemberRole(data.userId, data.boardId, data.role);
+      return updateMemberRole(
+        data.userId,
+        data.boardId,
+        data.role,
+        authenticatedUserId
+      );
     },
     Role.owner
   );
@@ -183,6 +189,19 @@ export const bulkImportMembersAction = async (
             const sourceByUserId = new Map(
               sourceMembers.map((member) => [member.userId, member])
             );
+            const existingMembers = await fetchMembersByBoardID(
+              data.targetBoardId,
+              trx
+            );
+            if (
+              sourceByUserId.get(userId)?.role !== Role.owner ||
+              !existingMembers.some(
+                (member) =>
+                  member.userId === userId && member.role === Role.owner
+              )
+            ) {
+              throw new Error("Board owner access is required.");
+            }
             const selectedMembers = uniqueUserIds.map((selectedUserId) => {
               const member = sourceByUserId.get(selectedUserId);
               if (!member)
@@ -191,10 +210,6 @@ export const bulkImportMembersAction = async (
                 );
               return member;
             });
-            const existingMembers = await fetchMembersByBoardID(
-              data.targetBoardId,
-              trx
-            );
             const existingIds = new Set(existingMembers.map((m) => m.userId));
             const membersToAdd = selectedMembers
               .filter((m) => !existingIds.has(m.userId))

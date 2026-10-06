@@ -120,9 +120,9 @@ export default function MemberList({
                       </SelectContent>
                     </Select>
                     {updatingMemberId === member.id && (
-                      <span role="status" className="text-xs text-[#64748B]">
+                      <output className="text-xs text-[#64748B]">
                         Saving role...
-                      </span>
+                      </output>
                     )}
                   </div>
                 ) : (
