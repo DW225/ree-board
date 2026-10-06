@@ -8,6 +8,7 @@ import {
   memberSignalInitial,
   membersSignal,
   removeMember,
+  updateMemberRole,
 } from "./memberSignals";
 
 afterEach(() => {
@@ -34,9 +35,12 @@ it("keeps member consumers in sync through initialization, addition, and removal
   expect(memberSignal.value).toEqual([owner]);
   addMember(guest);
   expect(memberSignal.value).toEqual([owner, guest]);
+  updateMemberRole(guest.id, Role.member);
+  const updatedGuest = { ...guest, role: Role.member };
+  expect(memberSignal.value).toEqual([owner, updatedGuest]);
   removeMember(owner.id);
-  expect(memberSignal.value).toEqual([guest]);
-  expect(membersSignal.value).toEqual([guest]);
+  expect(memberSignal.value).toEqual([updatedGuest]);
+  expect(membersSignal.value).toEqual([updatedGuest]);
   memberSignalInitial([owner]);
   expect(membersSignal.value).toEqual([owner]);
   expect(memberSignal.value).toEqual([owner]);

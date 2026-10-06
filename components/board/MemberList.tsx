@@ -1,6 +1,13 @@
 "use client";
 
 import { AvatarIcon } from "@/components/common/AvatarIcon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Role, roleDisplayName } from "@/lib/constants/role";
 import { membersSignal } from "@/lib/signal/memberSignals";
 import type { MemberSignal } from "@/lib/types/member";
@@ -12,6 +19,8 @@ interface MemberListProps {
   viewOnly: boolean;
   searchTerm: string;
   handleRemoveMember?: (member: MemberSignal) => void;
+  handleRoleChange?: (member: MemberSignal, role: Role) => void;
+  updatingMemberId?: string | null;
   onAssign?: (member: MemberSignal) => void;
   className?: string;
   selectedUserId?: string | null;
@@ -33,6 +42,8 @@ export default function MemberList({
   viewOnly,
   searchTerm,
   handleRemoveMember,
+  handleRoleChange,
+  updatingMemberId,
   onAssign,
   className,
   selectedUserId,
@@ -83,18 +94,52 @@ export default function MemberList({
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className={cn(
-                    "text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap",
-                    getRoleBadgeStyles(member.role)
-                  )}
-                >
-                  {roleDisplayName[member.role]}
-                </span>
+                {!isSelectionMode && !viewOnly && handleRoleChange ? (
+                  <div className="flex flex-col gap-1">
+                    <Select
+                      value={String(member.role)}
+                      onValueChange={(value) =>
+                        handleRoleChange(member, Number(value) as Role)
+                      }
+                      disabled={!!updatingMemberId}
+                    >
+                      <SelectTrigger
+                        aria-label={`Role for ${member.username}`}
+                        className="w-[110px] h-8 text-xs"
+                      >
+                        <SelectValue>
+                          {roleDisplayName[member.role]}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[Role.owner, Role.member, Role.guest].map((role) => (
+                          <SelectItem key={role} value={String(role)}>
+                            {roleDisplayName[role]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {updatingMemberId === member.id && (
+                      <span role="status" className="text-xs text-[#64748B]">
+                        Saving role...
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span
+                    className={cn(
+                      "text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap",
+                      getRoleBadgeStyles(member.role)
+                    )}
+                  >
+                    {roleDisplayName[member.role]}
+                  </span>
+                )}
 
                 {!isSelectionMode && canRemove && !isOwner && (
                   <button
                     type="button"
+                    disabled={!!updatingMemberId}
                     onClick={() => {
                       handleRemoveMember(member);
                     }}

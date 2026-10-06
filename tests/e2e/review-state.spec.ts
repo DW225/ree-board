@@ -157,7 +157,7 @@ for (const imported of [0, 1]) {
           imported,
           skipped: 2 - imported,
           members: imported
-            ? [{ id: "saved-a", userId: "user-a", role: 1 }]
+            ? [{ id: "saved-a", userId: "user-a", role: 0 }]
             : [],
         },
       })
@@ -181,16 +181,17 @@ for (const imported of [0, 1]) {
       .click();
     expect((await importRequest).postDataJSON()).toEqual({
       boardId: "mock",
-      members: [
-        { userId: "user-a", role: 1 },
-        { userId: "user-b", role: 1 },
-      ],
+      sourceBoardId: "source",
+      userIds: ["user-a", "user-b"],
     });
     await expect(page.getByRole("dialog")).toBeHidden();
     await expect(page.getByText("Member A", { exact: true })).toHaveCount(
       imported
     );
     await expect(page.getByText("Member B", { exact: true })).toHaveCount(0);
+    if (imported) {
+      await expect(page.getByText("Owner", { exact: true })).toBeVisible();
+    }
     await expect(
       page.getByText(`Successfully imported ${imported} members`, {
         exact: false,
@@ -334,4 +335,51 @@ test("member selection clears when a new source board loads and is empty", async
     page.getByRole("button", { name: "Import 0 Members", exact: true })
   ).toBeDisabled();
   await expect(page.getByRole("combobox")).toBeEnabled();
+});
+
+test("member role controls keep the saved role after failure and allow retry", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.route("**/api/user/**", (route) => route.fulfill({ json: {} }));
+  const pending = Promise.withResolvers<Route>();
+  await page.route("**/mock/member-role", (route) => {
+    pending.resolve(route);
+  });
+  await page.goto("/board/mock?review=member-roles");
+  await page.getByRole("button", { name: "View board members" }).click();
+  const role = page.getByRole("combobox", { name: "Role for Alex" });
+  await expect(role).toHaveText("Member");
+  await role.click();
+  await page.getByRole("option", { name: "Guest", exact: true }).click();
+  const request = await pending.promise;
+  expect(request.request().postDataJSON()).toEqual({
+    boardId: "mock",
+    userId: "alex",
+    role: 2,
+  });
+  await expect(role).toBeDisabled();
+  await expect(page.getByRole("status")).toHaveText("Saving role...");
+  await request.fulfill({ status: 500, body: "Save failed" });
+  await expect(
+    page.getByText("Could not update member role. Please try again.")
+  ).toBeVisible();
+  await expect(role).toBeEnabled();
+  await expect(role).toHaveText("Member");
+  await page.unroute("**/mock/member-role");
+  await page.route("**/mock/member-role", (route) =>
+    route.fulfill({
+      json: { id: "alex-membership", userId: "alex", role: 0 },
+    })
+  );
+  await role.click();
+  await page.getByRole("option", { name: "Owner", exact: true }).click();
+  await expect(role).toHaveText("Owner");
+  await expect(page.getByText("Member role updated.")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Close", exact: true })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "View board members" }).click();
+  await expect(role).toHaveText("Owner");
 });

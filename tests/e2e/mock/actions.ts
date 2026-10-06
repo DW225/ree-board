@@ -52,12 +52,35 @@ export const getMembersFromBoardWithExclusionAction = async (boardId: string) =>
   (await fetch("/mock/members", { method: "POST", body: boardId })).json();
 export const bulkImportMembersAction = async (
   boardId: string,
-  members: unknown
+  sourceBoardId: string,
+  userIds: string[]
 ) => {
   const response = await fetch("/mock/import", {
     method: "POST",
-    body: JSON.stringify({ boardId, members }),
+    body: JSON.stringify({ boardId, sourceBoardId, userIds }),
   });
   if (!response.ok) throw new Error("Mock import failed");
   return response.json();
+};
+
+export const updateMemberRoleAction = async (
+  boardId: string,
+  userId: string,
+  role: number
+) => {
+  const response = await fetch("/mock/member-role", {
+    method: "POST",
+    body: JSON.stringify({ boardId, userId, role }),
+  });
+  if (!response.ok) throw new Error("Mock role update failed");
+  return response.json();
+};
+export const findUserByEmailAction = async () => {
+  throw new Error("Invite is outside this fixture");
+};
+export const addMemberToBoardAction = async () => {
+  throw new Error("Invite is outside this fixture");
+};
+export const removeMemberFromBoardAction = async () => {
+  throw new Error("Removal is outside this fixture");
 };

@@ -41,8 +41,29 @@ jest.mock("@/lib/db/member", () => ({
   removeMember: jest.fn(),
 }));
 
+const sourceMember = (userId: string, role: Role) => ({
+  id: `${userId}-membership`,
+  userId,
+  role,
+  username: userId,
+  email: `${userId}@example.com`,
+  updatedAt: new Date(0),
+});
+
 beforeEach(() => {
   jest.clearAllMocks();
+  jest
+    .mocked(fetchMembersByBoardID)
+    .mockImplementation(async (boardId) =>
+      boardId === "source"
+        ? [
+            sourceMember("user", Role.guest),
+            sourceMember("source-owner", Role.owner),
+            sourceMember("added", Role.member),
+            sourceMember("skipped", Role.guest),
+          ]
+        : []
+    );
   jest.mocked(verifySession).mockResolvedValue({
     isAuth: true,
     userId: "actor",
@@ -53,7 +74,7 @@ beforeEach(() => {
 });
 
 it.each([Role.owner, 99 as Role])(
-  "rejects member role %s in individual and bulk grants",
+  "rejects member role %s in individual grants",
   async (role) => {
     await expect(
       addMemberToBoardAction({
@@ -62,9 +83,6 @@ it.each([Role.owner, 99 as Role])(
         boardId: "board",
         role,
       })
-    ).rejects.toThrow();
-    await expect(
-      bulkImportMembersAction("board", [{ userId: "user", role }])
     ).rejects.toThrow();
     expect(addMember).not.toHaveBeenCalled();
     expect(bulkAddMembers).not.toHaveBeenCalled();
@@ -84,7 +102,7 @@ it.each([Role.member, Role.guest, null])(
       })
     ).rejects.toThrow();
     await expect(
-      bulkImportMembersAction("board", [{ userId: "user", role: Role.member }])
+      bulkImportMembersAction("board", "source", ["user"])
     ).rejects.toThrow();
     expect(addMember).not.toHaveBeenCalled();
     expect(bulkAddMembers).not.toHaveBeenCalled();
@@ -106,7 +124,12 @@ it.each([Role.member, Role.guest])(
       boardId: "board",
       role,
     });
-    await bulkImportMembersAction(" board ", [{ userId: " user ", role }]);
+    jest
+      .mocked(fetchMembersByBoardID)
+      .mockImplementation(async (boardId) =>
+        boardId === "source" ? [sourceMember("user", role)] : []
+      );
+    await bulkImportMembersAction(" board ", " source ", [" user "]);
     expect(bulkAddMembers).toHaveBeenCalledWith(
       [{ id: "new-member", userId: "user", boardId: "board", role }],
       expect.anything()
@@ -124,7 +147,7 @@ it("rejects empty grant IDs", async () => {
     })
   ).rejects.toThrow();
   await expect(
-    bulkImportMembersAction("board", [{ userId: " ", role: Role.member }])
+    bulkImportMembersAction("board", "source", [" "])
   ).rejects.toThrow();
   expect(addMember).not.toHaveBeenCalled();
   expect(bulkAddMembers).not.toHaveBeenCalled();
@@ -195,10 +218,10 @@ it("does not forward caller timestamps in member grants", async () => {
   });
 });
 
-it("imports each user once and retains the first requested role", async () => {
-  const result = await bulkImportMembersAction("board", [
-    { userId: " user ", role: Role.guest },
-    { userId: "user", role: Role.member },
+it("imports each user once with the stored source role", async () => {
+  const result = await bulkImportMembersAction("board", "source", [
+    " user ",
+    "user",
   ]);
   expect(bulkAddMembers).toHaveBeenCalledWith(
     [{ id: "new-member", userId: "user", boardId: "board", role: Role.guest }],
@@ -222,34 +245,39 @@ it.each([
   "returns $imported inserted members and counts $skipped conflicts",
   async (expected) => {
     jest.mocked(bulkAddMembers).mockResolvedValueOnce(expected.members);
-    const result = await bulkImportMembersAction("board", [
-      { userId: "added", role: Role.member },
-      { userId: "skipped", role: Role.guest },
+    const result = await bulkImportMembersAction("board", "source", [
+      "added",
+      "skipped",
     ]);
     expect(result).toEqual(expected);
   }
 );
 
 it("returns no members when all selected users already belong to the board", async () => {
-  jest.mocked(fetchMembersByBoardID).mockResolvedValueOnce([
-    {
-      id: "existing",
-      userId: "user",
-      role: Role.member,
-      username: "User",
-      email: "user@example.com",
-      updatedAt: new Date(0),
-    },
-  ]);
+  jest
+    .mocked(fetchMembersByBoardID)
+    .mockImplementation(async (boardId) => [
+      sourceMember("user", boardId === "source" ? Role.guest : Role.member),
+    ]);
   await expect(
-    bulkImportMembersAction("board", [{ userId: "user", role: Role.guest }])
+    bulkImportMembersAction("board", "source", ["user"])
   ).resolves.toEqual({ imported: 0, skipped: 1, members: [] });
 });
 
 it("returns no members for an empty import", async () => {
-  await expect(bulkImportMembersAction("board", [])).resolves.toEqual({
-    imported: 0,
-    skipped: 0,
-    members: [],
+  await expect(bulkImportMembersAction("board", "source", [])).resolves.toEqual(
+    {
+      imported: 0,
+      skipped: 0,
+      members: [],
+    }
+  );
+});
+
+it("preserves the owner role when importing a source board owner", async () => {
+  await expect(
+    bulkImportMembersAction("board", "source", ["source-owner"])
+  ).resolves.toMatchObject({
+    members: [{ userId: "source-owner", role: Role.owner }],
   });
 });
