@@ -27,16 +27,26 @@ export const removeMember = async (
     );
 };
 
-export const updateMemberRole = async (
+/** Rechecks owner access and preserves the last owner in the write transaction. */
+export const updateMemberRole = (
   userId: User["id"],
   boardId: Board["id"],
-  role: Role
+  role: Role,
+  authenticatedUserId: User["id"]
 ) =>
   db.transaction(async (trx) => {
     const members = await trx
       .select({ userId: memberTable.userId, role: memberTable.role })
       .from(memberTable)
       .where(eq(memberTable.boardId, boardId));
+    if (
+      !members.some(
+        (entry) =>
+          entry.userId === authenticatedUserId && entry.role === Role.owner
+      )
+    ) {
+      throw new Error("Board owner access is required.");
+    }
     const member = members.find((entry) => entry.userId === userId);
     if (!member) throw new Error("Member not found");
     if (
@@ -44,7 +54,10 @@ export const updateMemberRole = async (
       role !== Role.owner &&
       members.filter((entry) => entry.role === Role.owner).length === 1
     ) {
-      throw new Error("The board must have at least one owner.");
+      return {
+        ok: false as const,
+        error: "The board must have at least one owner.",
+      };
     }
 
     const [updated] = await trx
@@ -58,7 +71,7 @@ export const updateMemberRole = async (
         userId: memberTable.userId,
         role: memberTable.role,
       });
-    return updated;
+    return { ok: true as const, member: updated };
   });
 
 const prepareFetchMembersByBoardID = db

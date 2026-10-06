@@ -75,12 +75,9 @@ export const updateMemberRoleAction = async (
   if (!response.ok) throw new Error("Mock role update failed");
   return response.json();
 };
-export const findUserByEmailAction = async () => {
-  throw new Error("Invite is outside this fixture");
-};
-export const addMemberToBoardAction = async () => {
-  throw new Error("Invite is outside this fixture");
-};
-export const removeMemberFromBoardAction = async () => {
-  throw new Error("Removal is outside this fixture");
-};
+export const findUserByEmailAction = () =>
+  Promise.reject(new Error("Invite is outside this fixture"));
+export const addMemberToBoardAction = () =>
+  Promise.reject(new Error("Invite is outside this fixture"));
+export const removeMemberFromBoardAction = () =>
+  Promise.reject(new Error("Removal is outside this fixture"));

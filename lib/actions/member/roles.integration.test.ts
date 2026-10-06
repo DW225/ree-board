@@ -62,20 +62,22 @@ it.each([Role.owner, Role.member, Role.guest])(
     await expect(
       updateMemberRoleAction(" target ", " beta ", role)
     ).resolves.toEqual({
-      id: "beta-target",
-      userId: "beta",
-      role,
+      ok: true,
+      member: { id: "beta-target", userId: "beta", role },
     });
     expect(await checkMemberRole("beta", "target")).toBe(role);
     expect(await checkMemberRole("beta", "source")).toBe(Role.member);
   }
 );
 
-it("rejects demotion of the last owner without changing stored rows", async () => {
+it("returns the last-owner rejection without changing stored rows", async () => {
   const before = await state();
   await expect(
     updateMemberRoleAction("target", "actor", Role.guest)
-  ).rejects.toThrow("at least one owner");
+  ).resolves.toEqual({
+    ok: false,
+    error: "The board must have at least one owner.",
+  });
   expect(await state()).toEqual(before);
 });
 
@@ -93,12 +95,38 @@ it("keeps an owner when two owner demotions run at the same time", async () => {
     updateMemberRoleAction("target", "beta", Role.member),
   ]);
   expect(
-    results.filter((result) => result.status === "fulfilled")
+    results.filter((result) => result.status === "fulfilled" && result.value.ok)
   ).toHaveLength(1);
   const owners = (await state()).filter(
     (row) => row.board_id === "target" && row.role === Role.owner
   );
   expect(owners).toHaveLength(1);
+});
+
+it("does not restore ownership if the caller is demoted before the transaction", async () => {
+  await updateMemberRoleAction("target", "beta", Role.owner);
+  const transaction = db.transaction.bind(db);
+  const pending = jest
+    .spyOn(db, "transaction")
+    .mockImplementationOnce(async (callback, config) => {
+      jest.mocked(verifySession).mockResolvedValue({
+        isAuth: true,
+        userId: "beta",
+        supabaseId: "beta",
+        isGuest: false,
+      });
+      await updateMemberRoleAction("target", "actor", Role.guest);
+      return transaction(callback, config);
+    });
+  try {
+    await expect(
+      updateMemberRoleAction("target", "actor", Role.owner)
+    ).rejects.toThrow("Board owner access is required.");
+    expect(await checkMemberRole("actor", "target")).toBe(Role.guest);
+    expect(await checkMemberRole("beta", "target")).toBe(Role.owner);
+  } finally {
+    pending.mockRestore();
+  }
 });
 
 it("rejects a member from another board without changing stored rows", async () => {
@@ -179,6 +207,36 @@ it.each(["source", "target"])(
       bulkImportMembersAction("target", "source", ["alpha"])
     ).rejects.toThrow();
     expect(await state()).toEqual(before);
+  }
+);
+
+it.each(["source", "target"])(
+  "denies an import if the caller loses %s ownership before the transaction",
+  async (boardId) => {
+    await updateMemberRoleAction("target", "beta", Role.owner);
+    const transaction = db.transaction.bind(db);
+    const pending = jest
+      .spyOn(db, "transaction")
+      .mockImplementationOnce(async (callback, config) => {
+        const owner = boardId === "source" ? "alpha" : "beta";
+        jest.mocked(verifySession).mockResolvedValue({
+          isAuth: true,
+          userId: owner,
+          supabaseId: owner,
+          isGuest: false,
+        });
+        await updateMemberRoleAction(boardId, "actor", Role.guest);
+        return transaction(callback, config);
+      });
+    try {
+      await expect(
+        bulkImportMembersAction("target", "source", ["alpha"])
+      ).rejects.toThrow("Board owner access is required.");
+      expect(await checkMemberRole("actor", boardId)).toBe(Role.guest);
+      expect(await checkMemberRole("alpha", "target")).toBeNull();
+    } finally {
+      pending.mockRestore();
+    }
   }
 );
 
