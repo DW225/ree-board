@@ -15,12 +15,14 @@ import {
   addMemberToBoardAction,
   findUserByEmailAction,
   removeMemberFromBoardAction,
+  updateMemberRoleAction,
 } from "@/lib/actions/member/action";
 import { Role } from "@/lib/constants/role";
 import {
   addMember,
   memberSignal,
   removeMember,
+  updateMemberRole,
 } from "@/lib/signal/memberSignals";
 import type { MemberSignal } from "@/lib/types/member";
 import { emailSchema } from "@/lib/utils/validation";
@@ -28,8 +30,9 @@ import { useSignals } from "@preact/signals-react/runtime";
 import { Search, UserPlus } from "lucide-react";
 import { nanoid } from "nanoid";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import type { ReactNode, SubmitEvent } from "react";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface MemberManageProps {
@@ -58,6 +61,7 @@ export default function MemberManageModalComponent({
   children,
 }: Readonly<MemberManageProps>) {
   useSignals();
+  const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -68,6 +72,8 @@ export default function MemberManageModalComponent({
   );
   const [isInvitePending, startInviteTransition] = useTransition();
   const [isRemoving, setIsRemoving] = useState(false);
+  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+  const roleUpdatePending = useRef(false);
 
   const totalCount = memberSignal.value.length;
 
@@ -117,6 +123,33 @@ export default function MemberManageModalComponent({
 
   const handleRemoveMember = (member: MemberSignal) => {
     setMemberToRemove(member);
+  };
+
+  const handleRoleChange = async (member: MemberSignal, role: Role) => {
+    if (viewOnly || roleUpdatePending.current || member.role === role) return;
+    roleUpdatePending.current = true;
+    setUpdatingMemberId(member.id);
+    try {
+      const updated = await updateMemberRoleAction(
+        boardId,
+        member.userId,
+        role
+      );
+      updateMemberRole(updated.id, updated.role);
+      toast.success("Member role updated.");
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error &&
+        error.message === "The board must have at least one owner."
+          ? error.message
+          : "Could not update member role. Please try again.";
+      toast.error(message);
+      console.error(error);
+    } finally {
+      roleUpdatePending.current = false;
+      setUpdatingMemberId(null);
+    }
   };
 
   const confirmRemoveMember = async () => {
@@ -193,6 +226,8 @@ export default function MemberManageModalComponent({
               viewOnly={viewOnly}
               searchTerm={searchTerm}
               handleRemoveMember={viewOnly ? undefined : handleRemoveMember}
+              handleRoleChange={viewOnly ? undefined : handleRoleChange}
+              updatingMemberId={updatingMemberId}
             />
 
             {/* Invite by Email */}

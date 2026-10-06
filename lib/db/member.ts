@@ -1,4 +1,5 @@
 import { boardTable, memberTable, userTable } from "@/db/schema";
+import { Role } from "@/lib/constants/role";
 import type { Board } from "@/lib/types/board";
 import type { Transaction } from "@/lib/types/db";
 import type { NewMember } from "@/lib/types/member";
@@ -25,6 +26,40 @@ export const removeMember = async (
       and(eq(memberTable.userId, userID), eq(memberTable.boardId, boardId))
     );
 };
+
+export const updateMemberRole = async (
+  userId: User["id"],
+  boardId: Board["id"],
+  role: Role
+) =>
+  db.transaction(async (trx) => {
+    const members = await trx
+      .select({ userId: memberTable.userId, role: memberTable.role })
+      .from(memberTable)
+      .where(eq(memberTable.boardId, boardId));
+    const member = members.find((entry) => entry.userId === userId);
+    if (!member) throw new Error("Member not found");
+    if (
+      member.role === Role.owner &&
+      role !== Role.owner &&
+      members.filter((entry) => entry.role === Role.owner).length === 1
+    ) {
+      throw new Error("The board must have at least one owner.");
+    }
+
+    const [updated] = await trx
+      .update(memberTable)
+      .set({ role, updatedAt: new Date() })
+      .where(
+        and(eq(memberTable.userId, userId), eq(memberTable.boardId, boardId))
+      )
+      .returning({
+        id: memberTable.id,
+        userId: memberTable.userId,
+        role: memberTable.role,
+      });
+    return updated;
+  });
 
 const prepareFetchMembersByBoardID = db
   .select({

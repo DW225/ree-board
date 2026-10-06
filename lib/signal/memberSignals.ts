@@ -17,6 +17,15 @@ export const removeMember = (memberId: Member["id"]) => {
   );
 };
 
+export const updateMemberRole = (
+  memberId: Member["id"],
+  role: Member["role"]
+) => {
+  membersSignal.value = membersSignal.value.map((member) =>
+    member.id === memberId ? { ...member, role } : member
+  );
+};
+
 // Legacy aliases still used by the board UI and local transport.
 export const memberSignalInitial = initializeMemberSignals;
 export const memberSignal = membersSignal;

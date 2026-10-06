@@ -86,6 +86,7 @@ export default function ImportMembersComponent({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const importPending = useRef(false);
   const loadRequest = useRef(0);
 
   const loadAvailableBoards = useCallback(async () => {
@@ -169,23 +170,23 @@ export default function ImportMembersComponent({
   }, [boardMembers, selectedMembers.size]);
 
   const handleImport = async () => {
+    if (importPending.current) return;
     if (selectedMembers.size === 0) {
       toast.error("Please select at least one member to import");
       return;
     }
 
+    importPending.current = true;
     try {
       setIsImporting(true);
 
       const membersToImport = boardMembers
         .filter((member) => selectedMembers.has(member.id))
-        .map((member) => ({
-          userId: member.userId,
-          role: member.role === Role.owner ? Role.member : member.role,
-        }));
+        .map((member) => member.userId);
 
       const result = await bulkImportMembersAction(
         currentBoardId,
+        selectedBoardId,
         membersToImport
       );
 
@@ -223,6 +224,7 @@ export default function ImportMembersComponent({
       toast.error("Failed to import members");
       console.error(error);
     } finally {
+      importPending.current = false;
       setIsImporting(false);
     }
   };

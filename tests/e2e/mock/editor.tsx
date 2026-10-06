@@ -4,6 +4,7 @@ import BoardColumn from "@/components/board/BoardColumn";
 import PostProvider from "@/components/board/PostProvider";
 import ImportMembersComponent from "@/components/board/ImportMembersComponent";
 import MemberList from "@/components/board/MemberList";
+import MemberManageModalComponent from "@/components/board/MemberManageModalComponent";
 import MagicLinkManager from "@/components/board/MagicLink/MagicLinkManager";
 import { GuestBanner } from "@/components/guest/GuestBanner";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,8 @@ import { PostType } from "@/lib/constants/post";
 import { Role } from "@/lib/constants/role";
 import type { EnrichedPost } from "@/lib/signal/postSignals";
 import { initializePostSignals } from "@/lib/signal/postSignals";
+import { initializeMemberSignals } from "@/lib/signal/memberSignals";
+import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 
@@ -203,6 +206,35 @@ if (params.get("review") === "merge") {
       <MemberList viewOnly searchTerm="" />
       <Toaster />
     </>
+  );
+} else if (params.get("review") === "member-roles") {
+  initializeMemberSignals([
+    ...initials.members,
+    {
+      id: "alex-membership",
+      userId: "alex",
+      username: "Alex",
+      email: "alex@example.invalid",
+      role: Role.member,
+    },
+  ]);
+  fixture = (
+    <AppRouterContext.Provider
+      value={{
+        bfcacheId: "member-role-fixture",
+        back() {},
+        forward() {},
+        refresh() {},
+        push() {},
+        replace() {},
+        prefetch() {},
+      }}
+    >
+      <MemberManageModalComponent boardId="mock" viewOnly={guest}>
+        Members
+      </MemberManageModalComponent>
+      <Toaster />
+    </AppRouterContext.Provider>
   );
 }
 createRoot(document.getElementById("root")!).render(fixture);

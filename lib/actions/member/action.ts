@@ -9,6 +9,7 @@ import {
   fetchMembersByBoardID,
   fetchMembersWithExclude,
   removeMember,
+  updateMemberRole,
 } from "@/lib/db/member";
 import { findUserByEmail } from "@/lib/db/user";
 import type { Board } from "@/lib/types/board";
@@ -93,6 +94,29 @@ export const removeMemberFromBoardAction = async (
   );
 };
 
+export const updateMemberRoleAction = async (
+  boardId: Board["id"],
+  userId: User["id"],
+  role: Role
+) => {
+  const data = z
+    .object({ boardId: idSchema, userId: idSchema, role: z.enum(Role) })
+    .parse({ boardId, userId, role });
+  return rbacWithAuth(
+    data.boardId,
+    async (authenticatedUserId) => {
+      logger.logAction("updateMemberRoleAction", {
+        userId: authenticatedUserId,
+        boardId: data.boardId,
+        updatedUserId: data.userId,
+        role: data.role,
+      });
+      return updateMemberRole(data.userId, data.boardId, data.role);
+    },
+    Role.owner
+  );
+};
+
 export const getBoardsWhereUserIsAdminAction = async () =>
   actionWithAuth(async (userId) => {
     logger.logAction("getBoardsWhereUserIsAdminAction", { userId });
@@ -126,56 +150,71 @@ export const getMembersFromBoardWithExclusionAction = async (
 
 export const bulkImportMembersAction = async (
   targetBoardId: Board["id"],
-  membersToImport: Array<{
-    userId: User["id"];
-    role: Role;
-  }>
+  sourceBoardId: Board["id"],
+  userIds: User["id"][]
 ) => {
   const data = z
     .object({
       targetBoardId: idSchema,
-      membersToImport: z.array(memberGrantSchema).max(1000),
+      sourceBoardId: idSchema,
+      userIds: z.array(idSchema).max(1000),
     })
-    .parse({ targetBoardId, membersToImport });
+    .parse({ targetBoardId, sourceBoardId, userIds });
   return rbacWithAuth(
     data.targetBoardId,
-    async (userId) => {
-      logger.logAction("bulkImportMembersAction", {
-        userId,
-        boardId: data.targetBoardId,
-        memberCount: data.membersToImport.length,
-      });
-
-      const seenIds = new Set<string>();
-      const uniqueMembers = data.membersToImport.filter((member) => {
-        if (seenIds.has(member.userId)) return false;
-        seenIds.add(member.userId);
-        return true;
-      });
-      const totalMemberCount = uniqueMembers.length;
-      const importedMembers = await db.transaction(async (trx) => {
-        const existingMembers = await fetchMembersByBoardID(
-          data.targetBoardId,
-          trx
-        );
-        const existingIds = new Set(existingMembers.map((m) => m.userId));
-        const membersToAdd = uniqueMembers
-          .filter((m) => !existingIds.has(m.userId))
-          .map((m) => ({
-            id: nanoid(),
-            userId: m.userId,
+    async () =>
+      rbacWithAuth(
+        data.sourceBoardId,
+        async (userId) => {
+          logger.logAction("bulkImportMembersAction", {
+            userId,
             boardId: data.targetBoardId,
-            role: m.role,
-          }));
-        return bulkAddMembers(membersToAdd, trx);
-      });
+            sourceBoardId: data.sourceBoardId,
+            memberCount: data.userIds.length,
+          });
 
-      return {
-        imported: importedMembers.length,
-        skipped: totalMemberCount - importedMembers.length,
-        members: importedMembers,
-      };
-    },
+          const uniqueUserIds = [...new Set(data.userIds)];
+          const totalMemberCount = uniqueUserIds.length;
+          const importedMembers = await db.transaction(async (trx) => {
+            const sourceMembers = await fetchMembersByBoardID(
+              data.sourceBoardId,
+              trx
+            );
+            const sourceByUserId = new Map(
+              sourceMembers.map((member) => [member.userId, member])
+            );
+            const selectedMembers = uniqueUserIds.map((selectedUserId) => {
+              const member = sourceByUserId.get(selectedUserId);
+              if (!member)
+                throw new Error(
+                  "Selected member is no longer on the source board."
+                );
+              return member;
+            });
+            const existingMembers = await fetchMembersByBoardID(
+              data.targetBoardId,
+              trx
+            );
+            const existingIds = new Set(existingMembers.map((m) => m.userId));
+            const membersToAdd = selectedMembers
+              .filter((m) => !existingIds.has(m.userId))
+              .map((m) => ({
+                id: nanoid(),
+                userId: m.userId,
+                boardId: data.targetBoardId,
+                role: m.role,
+              }));
+            return bulkAddMembers(membersToAdd, trx);
+          });
+
+          return {
+            imported: importedMembers.length,
+            skipped: totalMemberCount - importedMembers.length,
+            members: importedMembers,
+          };
+        },
+        Role.owner
+      ),
     Role.owner
   );
 };
