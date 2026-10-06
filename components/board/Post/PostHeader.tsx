@@ -99,7 +99,7 @@ export const PostHeader = memo(function PostHeader({
       } catch (error) {
         console.error("Error updating status:", error);
         toast.error("Failed to update status");
-        if (oldState) {
+        if (oldState !== undefined) {
           updatePostState(post.id, oldState);
         }
       }
