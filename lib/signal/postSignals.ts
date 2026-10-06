@@ -237,8 +237,8 @@ export const updatePostState = (
  */
 interface MergeRollbackData {
   originalPosts: Post[];
-  originalTasks: Record<string, Task>;
-  originalVotes: Record<string, number>;
+  originalTasks: Record<string, Task | undefined>;
+  originalVotes: Record<string, number | undefined>;
 }
 
 /**
@@ -257,12 +257,16 @@ export const mergePosts = (
   const currentTasks = tasksSignal.value;
   const currentVotes = votesSignal.value;
 
-  // Capture original state for rollback
+  // Capture only merged posts' state, including absent task and vote entries.
   const allPostIds = new Set([targetPostId, ...sourcePostIds]);
   const rollbackData: MergeRollbackData = {
     originalPosts: currentPosts.filter((p) => allPostIds.has(p.id)),
-    originalTasks: { ...currentTasks },
-    originalVotes: { ...currentVotes },
+    originalTasks: Object.fromEntries(
+      [...allPostIds].map((id) => [id, currentTasks[id]])
+    ),
+    originalVotes: Object.fromEntries(
+      [...allPostIds].map((id) => [id, currentVotes[id]])
+    ),
   };
 
   batch(() => {
@@ -336,10 +340,21 @@ export const rollbackMerge = (rollbackData: MergeRollbackData) => {
     );
     const restoredPosts = [...filteredPosts, ...rollbackData.originalPosts];
 
-    // Restore state
+    // Restore only merged posts' entries, preserving unrelated updates.
+    const restoredTasks = { ...tasksSignal.value };
+    for (const [postId, task] of Object.entries(rollbackData.originalTasks)) {
+      if (task === undefined) delete restoredTasks[postId];
+      else restoredTasks[postId] = task;
+    }
+    const restoredVotes = { ...votesSignal.value };
+    for (const [postId, votes] of Object.entries(rollbackData.originalVotes)) {
+      if (votes === undefined) delete restoredVotes[postId];
+      else restoredVotes[postId] = votes;
+    }
+
     postsSignal.value = restoredPosts;
-    tasksSignal.value = rollbackData.originalTasks;
-    votesSignal.value = rollbackData.originalVotes;
+    tasksSignal.value = restoredTasks;
+    votesSignal.value = restoredVotes;
   });
 };
 

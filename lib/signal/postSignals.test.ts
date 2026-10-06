@@ -12,8 +12,10 @@ import {
   addPost,
   assignTask,
   initializePostSignals,
+  incrementPostVoteCount,
   mergePosts,
   postsSignal,
+  removePost,
   rollbackMerge,
   tasksSignal,
   updatePost,
@@ -96,6 +98,79 @@ it("merges signal state and restores posts, votes, and tasks on rollback", () =>
     source: tasks[1],
     other: tasks[2],
   });
+});
+
+it("preserves unrelated concurrent changes when rolling back a merge", () => {
+  const posts = ["target", "source", "other", "removed"].map((id) => ({
+    ...saved,
+    id,
+  }));
+  const tasks = posts.map((post) => ({
+    id: `task-${post.id}`,
+    postId: post.id,
+    boardId: saved.boardId,
+    userId: saved.author,
+    state: TaskState.pending,
+    createdAt: saved.createdAt,
+    updatedAt: saved.updatedAt,
+  }));
+  initializePostSignals(posts, tasks);
+
+  const rollback = mergePosts("target", ["source"], "merged content");
+
+  updatePostState("other", TaskState.completed);
+  incrementPostVoteCount("other");
+  addPost({ ...saved, id: "added" });
+  assignTask("added", "new-assignee");
+  incrementPostVoteCount("added");
+  removePost("removed");
+
+  rollbackMerge(rollback);
+
+  expect(postsSignal.value).toHaveLength(4);
+  expect(postsSignal.value).toEqual(
+    expect.arrayContaining([
+      posts[0],
+      posts[1],
+      posts[2],
+      { ...saved, id: "added" },
+    ])
+  );
+  expect(tasksSignal.value).toEqual({
+    target: tasks[0],
+    source: tasks[1],
+    other: {
+      ...tasks[2],
+      state: TaskState.completed,
+      updatedAt: expect.any(Date),
+    },
+    added: expect.objectContaining({ postId: "added", userId: "new-assignee" }),
+  });
+  expect(votesSignal.value).toEqual({
+    target: 0,
+    source: 0,
+    other: 1,
+    added: 1,
+  });
+});
+
+it("restores absent task and vote entries for all merged posts", () => {
+  const posts = ["target", "source", "second-source"].map((id) => ({
+    ...saved,
+    id,
+  }));
+  initializePostSignals(posts, []);
+  votesSignal.value = {};
+
+  const rollback = mergePosts("target", ["source", "second-source"], "merged");
+  assignTask("target", "new-assignee");
+
+  rollbackMerge(rollback);
+
+  expect(postsSignal.value).toEqual(expect.arrayContaining(posts));
+  expect(postsSignal.value).toHaveLength(3);
+  expect(tasksSignal.value).toEqual({});
+  expect(votesSignal.value).toEqual({});
 });
 
 const taskOperations = [
