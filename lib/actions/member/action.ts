@@ -105,7 +105,7 @@ export const updateMemberRoleAction = async (
     .parse({ boardId, userId, role });
   return rbacWithAuth(
     data.boardId,
-    async (authenticatedUserId) => {
+    (authenticatedUserId) => {
       logger.logAction("updateMemberRoleAction", {
         userId: authenticatedUserId,
         boardId: data.boardId,
