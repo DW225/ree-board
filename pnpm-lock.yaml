@@ -45,8 +45,8 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       cn:
-        specifier: 0.3.3
-        version: 0.3.3
+        specifier: 0.4.0
+        version: 0.4.0
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -3922,8 +3922,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  cn@0.3.3:
-    resolution: {integrity: sha512-OEiyJkSpYm2kOuNOKQ+c2wmzZRG8orrb9fnObtHTbCGNx/E9KLnGcmcocItOzREKk5KzQN5I2e3BUCj563KEpw==}
+  cn@0.4.0:
+    resolution: {integrity: sha512-qOAeUhPwPzBxx6jaeQdo646XIKliKHc2j1ZF7Ngb1o0pJZKH5gq8FkA0aVdUdPFUDXNXyUCXpCtoJISo6dhizg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -10311,7 +10311,7 @@ snapshots:
 
   cn@0.3.2: {}
 
-  cn@0.3.3: {}
+  cn@0.4.0: {}
 
   co@4.6.0: {}
 
