@@ -53,54 +53,67 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-it("restores pending state 0 after a status update fails", async () => {
-  const post: Post = {
-    id: "post",
-    boardId: "board",
-    author: "author",
-    content: "Action item",
-    type: PostType.action_item,
-    voteCount: 0,
-    createdAt: new Date("2026-10-05"),
-    updatedAt: new Date("2026-10-05"),
-  };
-  const task: Task = {
-    id: "task",
-    postId: post.id,
-    boardId: post.boardId,
-    userId: "assignee",
-    state: 0,
-    createdAt: post.createdAt,
-    updatedAt: post.updatedAt,
-  };
-  initializePostSignals([post], [task]);
-  jest.spyOn(console, "error").mockImplementation(() => undefined);
-  const { promise, reject } =
-    Promise.withResolvers<
-      Awaited<ReturnType<typeof authedPostActionStateUpdate>>
-    >();
-  jest.mocked(authedPostActionStateUpdate).mockReturnValueOnce(promise);
+it.each([
+  { taskLoaded: true, laterChange: false },
+  { taskLoaded: false, laterChange: false },
+  { taskLoaded: false, laterChange: true },
+])(
+  "rolls back only its own status update: %j",
+  async ({ taskLoaded, laterChange }) => {
+    const post: Post = {
+      id: "post",
+      boardId: "board",
+      author: "author",
+      content: "Action item",
+      type: PostType.action_item,
+      voteCount: 0,
+      createdAt: new Date("2026-10-05"),
+      updatedAt: new Date("2026-10-05"),
+    };
+    const task: Task = {
+      id: "task",
+      postId: post.id,
+      boardId: post.boardId,
+      userId: "assignee",
+      state: 0,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+    };
+    initializePostSignals([post], taskLoaded ? [task] : []);
+    jest.spyOn(console, "error").mockImplementation(() => undefined);
+    const { promise, reject } =
+      Promise.withResolvers<
+        Awaited<ReturnType<typeof authedPostActionStateUpdate>>
+      >();
+    jest.mocked(authedPostActionStateUpdate).mockReturnValueOnce(promise);
 
-  const tree = PostHeader({
-    post: enrichedPostsSignal.value[0],
-    onDelete: jest.fn(),
-    onUpdate: jest.fn(),
-  });
-  const selectStatus = findStatusItem(tree, "In Progress")?.props.onClick;
-  if (!selectStatus)
-    throw new Error("In Progress status item was not rendered");
+    const tree = PostHeader({
+      post: enrichedPostsSignal.value[0],
+      onDelete: jest.fn(),
+      onUpdate: jest.fn(),
+    });
+    const selectStatus = findStatusItem(tree, "In Progress")?.props.onClick;
+    if (!selectStatus)
+      throw new Error("In Progress status item was not rendered");
 
-  const update = selectStatus();
-  expect(tasksSignal.value[post.id].state).toBe(1);
-  expect(authedPostActionStateUpdate).toHaveBeenCalledWith({
-    postId: "post",
-    boardId: "board",
-    state: 1,
-  });
+    const update = selectStatus();
+    expect(tasksSignal.value[post.id].state).toBe(1);
+    expect(authedPostActionStateUpdate).toHaveBeenCalledWith({
+      postId: "post",
+      boardId: "board",
+      state: 1,
+    });
 
-  reject(new Error("offline"));
-  await update;
+    if (laterChange) {
+      jest.mocked(authedPostActionStateUpdate).mockResolvedValueOnce([]);
+      const selectDone = findStatusItem(tree, "Done")?.props.onClick;
+      if (!selectDone) throw new Error("Done status item was not rendered");
+      await selectDone();
+    }
+    reject(new Error("offline"));
+    await update;
 
-  expect(enrichedPostsSignal.value[0].task?.state).toBe(0);
-  expect(toast.error).toHaveBeenCalledWith("Failed to update status");
-});
+    expect(enrichedPostsSignal.value[0].task?.state).toBe(laterChange ? 2 : 0);
+    expect(toast.error).toHaveBeenCalledWith("Failed to update status");
+  }
+);

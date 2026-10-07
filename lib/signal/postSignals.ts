@@ -157,15 +157,19 @@ export const decrementPostVoteCount = (postId: Post["id"]) => {
 
 // Task operations
 export const addPostTask = (task: NewTask) => {
-  const newTask: Task = {
-    id: task.id,
-    postId: task.postId,
-    boardId: task.boardId,
-    userId: task.userId ?? null,
-    state: task.state ?? TaskState.pending,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  const existingTask = tasksSignal.value[task.postId];
+  // A create event can arrive after an assignment or status update.
+  const newTask: Task = existingTask
+    ? { ...existingTask, id: task.id }
+    : {
+        id: task.id,
+        postId: task.postId,
+        boardId: task.boardId,
+        userId: task.userId ?? null,
+        state: task.state ?? TaskState.pending,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
   tasksSignal.value = {
     ...tasksSignal.value,
