@@ -5,6 +5,8 @@ import { Role } from "@/lib/constants/role";
 import { db } from "./client";
 import { deletePost, updatePostContent, updatePostType } from "./post";
 
+jest.mock("nanoid", () => ({ nanoid: () => "task-id" }));
+
 jest.mock("./client", () =>
   jest
     .requireActual<typeof TestDatabase>("@/tests/helpers/database")

@@ -1,28 +1,39 @@
 import { postTable, taskTable, voteTable } from "@/db/schema";
+import { PostType } from "@/lib/constants/post";
 import { Role } from "@/lib/constants/role";
 import type { Board } from "@/lib/types/board";
 import type { NewPost, Post } from "@/lib/types/post";
 import { and, eq, inArray, not, sql } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import { db, withDbRetry } from "./client";
+import { createTask } from "./task";
 
 const UNAUTHORIZED_POST_MUTATION_ERROR =
   "Post not found or you do not have permission to modify it";
 
-export const createPost = async (post: NewPost) => {
-  const newPosts = await db
-    .insert(postTable)
-    .values({
-      id: post.id,
-      content: post.content,
-      author: post.author,
-      boardId: post.boardId,
-      type: post.type,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    .returning();
+export const createPost = (post: NewPost) => {
+  return db.transaction(async (trx) => {
+    const newPosts = await trx
+      .insert(postTable)
+      .values({
+        id: post.id,
+        content: post.content,
+        author: post.author,
+        boardId: post.boardId,
+        type: post.type,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
 
-  return newPosts[0];
+    const task =
+      post.type === PostType.action_item
+        ? { id: nanoid(), postId: post.id, boardId: post.boardId }
+        : undefined;
+    if (!task) return { post: newPosts[0], task: undefined };
+    const result = await createTask(task, trx);
+    return { post: newPosts[0], task: result.created ? task : undefined };
+  });
 };
 
 const prepareFetchPostsByBoardID = db
@@ -78,18 +89,25 @@ export const updatePostType = async (
           eq(postTable.author, userId)
         );
 
-  const updatedPosts = await db
-    .update(postTable)
-    .set({
-      type: newType,
-      updatedAt: new Date(),
-    })
-    .where(condition)
-    .returning({ id: postTable.id });
+  return await db.transaction(async (trx) => {
+    const updatedPosts = await trx
+      .update(postTable)
+      .set({
+        type: newType,
+        updatedAt: new Date(),
+      })
+      .where(condition)
+      .returning({ id: postTable.id });
 
-  if (updatedPosts.length === 0) {
-    throw new Error(UNAUTHORIZED_POST_MUTATION_ERROR);
-  }
+    if (updatedPosts.length === 0) {
+      throw new Error(UNAUTHORIZED_POST_MUTATION_ERROR);
+    }
+    if (newType === PostType.action_item) {
+      const task = { id: nanoid(), postId: id, boardId };
+      const result = await createTask(task, trx);
+      if (result.created) return task;
+    }
+  });
 };
 
 export const updatePostContent = async (

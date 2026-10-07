@@ -1,13 +1,16 @@
 import { postTable, taskTable } from "@/db/schema";
+import { PostType } from "@/lib/constants/post";
 import type { Board } from "@/lib/types/board";
+import type { Transaction } from "@/lib/types/db";
 import type { Post } from "@/lib/types/post";
 import type { NewTask, Task } from "@/lib/types/task";
 import type { User } from "@/lib/types/user";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import { db } from "./client";
 
-export async function createTask(action: NewTask) {
-  return await db.transaction(async (trx) => {
+export function createTask(action: NewTask, transaction?: Transaction) {
+  const insert = async (trx: Transaction) => {
     const [post] = await trx
       .select({ id: postTable.id })
       .from(postTable)
@@ -19,6 +22,16 @@ export async function createTask(action: NewTask) {
       )
       .limit(1);
     if (!post) throw new Error("Post not found");
+    const [existing] = await trx
+      .select({ id: taskTable.id, boardId: taskTable.boardId })
+      .from(taskTable)
+      .where(eq(taskTable.postId, action.postId))
+      .limit(1);
+    if (existing) {
+      if (existing.boardId !== action.boardId)
+        throw new Error("Task not found");
+      return { id: existing.id, created: false };
+    }
     const [result] = await trx
       .insert(taskTable)
       .values({
@@ -31,8 +44,9 @@ export async function createTask(action: NewTask) {
         updatedAt: action.updatedAt,
       })
       .returning({ id: taskTable.id });
-    return result.id;
-  });
+    return { id: result.id, created: true };
+  };
+  return transaction ? insert(transaction) : db.transaction(insert);
 }
 
 const prepareFetchTasks = db
@@ -52,27 +66,7 @@ export async function assignTask(
 ) {
   if (!postId) throw new Error("postId is required");
   try {
-    const rows = await db
-      .update(taskTable)
-      .set({ userId, updatedAt: sql`(strftime('%s','now'))` })
-      .where(
-        and(
-          eq(taskTable.postId, postId),
-          eq(taskTable.boardId, boardId),
-          inArray(
-            taskTable.postId,
-            db
-              .select({ id: postTable.id })
-              .from(postTable)
-              .where(
-                and(eq(postTable.id, postId), eq(postTable.boardId, boardId))
-              )
-          )
-        )
-      )
-      .returning({ id: taskTable.id })
-      .execute();
-    if (rows.length === 0) throw new Error("Task not found");
+    await updateTask(postId, boardId, { userId });
   } catch (error) {
     console.error("Failed to assign action for post %s:", postId, error);
     throw error;
@@ -92,25 +86,50 @@ export async function updateTaskState(
   newState: Task["state"],
   boardId: Board["id"]
 ) {
-  const rows = await db
-    .update(taskTable)
-    .set({ state: newState, updatedAt: new Date() })
-    .where(
-      and(
-        eq(taskTable.postId, postId),
-        eq(taskTable.boardId, boardId),
-        inArray(
-          taskTable.postId,
-          db
-            .select({ id: postTable.id })
-            .from(postTable)
-            .where(
-              and(eq(postTable.id, postId), eq(postTable.boardId, boardId))
-            )
+  await updateTask(postId, boardId, { state: newState });
+}
+
+async function updateTask(
+  postId: Post["id"],
+  boardId: Board["id"],
+  changes: Partial<Pick<Task, "userId" | "state">>
+) {
+  await db.transaction(async (trx) => {
+    const rows = await trx
+      .update(taskTable)
+      .set({ ...changes, updatedAt: new Date() })
+      .where(
+        and(
+          eq(taskTable.postId, postId),
+          eq(taskTable.boardId, boardId),
+          inArray(
+            taskTable.postId,
+            trx
+              .select({ id: postTable.id })
+              .from(postTable)
+              .where(
+                and(eq(postTable.id, postId), eq(postTable.boardId, boardId))
+              )
+          )
         )
       )
-    )
-    .returning({ id: taskTable.id })
-    .execute();
-  if (rows.length === 0) throw new Error("Task not found");
+      .returning({ id: taskTable.id })
+      .execute();
+    if (rows.length > 0) return;
+
+    // Repair action items saved before post and task creation became atomic.
+    const [post] = await trx
+      .select({ id: postTable.id })
+      .from(postTable)
+      .where(
+        and(
+          eq(postTable.id, postId),
+          eq(postTable.boardId, boardId),
+          eq(postTable.type, PostType.action_item)
+        )
+      )
+      .limit(1);
+    if (!post) throw new Error("Task not found");
+    await createTask({ id: nanoid(), postId, boardId, ...changes }, trx);
+  });
 }

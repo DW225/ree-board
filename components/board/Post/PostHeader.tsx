@@ -23,7 +23,11 @@ import { authedPostActionStateUpdate } from "@/lib/actions/task/action";
 import { PostType } from "@/lib/constants/post";
 import { TaskState } from "@/lib/constants/task";
 import type { EnrichedPost } from "@/lib/signal/postSignals";
-import { postsSignal, updatePostState } from "@/lib/signal/postSignals";
+import {
+  beginPostStateUpdate,
+  postsSignal,
+  tasksSignal,
+} from "@/lib/signal/postSignals";
 import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
 import { MoreHorizontal } from "lucide-react";
@@ -85,26 +89,25 @@ export const PostHeader = memo(function PostHeader({
 
   const handleStatusChange = useCallback(
     async (newStatus: Task["state"]) => {
-      if (post.task?.state === newStatus) return;
+      const oldState = tasksSignal.value[post.id]?.state ?? TaskState.pending;
+      if (oldState === newStatus) return;
 
-      const oldState = post.task?.state;
+      let update: ReturnType<typeof beginPostStateUpdate> | undefined;
       try {
-        updatePostState(post.id, newStatus);
-
+        update = beginPostStateUpdate(post.id, newStatus);
         await authedPostActionStateUpdate({
           postId: post.id,
           state: newStatus,
           boardId: post.boardId,
         });
+        update.commit();
       } catch (error) {
         console.error("Error updating status:", error);
         toast.error("Failed to update status");
-        if (oldState !== undefined) {
-          updatePostState(post.id, oldState);
-        }
+        update?.rollback();
       }
     },
-    [post.id, post.task?.state, post.boardId]
+    [post.id, post.boardId]
   );
 
   function handleDialogItemSelect() {

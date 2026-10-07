@@ -4,18 +4,15 @@ import { useAddPostForm } from "@/components/board/PostProvider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { CreatePostAction } from "@/lib/actions/post/action";
-import { authedCreateAction } from "@/lib/actions/task/action";
 import { PostType } from "@/lib/constants/post";
 import {
   addPost,
-  addPostTask,
   removePost,
   postsSignal,
   votesSignal,
   updatePost,
 } from "@/lib/signal/postSignals";
 import type { Post } from "@/lib/types/post";
-import type { NewTask } from "@/lib/types/task";
 import { Plus, X } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { SubmitEvent } from "react";
@@ -88,20 +85,6 @@ export default function AddPostForm({
                 : currentPost.type,
             voteCount: votesSignal.value[postId] ?? savedPost.voteCount,
           });
-        }
-        if (postType === PostType.action_item) {
-          const newTask: NewTask = {
-            id: nanoid(),
-            postId,
-            boardId,
-          };
-          try {
-            await authedCreateAction(newTask);
-            addPostTask(newTask);
-          } catch (error) {
-            removePost(postId);
-            throw error; // Re-throw to trigger the outer catch block
-          }
         }
       } catch (error) {
         toast.error("Failed to create a post. Please try again later.");
