@@ -17,6 +17,18 @@ export const postsSignal = signal<Post[]>([]);
 export const tasksSignal = signal<Record<string, Task>>({});
 export const votesSignal = signal<Record<string, number>>({});
 
+interface PostStateChange {
+  state: Task["state"];
+}
+
+interface PendingPostState {
+  savedState: Task["state"];
+  changes: PostStateChange[];
+}
+
+let pendingPostStates: Record<Post["id"], PendingPostState | undefined> =
+  Object.create(null);
+
 // UI state signals
 export const sortCriteriaSignal = signal<{
   criterion: SortCriterion;
@@ -71,6 +83,7 @@ export const sortedPostsSignal = computed(() => {
 
 // Initialization function
 export const initializePostSignals = (posts: Post[], tasks: Task[]) => {
+  pendingPostStates = Object.create(null);
   batch(() => {
     postsSignal.value = posts;
 
@@ -103,6 +116,7 @@ export const addPost = (newPost: Post) => {
 };
 
 export const removePost = (postId: Post["id"]) => {
+  delete pendingPostStates[postId];
   batch(() => {
     postsSignal.value = postsSignal.value.filter((post) => post.id !== postId);
 
@@ -157,15 +171,19 @@ export const decrementPostVoteCount = (postId: Post["id"]) => {
 
 // Task operations
 export const addPostTask = (task: NewTask) => {
-  const newTask: Task = {
-    id: task.id,
-    postId: task.postId,
-    boardId: task.boardId,
-    userId: task.userId ?? null,
-    state: task.state ?? TaskState.pending,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  const existingTask = tasksSignal.value[task.postId];
+  // A create event can arrive after an assignment or status update.
+  const newTask: Task = existingTask
+    ? { ...existingTask, id: task.id }
+    : {
+        id: task.id,
+        postId: task.postId,
+        boardId: task.boardId,
+        userId: task.userId ?? null,
+        state: task.state ?? TaskState.pending,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
   tasksSignal.value = {
     ...tasksSignal.value,
@@ -202,7 +220,7 @@ export const assignTask = (
   });
 };
 
-export const updatePostState = (
+const writePostState = (
   postId: Post["id"],
   state: Task["state"],
   boardId?: string
@@ -229,6 +247,54 @@ export const updatePostState = (
     boardId: boardId || post.boardId || "",
     state,
   });
+};
+
+export const updatePostState = (
+  postId: Post["id"],
+  state: Task["state"],
+  boardId?: string
+) => {
+  // A server status update supersedes pending requests, even for the same value.
+  delete pendingPostStates[postId];
+  writePostState(postId, state, boardId);
+};
+
+export const beginPostStateUpdate = (
+  postId: Post["id"],
+  state: Task["state"]
+) => {
+  const pending = pendingPostStates[postId] ?? {
+    savedState: tasksSignal.value[postId]?.state ?? TaskState.pending,
+    changes: [],
+  };
+  const change = { state };
+  pending.changes.push(change);
+  pendingPostStates[postId] = pending;
+  writePostState(postId, state);
+
+  const settle = (saved: boolean) => {
+    if (pendingPostStates[postId] !== pending) return;
+    const index = pending.changes.indexOf(change);
+    if (index === -1) return;
+
+    if (saved) {
+      pending.savedState = state;
+      // A saved change supersedes all earlier optimistic changes.
+      pending.changes.splice(0, index + 1);
+    } else {
+      pending.changes.splice(index, 1);
+    }
+
+    const nextState = pending.changes.at(-1)?.state ?? pending.savedState;
+    if (pending.changes.length === 0) delete pendingPostStates[postId];
+    const task = tasksSignal.value[postId];
+    if (task && task.state !== nextState) writePostState(postId, nextState);
+  };
+
+  return {
+    commit: () => settle(true),
+    rollback: () => settle(false),
+  };
 };
 
 /**
@@ -315,6 +381,7 @@ export const mergePosts = (
     // Clean up tasks for deleted posts, keep target post's task if it exists
     const cleanedTasks = { ...currentTasks };
     for (const postId of sourcePostIds) {
+      delete pendingPostStates[postId];
       delete cleanedTasks[postId];
     }
     tasksSignal.value = cleanedTasks;
@@ -343,6 +410,7 @@ export const rollbackMerge = (rollbackData: MergeRollbackData) => {
     // Restore only merged posts' entries, preserving unrelated updates.
     const restoredTasks = { ...tasksSignal.value };
     for (const [postId, task] of Object.entries(rollbackData.originalTasks)) {
+      delete pendingPostStates[postId];
       if (task === undefined) delete restoredTasks[postId];
       else restoredTasks[postId] = task;
     }

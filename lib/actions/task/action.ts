@@ -40,11 +40,12 @@ export const authedCreateAction = async (action: NewTask) => {
     const now = new Date();
     const task = { ...data, createdAt: now, updatedAt: now };
     const result = await createTask(task);
+    if (!result.created) return [result.id, undefined];
     const published = await ablyClient(data.boardId).publish({
       name: EVENT_TYPE.ACTION.CREATE,
       data: JSON.stringify(task),
     });
-    return [result, published];
+    return [result.id, published];
   });
 };
 

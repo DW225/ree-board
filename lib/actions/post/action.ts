@@ -21,7 +21,10 @@ export const CreatePostAction = async (post: NewPost) => {
   const data = CreatePostSchema.parse(post);
   return rbacWithAuth(data.boardId, async (userId) => {
     logger.logAction("CreatePostAction", { userId, boardId: data.boardId });
-    const result = await createPost({ ...data, author: userId });
+    const { post: result, task } = await createPost({
+      ...data,
+      author: userId,
+    });
     try {
       await ablyClient(data.boardId).publish({
         name: EVENT_TYPE.POST.ADD,
@@ -34,6 +37,20 @@ export const CreatePostAction = async (post: NewPost) => {
         { boardId: data.boardId, userId },
         realtimeError as Error
       );
+    }
+    if (task) {
+      try {
+        await ablyClient(data.boardId).publish({
+          name: EVENT_TYPE.ACTION.CREATE,
+          data: JSON.stringify(task),
+        });
+      } catch (realtimeError) {
+        logger.warn(
+          "Failed to publish real-time task-create event",
+          { boardId: data.boardId, userId },
+          realtimeError as Error
+        );
+      }
     }
     return result;
   });
@@ -85,7 +102,7 @@ export const UpdatePostTypeAction = async (
       newType,
     });
 
-    await updatePostType(id, boardId, newType, userId, role);
+    const task = await updatePostType(id, boardId, newType, userId, role);
     try {
       await ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPDATE_TYPE,
@@ -98,6 +115,20 @@ export const UpdatePostTypeAction = async (
         { boardId, userId },
         realtimeError as Error
       );
+    }
+    if (task) {
+      try {
+        await ablyClient(boardId).publish({
+          name: EVENT_TYPE.ACTION.CREATE,
+          data: JSON.stringify(task),
+        });
+      } catch (realtimeError) {
+        logger.warn(
+          "Failed to publish real-time task-create event",
+          { boardId, userId },
+          realtimeError as Error
+        );
+      }
     }
   });
 };
