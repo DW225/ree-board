@@ -21,13 +21,22 @@ export const CreatePostAction = async (post: NewPost) => {
   const data = CreatePostSchema.parse(post);
   return rbacWithAuth(data.boardId, async (userId) => {
     logger.logAction("CreatePostAction", { userId, boardId: data.boardId });
-    const result = await createPost({ ...data, author: userId });
+    const { post: result, task } = await createPost({
+      ...data,
+      author: userId,
+    });
     try {
       await ablyClient(data.boardId).publish({
         name: EVENT_TYPE.POST.ADD,
         extras: { headers: { user: userId } },
         data: JSON.stringify(result),
       });
+      if (task) {
+        await ablyClient(data.boardId).publish({
+          name: EVENT_TYPE.ACTION.CREATE,
+          data: JSON.stringify(task),
+        });
+      }
     } catch (realtimeError) {
       logger.warn(
         "Failed to publish real-time create event",
@@ -85,13 +94,19 @@ export const UpdatePostTypeAction = async (
       newType,
     });
 
-    await updatePostType(id, boardId, newType, userId, role);
+    const task = await updatePostType(id, boardId, newType, userId, role);
     try {
       await ablyClient(boardId).publish({
         name: EVENT_TYPE.POST.UPDATE_TYPE,
         extras: { headers: { user: userId } },
         data: JSON.stringify({ id, type: newType }),
       });
+      if (task) {
+        await ablyClient(boardId).publish({
+          name: EVENT_TYPE.ACTION.CREATE,
+          data: JSON.stringify(task),
+        });
+      }
     } catch (realtimeError) {
       logger.warn(
         "Failed to publish real-time update-type event",

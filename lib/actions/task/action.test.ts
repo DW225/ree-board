@@ -2,8 +2,19 @@
 import type * as TestDatabase from "@/tests/helpers/database";
 import { Role } from "@/lib/constants/role";
 import { TaskState } from "@/lib/constants/task";
+import { PostType } from "@/lib/constants/post";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db/client";
+import {
+  processPostMessage,
+  processTaskMessage,
+} from "@/lib/realtime/messageProcessors";
+import { initializePostSignals, tasksSignal } from "@/lib/signal/postSignals";
+import {
+  CreatePostAction,
+  UpdatePostTypeAction,
+} from "@/lib/actions/post/action";
+import type * as Crypto from "node:crypto";
 import {
   authedCreateAction,
   authedPostAssign,
@@ -12,9 +23,11 @@ import {
 
 jest.mock("@/lib/dal", () => ({ verifySession: jest.fn() }));
 jest.mock("@/lib/utils/logger", () => ({
-  logger: { debug: jest.fn(), logAction: jest.fn() },
+  logger: { debug: jest.fn(), logAction: jest.fn(), warn: jest.fn() },
 }));
-jest.mock("nanoid", () => ({ nanoid: () => "unused" }));
+jest.mock("nanoid", () => ({
+  nanoid: () => jest.requireActual<typeof Crypto>("node:crypto").randomUUID(),
+}));
 jest.mock("@/lib/db/client", () =>
   jest
     .requireActual<typeof TestDatabase>("@/tests/helpers/database")
@@ -28,6 +41,7 @@ const mockChannel = jest.fn<{ publish: typeof mockPublish }, [string]>(() => ({
 jest.mock("@/lib/utils/ably", () => ({
   ablyClient: (boardId: string) => mockChannel(boardId),
   EVENT_TYPE: {
+    POST: { ADD: "POST_ADD", UPDATE_TYPE: "POST_UPDATE_TYPE" },
     ACTION: {
       CREATE: "ACTION_CREATE",
       ASSIGN: "ACTION_ASSIGN",
@@ -67,10 +81,15 @@ beforeAll(async () => {
     CREATE TABLE board (id TEXT PRIMARY KEY);
     CREATE TABLE member (id TEXT PRIMARY KEY, user_id TEXT REFERENCES user(id),
       board_id TEXT REFERENCES board(id), role INTEGER NOT NULL, updated_at INTEGER);
-    CREATE TABLE post (id TEXT PRIMARY KEY, board_id TEXT REFERENCES board(id));
+    CREATE TABLE post (id TEXT PRIMARY KEY, board_id TEXT REFERENCES board(id),
+      user_id TEXT REFERENCES user(id), content TEXT NOT NULL DEFAULT 'text',
+      post_type INTEGER NOT NULL DEFAULT 0, vote_count INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT 1, updated_at INTEGER NOT NULL DEFAULT 1);
     CREATE TABLE action (id TEXT PRIMARY KEY, post_id TEXT REFERENCES post(id),
       board_id TEXT REFERENCES board(id), user_id TEXT REFERENCES user(id),
-      state INTEGER NOT NULL DEFAULT 0, created_at INTEGER, updated_at INTEGER);
+      state INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+      updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now')));
     INSERT INTO user(id) VALUES ('actor'), ('assignee');
     INSERT INTO board(id) VALUES ('board-a'), ('board-b');
     INSERT INTO post(id, board_id) VALUES ('post-a', 'board-a'), ('post-b', 'board-b');
@@ -79,6 +98,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   jest.clearAllMocks();
+  initializePostSignals([], []);
   mockPublish.mockResolvedValue(undefined);
   jest.mocked(verifySession).mockResolvedValue({
     isAuth: true,
@@ -89,6 +109,8 @@ beforeEach(async () => {
   await client.executeMultiple(`
     DELETE FROM member;
     DELETE FROM action;
+    DELETE FROM post WHERE id NOT IN ('post-a', 'post-b');
+    UPDATE post SET post_type = 0, user_id = 'actor';
     INSERT INTO member(id, user_id, board_id, role) VALUES ('member-a', 'actor', 'board-a', 1);
     INSERT INTO action(id, post_id, board_id) VALUES ('task-a', 'post-a', 'board-a'), ('task-b', 'post-b', 'board-b');
   `);
@@ -98,6 +120,71 @@ const state = async () =>
   (await client.execute("SELECT * FROM action ORDER BY id")).rows;
 
 describe.each(operations)("task $name", ({ run, column, value, event }) => {
+  it("works as soon as a new action item is published", async () => {
+    const id = "abcdefghijklmnopqrstu";
+    mockPublish.mockImplementation(
+      async (message: { name: string; data: string }) => {
+        if (message.name === "POST_ADD") {
+          processPostMessage(message.name, JSON.parse(message.data), "viewer");
+          await run(id, "board-a");
+        } else {
+          processTaskMessage(message.name, JSON.parse(message.data));
+        }
+      }
+    );
+    await CreatePostAction({
+      id,
+      boardId: "board-a",
+      content: "Action",
+      type: PostType.action_item,
+    });
+    expect((await state()).filter((row) => row.post_id === id)).toEqual([
+      expect.objectContaining({ board_id: "board-a", [column]: value }),
+    ]);
+    const savedTask = (await state()).find((row) => row.post_id === id);
+    expect(tasksSignal.value[id]).toMatchObject({
+      id: savedTask?.id,
+      [column === "user_id" ? "userId" : "state"]: value,
+    });
+  });
+
+  it("repairs a missing task and keeps subsequent updates in one row", async () => {
+    await client.executeMultiple(`
+      DELETE FROM action WHERE post_id = 'post-a';
+      UPDATE post SET post_type = 3 WHERE id = 'post-a';
+    `);
+    await run("post-a", "board-a");
+    await authedPostAssign({
+      postId: "post-a",
+      boardId: "board-a",
+      userId: "assignee",
+    });
+    await authedPostActionStateUpdate({
+      postId: "post-a",
+      boardId: "board-a",
+      state: TaskState.completed,
+    });
+    expect((await state()).filter((row) => row.post_id === "post-a")).toEqual([
+      expect.objectContaining({
+        user_id: "assignee",
+        state: TaskState.completed,
+      }),
+    ]);
+  });
+
+  it("does not create a task for an ordinary post", async () => {
+    await client.execute("DELETE FROM action WHERE post_id = 'post-a'");
+    const before = await state();
+    const consoleError = jest.spyOn(console, "error").mockImplementation();
+    try {
+      await expect(run("post-a", "board-a")).rejects.toThrow("Task not found");
+      expect(await state()).toEqual(before);
+      expect(mockPublish).not.toHaveBeenCalled();
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
   it.each([Role.owner, Role.member])(
     "saves before publishing for role %s",
     async (role) => {
@@ -134,6 +221,7 @@ describe.each(operations)("task $name", ({ run, column, value, event }) => {
     "wrong-task-board",
     "wrong-post-board",
   ])("rejects %s without writes or events", async (kind) => {
+    await client.execute("UPDATE post SET post_type = 3");
     if (kind === "guest") await client.execute("UPDATE member SET role = 2");
     if (kind === "nonmember") await client.execute("DELETE FROM member");
     if (kind === "unauthenticated")
@@ -228,6 +316,9 @@ it("rejects an empty assignee", async () => {
 
 describe("task creation", () => {
   const input = { id: "task-new", postId: "post-a", boardId: "board-a" };
+  beforeEach(async () => {
+    await client.execute("DELETE FROM action WHERE post_id = 'post-a'");
+  });
   it.each([
     "foreign",
     "missing",
@@ -241,7 +332,7 @@ describe("task creation", () => {
     if (kind === "missing") value.postId = "missing";
     if (kind === "guest") await client.execute("UPDATE member SET role = 2");
     if (kind === "invalid-id") value.id = " ";
-    if (kind === "failed-write") value.id = "task-a";
+    if (kind === "failed-write") value.id = "task-b";
     const before = await state();
     await expect(
       authedCreateAction({
@@ -278,4 +369,83 @@ describe("task creation", () => {
       Math.floor(Date.parse(event.createdAt) / 1000)
     );
   });
+});
+
+it("creates a task on conversion and preserves it on re-entry", async () => {
+  await client.execute("DELETE FROM action WHERE post_id = 'post-a'");
+  mockPublish.mockImplementation(
+    async (message: { name: string; data: string }) => {
+      if (message.name.startsWith("ACTION_")) {
+        processTaskMessage(message.name, JSON.parse(message.data));
+      }
+    }
+  );
+  await UpdatePostTypeAction("post-a", "board-a", PostType.action_item);
+  const rows = (await state()).filter((row) => row.post_id === "post-a");
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({ user_id: null, state: TaskState.pending });
+  expect(tasksSignal.value["post-a"]).toMatchObject({
+    id: rows[0].id,
+    state: TaskState.pending,
+  });
+  await authedPostAssign({
+    postId: "post-a",
+    boardId: "board-a",
+    userId: "assignee",
+  });
+  await authedPostActionStateUpdate({
+    postId: "post-a",
+    boardId: "board-a",
+    state: TaskState.completed,
+  });
+  const saved = await state();
+  const savedSignal = tasksSignal.value["post-a"];
+  await UpdatePostTypeAction("post-a", "board-a", PostType.to_discuss);
+  await UpdatePostTypeAction("post-a", "board-a", PostType.action_item);
+  expect(await state()).toEqual(saved);
+  expect(tasksSignal.value["post-a"]).toEqual(savedSignal);
+});
+
+it.each(["create", "convert"])(
+  "rolls back %s if task creation fails",
+  async (kind) => {
+    await client.execute("DELETE FROM action WHERE post_id = 'post-a'");
+    const before = (await client.execute("SELECT * FROM post ORDER BY id"))
+      .rows;
+    await client.executeMultiple(
+      "CREATE TRIGGER reject_insert BEFORE INSERT ON action BEGIN SELECT RAISE(ABORT, 'forced failure'); END;"
+    );
+    try {
+      const operation =
+        kind === "create"
+          ? CreatePostAction({
+              id: "abcdefghijklmnopqrstu",
+              boardId: "board-a",
+              content: "Action",
+              type: PostType.action_item,
+            })
+          : UpdatePostTypeAction("post-a", "board-a", PostType.action_item);
+      await expect(operation).rejects.toThrow();
+      expect(
+        (await client.execute("SELECT * FROM post ORDER BY id")).rows
+      ).toEqual(before);
+      expect(mockPublish).not.toHaveBeenCalled();
+    } finally {
+      await client.execute("DROP TRIGGER reject_insert");
+    }
+  }
+);
+
+it("does not duplicate or reset a task when an older client requests creation again", async () => {
+  await client.execute(
+    "UPDATE action SET user_id = 'assignee', state = 2 WHERE id = 'task-a'"
+  );
+  const before = await state();
+  await authedCreateAction({
+    id: "old-client-task",
+    postId: "post-a",
+    boardId: "board-a",
+  });
+  expect(await state()).toEqual(before);
+  expect(mockPublish).not.toHaveBeenCalled();
 });

@@ -23,7 +23,11 @@ import { authedPostActionStateUpdate } from "@/lib/actions/task/action";
 import { PostType } from "@/lib/constants/post";
 import { TaskState } from "@/lib/constants/task";
 import type { EnrichedPost } from "@/lib/signal/postSignals";
-import { postsSignal, updatePostState } from "@/lib/signal/postSignals";
+import {
+  postsSignal,
+  tasksSignal,
+  updatePostState,
+} from "@/lib/signal/postSignals";
 import type { Post } from "@/lib/types/post";
 import type { Task } from "@/lib/types/task";
 import { MoreHorizontal } from "lucide-react";
@@ -87,7 +91,7 @@ export const PostHeader = memo(function PostHeader({
     async (newStatus: Task["state"]) => {
       if (post.task?.state === newStatus) return;
 
-      const oldState = post.task?.state;
+      const oldState = post.task?.state ?? TaskState.pending;
       try {
         updatePostState(post.id, newStatus);
 
@@ -99,7 +103,7 @@ export const PostHeader = memo(function PostHeader({
       } catch (error) {
         console.error("Error updating status:", error);
         toast.error("Failed to update status");
-        if (oldState !== undefined) {
+        if (tasksSignal.value[post.id]?.state === newStatus) {
           updatePostState(post.id, oldState);
         }
       }
