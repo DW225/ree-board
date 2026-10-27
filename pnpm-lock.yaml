@@ -18,8 +18,8 @@ importers:
         specifier: ^0.18.0
         version: 0.18.0
       '@marsidev/react-turnstile':
-        specifier: ^1.6.2
-        version: 1.6.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^1.6.3
+        version: 1.6.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@next/env':
         specifier: 16.4.3
         version: 16.4.3
@@ -45,8 +45,8 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       cn:
-        specifier: 0.4.0
-        version: 0.4.0
+        specifier: 0.5.0
+        version: 0.5.0
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -1505,8 +1505,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@marsidev/react-turnstile@1.6.2':
-    resolution: {integrity: sha512-0CL9hNI/t39C8JfBCHQWj+A7llq2xdf9cjg0bYVbiywQlVS0bi1LTTTnF3S59OaBYgc+tMrxMedSDICJfaAkdg==}
+  '@marsidev/react-turnstile@1.6.3':
+    resolution: {integrity: sha512-JdMMArjEVDMs5jnGMBeXl3y6dkMuIXPG4Tu88Uo2Rkf8ujEw/iJ2Yp/3n4kDF3BjJ+bJB9WC19LPWc5a7/4srA==}
     peerDependencies:
       react: ^17.0.2 || ^18.0.0 || ^19.0
       react-dom: ^17.0.2 || ^18.0.0 || ^19.0
@@ -3921,6 +3921,11 @@ packages:
   cn@0.4.0:
     resolution: {integrity: sha512-qOAeUhPwPzBxx6jaeQdo646XIKliKHc2j1ZF7Ngb1o0pJZKH5gq8FkA0aVdUdPFUDXNXyUCXpCtoJISo6dhizg==}
     engines: {node: '>=20'}
+    hasBin: true
+
+  cn@0.5.0:
+    resolution: {integrity: sha512-JGEixZEpfFXm1P5uXwvEobOFLlHwIWi5v4tjd1ZwfiYmcEilkuD2l+054rvJcYCR1B+uVThHeUbgmNz1FwuxuA==}
+    engines: {node: '>=22'}
     hasBin: true
 
   co@4.6.0:
@@ -7982,7 +7987,7 @@ snapshots:
   '@libsql/win32-x64-msvc@0.5.29':
     optional: true
 
-  '@marsidev/react-turnstile@1.6.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+  '@marsidev/react-turnstile@1.6.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
@@ -10316,6 +10321,8 @@ snapshots:
   clsx@2.1.1: {}
 
   cn@0.4.0: {}
+
+  cn@0.5.0: {}
 
   co@4.6.0: {}
 
