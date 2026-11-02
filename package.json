@@ -28,7 +28,7 @@
     "test:e2e:ably": "node scripts/e2e/env.mjs ably"
   },
   "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^3.1.0",
+    "@atlaskit/pragmatic-drag-and-drop": "^4.0.0",
     "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator": "^4.2.4",
     "@libsql/client": "^0.18.0",
     "@marsidev/react-turnstile": "^1.6.3",
