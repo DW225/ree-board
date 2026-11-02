@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
-        specifier: ^3.1.0
-        version: 3.1.0
+        specifier: ^4.0.0
+        version: 4.0.0
       '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator':
         specifier: ^4.2.4
         version: 4.2.4(react@19.3.1)(supports-color@8.1.1)
@@ -240,9 +240,6 @@ packages:
     resolution: {integrity: sha512-jCo1gHLIXaS/GWIlU4qQHAgLQnyEVlnbAuJ+ziRy25aqGurvqrz22Y1tGz7/i5ecDdQpDMDElxOC5kFOhOR6kQ==}
     peerDependencies:
       react: ^18.2.0 || ^19.0.0
-
-  '@atlaskit/pragmatic-drag-and-drop@3.1.0':
-    resolution: {integrity: sha512-VU+2Oh6OgvC6D1xiX3lfm1gZJsaSPD+ZKjAHodOQ9IO6RfOvAyReLlK5ut9gIUpPmbD8d09wlCs7y4A6/I8c5Q==}
 
   '@atlaskit/pragmatic-drag-and-drop@4.0.0':
     resolution: {integrity: sha512-pyDo2B5NiaExoKGmgeXKGNUL4aR4UzzSZm8QWWjYTEyBLVqSqKyKUwtVxMw2YEkakagOGFONUdHM32LAH2nPug==}
@@ -6908,12 +6905,6 @@ snapshots:
       react: 19.3.1
     transitivePeerDependencies:
       - supports-color
-
-  '@atlaskit/pragmatic-drag-and-drop@3.1.0':
-    dependencies:
-      '@babel/runtime': 7.29.7
-      bind-event-listener: 3.0.0
-      raf-schd: 4.0.3
 
   '@atlaskit/pragmatic-drag-and-drop@4.0.0':
     dependencies:
