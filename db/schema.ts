@@ -302,6 +302,10 @@ export const teamInvitationRelations = relations(
 );
 
 export const boardRelations = relations(boardTable, ({ one }) => ({
+  creator: one(userTable, {
+    fields: [boardTable.creator],
+    references: [userTable.id],
+  }),
   team: one(teamTable, {
     fields: [boardTable.teamId],
     references: [teamTable.id],

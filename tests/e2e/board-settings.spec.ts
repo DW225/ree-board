@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 import type { Route } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  test.skip(process.env.E2E_MOCK !== "1");
+  test.skip(
+    process.env.E2E_MOCK !== "1",
+    "Uses the isolated mock board fixture and mocked action responses."
+  );
   await page.route("**/*", (route) =>
     new URL(route.request().url()).origin === "http://127.0.0.1:3100"
       ? route.continue()
@@ -15,12 +18,19 @@ for (const view of ["grid", "list"]) {
     page,
   }) => {
     const requests: unknown[] = [];
+    const stored = {
+      title: "Saved board",
+      description: "Saved notes",
+      visibility: "private",
+    };
     await page.route("**/mock/board-settings", (route) => {
       const details = route.request().postDataJSON();
+      if (requests.length === 1) stored.description = "Saved by another owner";
+      Object.assign(stored, details);
       requests.push(details);
       return route.fulfill({
         json: {
-          ...details,
+          ...stored,
           id: details.boardId,
           teamId: null,
           updatedAt: "2026-10-13T00:00:00Z",
@@ -37,6 +47,7 @@ for (const view of ["grid", "list"]) {
     const save = dialog.getByRole("button", { name: "Save Changes" });
     await open();
     await expect(description).toHaveValue("Saved notes");
+    await expect(description).toHaveAttribute("maxlength", "2000");
     await expect(
       dialog.getByRole("button", { name: "Private", exact: true })
     ).toHaveAttribute("aria-pressed", "true");
@@ -46,9 +57,7 @@ for (const view of ["grid", "list"]) {
     expect(requests).toEqual([
       {
         boardId: "board-settings-test01",
-        title: "Saved board",
         description: "Updated notes\nNext steps",
-        visibility: "private",
       },
     ]);
     await open();
@@ -58,11 +67,10 @@ for (const view of ["grid", "list"]) {
     await expect(dialog).toBeHidden();
     expect(requests[1]).toEqual({
       boardId: "board-settings-test01",
-      title: "Saved board",
-      description: "Updated notes\nNext steps",
       visibility: "team",
     });
     await open();
+    await expect(description).toHaveValue("Saved by another owner");
     await expect(
       dialog.getByRole("button", { name: "Team", exact: true })
     ).toHaveAttribute("aria-pressed", "true");

@@ -152,7 +152,7 @@ it("keeps team-less private and Team-label boards valid", async () => {
 it("blocks deleting a team with boards and cascades memberships and invitations after its boards are removed", async () => {
   const teamId = await createTeam();
   await client.execute({
-    sql: "INSERT INTO board (id, title, state, visibility, team_id) VALUES (?, 'Team board', 0, 'team', ?)",
+    sql: "INSERT INTO board (id, title, state, visibility, team_id, user_id) VALUES (?, 'Team board', 0, 'team', ?, 'team-user')",
     args: [teamId, teamId],
   });
   await client.execute({
@@ -177,9 +177,9 @@ it("blocks deleting a team with boards and cascades memberships and invitations 
   expect(
     await relationalDb.query.boardTable.findFirst({
       where: eq(schema.boardTable.id, teamId),
-      with: { team: true },
+      with: { team: true, creator: true },
     })
-  ).toMatchObject({ team: { id: teamId } });
+  ).toMatchObject({ team: { id: teamId }, creator: { id: "team-user" } });
   await client.execute({
     sql: "DELETE FROM board WHERE id = ?",
     args: [teamId],

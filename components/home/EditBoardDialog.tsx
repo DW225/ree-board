@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateBoardAction } from "@/lib/actions/board/action";
+import { BOARD_DESCRIPTION_MAX_LENGTH } from "@/lib/constants/board";
 import { boardsSignal, updateBoard } from "@/lib/signal/boardSignals";
 import type { Board } from "@/lib/types/board";
 import { boardTitleSchema } from "@/lib/utils/validation";
@@ -45,17 +46,19 @@ export default function EditBoardDialog({
 
   const [previous, setPrevious] = useState({
     open,
+    boardId,
     currentTitle,
     currentDescription,
     currentVisibility,
   });
-  if (
-    open !== previous.open ||
-    currentTitle !== previous.currentTitle ||
-    currentDescription !== previous.currentDescription ||
-    currentVisibility !== previous.currentVisibility
-  ) {
-    setPrevious({ open, currentTitle, currentDescription, currentVisibility });
+  if (open !== previous.open || boardId !== previous.boardId) {
+    setPrevious({
+      open,
+      boardId,
+      currentTitle,
+      currentDescription,
+      currentVisibility,
+    });
     if (open) {
       setTitle(currentTitle);
       setTitleError("");
@@ -77,16 +80,14 @@ export default function EditBoardDialog({
   const handleSubmit = () => {
     if (isPending || !validateTitle(title)) return;
 
-    const details = {
-      title: title.trim(),
-      description: description.trim() || null,
-      visibility,
-    };
-    if (
-      details.title === currentTitle &&
-      details.description === currentDescription &&
-      visibility === currentVisibility
-    ) {
+    const details: Parameters<typeof updateBoardAction>[1] = {};
+    if (title.trim() !== previous.currentTitle) details.title = title.trim();
+    const nextDescription = description.trim() || null;
+    if (nextDescription !== previous.currentDescription)
+      details.description = nextDescription;
+    if (visibility !== previous.currentVisibility)
+      details.visibility = visibility;
+    if (Object.keys(details).length === 0) {
       onOpenChange(false);
       return;
     }
@@ -198,6 +199,7 @@ export default function EditBoardDialog({
             <Textarea
               id="edit-board-desc"
               value={description}
+              maxLength={BOARD_DESCRIPTION_MAX_LENGTH}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Board description"
               rows={3}

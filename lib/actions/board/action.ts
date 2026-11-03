@@ -70,7 +70,7 @@ export const deleteBoardAction = async (boardId: Board["id"]) =>
 
 export const updateBoardAction = async (
   boardId: Board["id"],
-  details: Pick<Board, "title" | "description" | "visibility">
+  details: Partial<Pick<Board, "title" | "description" | "visibility">>
 ) =>
   rbacWithAuth(
     boardIdSchema.parse(boardId),

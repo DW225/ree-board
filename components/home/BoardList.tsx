@@ -61,11 +61,11 @@ export default function BoardList() {
       <NewBoardCard />
 
       {boards.length === 0 && (
-        <p role="status" className="py-6 text-center text-sm text-[#64748B]">
+        <output className="block py-6 text-center text-sm text-[#64748B]">
           {boardsSignal.value.length > 0
             ? "No boards match your filters."
             : "No boards yet. Create one to get started."}
-        </p>
+        </output>
       )}
 
       {/* Board items */}

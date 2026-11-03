@@ -153,11 +153,7 @@ export default function FilterPanel({ onClose }: Readonly<FilterPanelProps>) {
               onChange={() => setPendingVisibility(visibility)}
               className="size-4 accent-[#4F46E5]"
             />
-            {visibility === "all"
-              ? "All"
-              : visibility === "private"
-                ? "Private"
-                : "Team"}
+            {{ all: "All", private: "Private", team: "Team" }[visibility]}
           </label>
         ))}
       </fieldset>

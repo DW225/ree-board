@@ -1,12 +1,11 @@
 import { build } from "esbuild";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { createRequire } from "node:module";
 import assert from "node:assert/strict";
 import postcss from "postcss";
+import tailwindcss from "@tailwindcss/postcss";
 import config from "../../../postcss.config.mjs";
 
-const require = createRequire(import.meta.url);
 const bundle = await build({
   entryPoints: ["tests/e2e/mock/editor.tsx"],
   bundle: true,
@@ -33,11 +32,9 @@ assert(
 );
 const css = process.env.E2E_PRODUCTION_CSS
   ? { css: await readFile(process.env.E2E_PRODUCTION_CSS, "utf8") }
-  : await postcss(
-      Object.entries(config.plugins).map(([name, options]) =>
-        require(name)(options)
-      )
-    ).process(await readFile("app/globals.css", "utf8"), {
+  : await postcss([
+      tailwindcss(config.plugins["@tailwindcss/postcss"]),
+    ]).process(await readFile("app/globals.css", "utf8"), {
       from: "app/globals.css",
     });
 

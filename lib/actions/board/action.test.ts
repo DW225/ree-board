@@ -148,7 +148,6 @@ it("saves and reads all settings on only the selected board", async () => {
 
 it("saves description-only and visibility-only changes and clears descriptions", async () => {
   await updateBoardAction(boardId, {
-    title: "Original board",
     description: "Notes",
     visibility: "team",
   });
@@ -156,21 +155,49 @@ it("saves description-only and visibility-only changes and clears descriptions",
     (await fetchBoards("owner")).find((board) => board.id === boardId)
   ).toMatchObject({ description: "Notes", visibility: "team" });
   await updateBoardAction(boardId, {
+    visibility: "private",
+  });
+  expect(
+    (await fetchBoards("owner")).find((board) => board.id === boardId)
+  ).toMatchObject({
     title: "Original board",
     description: "Notes",
     visibility: "private",
   });
-  expect(
-    (await fetchBoards("owner")).find((board) => board.id === boardId)
-  ).toMatchObject({ description: "Notes", visibility: "private" });
   await updateBoardAction(boardId, {
-    title: "Original board",
     description: "  ",
-    visibility: "private",
   });
   expect(
     (await fetchBoards("owner")).find((board) => board.id === boardId)
   ).toMatchObject({ description: null, visibility: "private" });
+});
+
+it("preserves an omitted or undefined description but clears an explicit null", async () => {
+  await updateBoardAction(boardId, details);
+  const saved = await updateBoardAction(boardId, {
+    visibility: "team",
+    description: undefined,
+  });
+  expect(saved).toMatchObject({
+    title: details.title,
+    description: details.description,
+    visibility: "team",
+  });
+  expect(await updateBoardAction(boardId, { description: null })).toMatchObject(
+    { title: details.title, description: null, visibility: "team" }
+  );
+});
+
+it("accepts the description length limit and rejects larger writes", async () => {
+  await updateBoardAction(boardId, {
+    ...details,
+    description: "x".repeat(2000),
+  });
+  const before = await state();
+  await expect(
+    updateBoardAction(boardId, { ...details, description: "x".repeat(2001) })
+  ).rejects.toThrow();
+  expect(await state()).toEqual(before);
 });
 
 it.each([Role.member, Role.guest, null])(
@@ -184,7 +211,9 @@ it.each([Role.member, Role.guest, null])(
         .set({ role })
         .where(eq(memberTable.boardId, boardId));
     const before = await state();
-    await expect(updateBoardAction(boardId, details)).rejects.toThrow();
+    await expect(
+      updateBoardAction(boardId, { visibility: "team" })
+    ).rejects.toThrow();
     expect(await state()).toEqual(before);
   }
 );
@@ -201,6 +230,9 @@ it("rejects an unauthenticated caller without changing a board", async () => {
 });
 
 it.each([
+  {},
+  { description: undefined },
+  { state: BoardState.archived },
   { ...details, title: "   " },
   { ...details, title: "x".repeat(101) },
   { ...details, description: 42 },

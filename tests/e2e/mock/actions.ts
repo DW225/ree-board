@@ -8,7 +8,7 @@ export const createBoardAction = async (board: NewBoard) => {
 
 export const updateBoardAction = async (
   boardId: string,
-  details: Pick<Board, "title" | "description" | "visibility">
+  details: Partial<Pick<Board, "title" | "description" | "visibility">>
 ) => {
   const response = await fetch("/mock/board-settings", {
     method: "POST",

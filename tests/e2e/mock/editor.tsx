@@ -10,12 +10,10 @@ import { GuestBanner } from "@/components/guest/GuestBanner";
 import BoardList from "@/components/home/BoardList";
 import CreateBoardModal from "@/components/home/CreateBoardModal";
 import DashboardSearch from "@/components/home/DashboardSearch";
+import HomeProvider from "@/components/home/HomeProvider";
+import type { BoardWithRole } from "@/lib/types/board";
 import { BoardState } from "@/lib/constants/board";
-import {
-  boardViewModeSignal,
-  boardsSignal,
-  initializeBoardSignals,
-} from "@/lib/signal/boardSignals";
+import { boardViewModeSignal } from "@/lib/signal/boardSignals";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -247,7 +245,7 @@ if (params.get("review") === "merge") {
   );
 }
 if (params.get("review") === "board-settings") {
-  initializeBoardSignals([
+  const initialBoards: BoardWithRole[] = [
     {
       id: "board-settings-test01",
       title: "Saved board",
@@ -260,18 +258,15 @@ if (params.get("review") === "board-settings") {
       createdAt: new Date("2026-09-07T00:00:00Z"),
       updatedAt: new Date("2026-09-07T00:00:00Z"),
     },
-  ]);
+  ];
   boardViewModeSignal.value = params.get("view") === "list" ? "list" : "grid";
   if (params.has("filters")) {
-    initializeBoardSignals([
-      ...boardsSignal.value,
-      {
-        ...boardsSignal.value[0],
-        id: "board-settings-test02",
-        title: "Team board",
-        visibility: "team",
-      },
-    ]);
+    initialBoards.push({
+      ...initialBoards[0],
+      id: "board-settings-test02",
+      title: "Team board",
+      visibility: "team",
+    });
   }
   fixture = (
     <AppRouterContext.Provider
@@ -286,7 +281,9 @@ if (params.get("review") === "board-settings") {
       }}
     >
       <DashboardSearch />
-      <BoardList />
+      <HomeProvider initialBoards={initialBoards}>
+        <BoardList />
+      </HomeProvider>
       <CreateBoardModal userID="mock-member" />
       <Toaster />
     </AppRouterContext.Provider>
