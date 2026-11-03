@@ -7,8 +7,10 @@ import { findUserByEmail } from "@/lib/db/user";
 import type { Board, NewBoard } from "@/lib/types/board";
 import type { User } from "@/lib/types/user";
 import {
+  boardDetailsSchema,
   boardIdSchema,
   boardTitleSchema,
+  boardVisibilitySchema,
   emailListSchema,
 } from "@/lib/utils/validation";
 import { nanoid } from "nanoid";
@@ -16,7 +18,7 @@ import { actionWithAuth, rbacWithAuth } from "../actionWithAuth";
 
 export const createBoardAction = async (
   board: NewBoard,
-  membersEmails: User["email"][],
+  membersEmails: User["email"][]
 ) =>
   actionWithAuth(async (userId) => {
     // Validate client-supplied board ID format
@@ -24,15 +26,19 @@ export const createBoardAction = async (
 
     // Server-side validation
     const validatedTitle = boardTitleSchema.parse(board.title);
+    const validatedVisibility = boardVisibilitySchema
+      .optional()
+      .parse(board.visibility);
     const validatedEmails = emailListSchema.parse(membersEmails);
 
     const boardID = await createBoard(
       {
         ...board,
         title: validatedTitle,
+        visibility: validatedVisibility,
         creator: userId,
       },
-      userId,
+      userId
     );
 
     // Add members to the board
@@ -47,7 +53,7 @@ export const createBoardAction = async (
             role: Role.member,
           });
         }
-      }),
+      })
     );
 
     return boardID;
@@ -59,19 +65,17 @@ export const deleteBoardAction = async (boardId: Board["id"]) =>
     async (userId) => {
       return deleteBoard(boardId, userId);
     },
-    Role.owner,
+    Role.owner
   );
 
-export const updateBoardTitleAction = async (
+export const updateBoardAction = async (
   boardId: Board["id"],
-  title: string,
+  details: Partial<Pick<Board, "title" | "description" | "visibility">>
 ) =>
   rbacWithAuth(
-    boardId,
+    boardIdSchema.parse(boardId),
     async (userId) => {
-      // Server-side validation
-      const validatedTitle = boardTitleSchema.parse(title);
-      return updateBoard(boardId, { title: validatedTitle }, userId);
+      return updateBoard(boardId, boardDetailsSchema.parse(details), userId);
     },
-    Role.owner,
+    Role.owner
   );

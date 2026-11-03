@@ -12,7 +12,7 @@ pnpm test:e2e:local --slot 0
 
 The first run downloads pinned images and prepares the Linux browser image. Runtime starts only after preparation. The supervisor starts the local Supabase stack on a temporary bootstrap network, then moves only its owned containers to an internal network with no host gateway. It preserves generated gateway certificates, database keys, volumes, and DNS aliases. All services, Node, and Chromium must pass external-connection denial checks before the app runs. The browser check uses no request interception. Normal test contexts also reject unexpected requests.
 
-Each run gets fresh storage, replays all nine migrations, builds the app with its local public settings, runs the three browser journeys, and removes its owned resources. The same command is configured in `.github/workflows/local-e2e.yml`. CI execution still requires a pushed branch.
+Each run gets fresh storage, replays all migrations in the journal, builds the app with its local public settings, runs the three browser journeys, and removes its owned resources. The same command is configured in `.github/workflows/local-e2e.yml`. CI execution still requires a pushed branch.
 
 For manual agent browser work, use the host profile:
 

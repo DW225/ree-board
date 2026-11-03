@@ -4,6 +4,7 @@ import type { SortDirection } from "@/lib/types/sort";
 import { computed, signal } from "@preact/signals-react";
 
 export type DateFilter = "thisWeek" | "thisMonth" | "last3Months" | "allTime";
+export type VisibilityFilter = "all" | Board["visibility"];
 
 // Core data signal - single source of truth
 export const boardsSignal = signal<BoardWithRole[]>([]);
@@ -20,6 +21,7 @@ export const boardSortCriteriaSignal = signal<{
 export const boardFilterSignal = signal<string>("");
 export const boardStatusFilterSignal = signal<BoardState[]>([]);
 export const boardDateFilterSignal = signal<DateFilter>("allTime");
+export const boardVisibilityFilterSignal = signal<VisibilityFilter>("all");
 
 // Computed signals for derived state
 export const filteredBoardsSignal = computed(() => {
@@ -27,8 +29,13 @@ export const filteredBoardsSignal = computed(() => {
   const textFilter = boardFilterSignal.value.toLowerCase();
   const statusFilter = boardStatusFilterSignal.value;
   const dateFilter = boardDateFilterSignal.value;
+  const visibilityFilter = boardVisibilityFilterSignal.value;
 
   return boards.filter((board) => {
+    if (visibilityFilter !== "all" && board.visibility !== visibilityFilter) {
+      return false;
+    }
+
     // Text search
     if (textFilter && !board.title.toLowerCase().includes(textFilter)) {
       return false;
@@ -110,31 +117,20 @@ export const addBoard = (newBoard: BoardWithRole) => {
 
 export const removeBoard = (boardId: Board["id"]) => {
   boardsSignal.value = boardsSignal.value.filter(
-    (board) => board.id !== boardId,
+    (board) => board.id !== boardId
   );
 };
 
 export const updateBoard = (updatedBoard: BoardWithRole) => {
   boardsSignal.value = boardsSignal.value.map((board) =>
-    board.id === updatedBoard.id ? updatedBoard : board,
-  );
-};
-
-export const updateBoardTitle = (
-  boardId: Board["id"],
-  newTitle: Board["title"],
-) => {
-  boardsSignal.value = boardsSignal.value.map((board) =>
-    board.id === boardId
-      ? { ...board, title: newTitle, updatedAt: new Date() }
-      : board,
+    board.id === updatedBoard.id ? updatedBoard : board
   );
 };
 
 // Sorting and filtering operations
 export const sortBoards = (
   criterion: "title" | "createdAt" | "updatedAt",
-  direction?: SortDirection,
+  direction?: SortDirection
 ) => {
   boardSortCriteriaSignal.value = {
     criterion,
@@ -154,10 +150,15 @@ export const setDateFilter = (date: DateFilter) => {
   boardDateFilterSignal.value = date;
 };
 
+export const setVisibilityFilter = (visibility: VisibilityFilter) => {
+  boardVisibilityFilterSignal.value = visibility;
+};
+
 export const resetAllFilters = () => {
   boardFilterSignal.value = "";
   boardStatusFilterSignal.value = [];
   boardDateFilterSignal.value = "allTime";
+  boardVisibilityFilterSignal.value = "all";
 };
 
 // Legacy compatibility (deprecated - use initializeBoardSignals instead)
