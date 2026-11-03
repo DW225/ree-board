@@ -7,6 +7,15 @@ import MemberList from "@/components/board/MemberList";
 import MemberManageModalComponent from "@/components/board/MemberManageModalComponent";
 import MagicLinkManager from "@/components/board/MagicLink/MagicLinkManager";
 import { GuestBanner } from "@/components/guest/GuestBanner";
+import BoardList from "@/components/home/BoardList";
+import CreateBoardModal from "@/components/home/CreateBoardModal";
+import DashboardSearch from "@/components/home/DashboardSearch";
+import { BoardState } from "@/lib/constants/board";
+import {
+  boardViewModeSignal,
+  boardsSignal,
+  initializeBoardSignals,
+} from "@/lib/signal/boardSignals";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -233,6 +242,52 @@ if (params.get("review") === "merge") {
       <MemberManageModalComponent boardId="mock" viewOnly={guest}>
         Members
       </MemberManageModalComponent>
+      <Toaster />
+    </AppRouterContext.Provider>
+  );
+}
+if (params.get("review") === "board-settings") {
+  initializeBoardSignals([
+    {
+      id: "board-settings-test01",
+      title: "Saved board",
+      description: "Saved notes",
+      visibility: "private",
+      teamId: null,
+      state: BoardState.active,
+      role: Role.owner,
+      creator: "mock-member",
+      createdAt: new Date("2026-09-07T00:00:00Z"),
+      updatedAt: new Date("2026-09-07T00:00:00Z"),
+    },
+  ]);
+  boardViewModeSignal.value = params.get("view") === "list" ? "list" : "grid";
+  if (params.has("filters")) {
+    initializeBoardSignals([
+      ...boardsSignal.value,
+      {
+        ...boardsSignal.value[0],
+        id: "board-settings-test02",
+        title: "Team board",
+        visibility: "team",
+      },
+    ]);
+  }
+  fixture = (
+    <AppRouterContext.Provider
+      value={{
+        bfcacheId: "board-settings-fixture",
+        back() {},
+        forward() {},
+        refresh() {},
+        push() {},
+        replace() {},
+        prefetch() {},
+      }}
+    >
+      <DashboardSearch />
+      <BoardList />
+      <CreateBoardModal userID="mock-member" />
       <Toaster />
     </AppRouterContext.Provider>
   );

@@ -2,15 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { BoardState } from "@/lib/constants/board";
+import { BOARD_VISIBILITIES, BoardState } from "@/lib/constants/board";
 import {
   boardDateFilterSignal,
   boardSortCriteriaSignal,
   boardStatusFilterSignal,
+  boardVisibilityFilterSignal,
   setDateFilter,
   setStatusFilter,
+  setVisibilityFilter,
   sortBoards,
   type DateFilter,
+  type VisibilityFilter,
 } from "@/lib/signal/boardSignals";
 import type { SortCriteria } from "@/lib/types/sort";
 import { useSignals } from "@preact/signals-react/runtime";
@@ -43,26 +46,30 @@ export default function FilterPanel({ onClose }: Readonly<FilterPanelProps>) {
   useSignals();
 
   const [pendingStatus, setPendingStatus] = useState<BoardState[]>(
-    boardStatusFilterSignal.value,
+    boardStatusFilterSignal.value
   );
   const [pendingDate, setPendingDate] = useState<DateFilter>(
-    boardDateFilterSignal.value,
+    boardDateFilterSignal.value
+  );
+  const [pendingVisibility, setPendingVisibility] = useState<VisibilityFilter>(
+    boardVisibilityFilterSignal.value
   );
   const [pendingSort, setPendingSort] = useState<SortCriteria>(
-    boardSortCriteriaSignal.value,
+    boardSortCriteriaSignal.value
   );
 
   const toggleStatus = (status: BoardState) => {
     setPendingStatus((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
-        : [...prev, status],
+        : [...prev, status]
     );
   };
 
   const handleApply = () => {
     setStatusFilter(pendingStatus);
     setDateFilter(pendingDate);
+    setVisibilityFilter(pendingVisibility);
     sortBoards(pendingSort.criterion, pendingSort.direction);
     onClose();
   };
@@ -73,12 +80,13 @@ export default function FilterPanel({ onClose }: Readonly<FilterPanelProps>) {
     setPendingSort({ criterion: "updatedAt", direction: "desc" });
     setStatusFilter([]);
     setDateFilter("allTime");
+    setVisibilityFilter("all");
     sortBoards("updatedAt", "desc");
     onClose();
   };
 
   return (
-    <div className="w-[280px] overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-[0_4px_16px_rgba(15,23,42,0.15),0_1px_3px_rgba(15,23,42,0.05)]">
+    <div className="w-[280px] max-h-[var(--radix-popover-content-available-height)] overflow-y-auto rounded-xl border border-[#E2E8F0] bg-white shadow-[0_4px_16px_rgba(15,23,42,0.15),0_1px_3px_rgba(15,23,42,0.05)]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pb-3 pt-4">
         <span className="text-[15px] font-semibold text-[#0F172A]">
@@ -123,6 +131,36 @@ export default function FilterPanel({ onClose }: Readonly<FilterPanelProps>) {
       </div>
 
       <div className="h-px bg-[#E2E8F0]" />
+
+      <fieldset className="flex flex-col gap-2.5 border-b border-[#E2E8F0] px-4 py-3.5">
+        <legend className="sr-only">Visibility</legend>
+        <span
+          aria-hidden="true"
+          className="text-[11px] font-semibold tracking-[1.2px] text-[#475569]"
+        >
+          VISIBILITY
+        </span>
+        {(["all", ...BOARD_VISIBILITIES] as const).map((visibility) => (
+          <label
+            key={visibility}
+            className="flex cursor-pointer items-center gap-2 text-[13px] text-[#334155]"
+          >
+            <input
+              type="radio"
+              name="board-visibility-filter"
+              value={visibility}
+              checked={pendingVisibility === visibility}
+              onChange={() => setPendingVisibility(visibility)}
+              className="size-4 accent-[#4F46E5]"
+            />
+            {visibility === "all"
+              ? "All"
+              : visibility === "private"
+                ? "Private"
+                : "Team"}
+          </label>
+        ))}
+      </fieldset>
 
       {/* Date Created section */}
       <div className="flex flex-col gap-0.5 px-4 py-3.5">
