@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Route } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
+  // Mock action endpoints are unavailable in live runs; tests/e2e/local covers real services.
   test.skip(
     process.env.E2E_MOCK !== "1",
     "Uses the isolated mock board fixture and mocked action responses."
