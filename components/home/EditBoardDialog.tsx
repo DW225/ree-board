@@ -10,8 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateBoardTitleAction } from "@/lib/actions/board/action";
-import { boardsSignal, updateBoard, updateBoardTitle } from "@/lib/signal/boardSignals";
+import { updateBoardAction } from "@/lib/actions/board/action";
+import { BOARD_DESCRIPTION_MAX_LENGTH } from "@/lib/constants/board";
+import { boardsSignal, updateBoard } from "@/lib/signal/boardSignals";
 import type { Board } from "@/lib/types/board";
 import { boardTitleSchema } from "@/lib/utils/validation";
 import { Loader2, Lock, Users, X } from "lucide-react";
@@ -19,12 +20,11 @@ import type { KeyboardEvent } from "react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-type VisibilityOption = "team" | "private";
-
 interface EditBoardDialogProps {
   boardId: Board["id"];
   currentTitle: Board["title"];
-  currentDescription?: string;
+  currentDescription: Board["description"];
+  currentVisibility: Board["visibility"];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -34,23 +34,36 @@ export default function EditBoardDialog({
   boardId,
   currentTitle,
   currentDescription,
+  currentVisibility,
   open,
   onOpenChange,
 }: Readonly<EditBoardDialogProps>) {
   const [title, setTitle] = useState(currentTitle);
   const [titleError, setTitleError] = useState<string>("");
   const [description, setDescription] = useState(currentDescription ?? "");
-  const [visibility, setVisibility] = useState<VisibilityOption>("team");
+  const [visibility, setVisibility] = useState(currentVisibility);
   const [isPending, startTransition] = useTransition();
 
-  const [previous, setPrevious] = useState({ open, currentTitle, currentDescription });
-  if (open !== previous.open || currentTitle !== previous.currentTitle || currentDescription !== previous.currentDescription) {
-    setPrevious({ open, currentTitle, currentDescription });
+  const [previous, setPrevious] = useState({
+    open,
+    boardId,
+    currentTitle,
+    currentDescription,
+    currentVisibility,
+  });
+  if (open !== previous.open || boardId !== previous.boardId) {
+    setPrevious({
+      open,
+      boardId,
+      currentTitle,
+      currentDescription,
+      currentVisibility,
+    });
     if (open) {
       setTitle(currentTitle);
       setTitleError("");
       setDescription(currentDescription ?? "");
-      setVisibility("team");
+      setVisibility(currentVisibility);
     }
   }
 
@@ -65,36 +78,32 @@ export default function EditBoardDialog({
   };
 
   const handleSubmit = () => {
-    if (!validateTitle(title)) return;
+    if (isPending || !validateTitle(title)) return;
 
-    const newTitle = title.trim();
-
-    if (newTitle !== currentTitle) {
-      // Snapshot the board before optimistic update so rollback preserves updatedAt
-      const prevBoard = boardsSignal.value.find((b) => b.id === boardId);
-      startTransition(async () => {
-        try {
-          // Optimistic update
-          updateBoardTitle(boardId, newTitle);
-
-          // Server action
-          await updateBoardTitleAction(boardId, newTitle);
-
-          toast.success("Board updated successfully");
-          onOpenChange(false);
-        } catch (error) {
-          console.error("Failed to update board:", error);
-          toast.error("Failed to update board. Please try again.");
-
-          // Rollback on error — restore full snapshot to preserve original updatedAt
-          if (prevBoard) {
-            updateBoard(prevBoard);
-          }
-        }
-      });
-    } else {
+    const details: Parameters<typeof updateBoardAction>[1] = {};
+    if (title.trim() !== previous.currentTitle) details.title = title.trim();
+    const nextDescription = description.trim() || null;
+    if (nextDescription !== previous.currentDescription)
+      details.description = nextDescription;
+    if (visibility !== previous.currentVisibility)
+      details.visibility = visibility;
+    if (Object.keys(details).length === 0) {
       onOpenChange(false);
+      return;
     }
+
+    startTransition(async () => {
+      try {
+        const saved = await updateBoardAction(boardId, details);
+        const board = boardsSignal.value.find((entry) => entry.id === boardId);
+        if (board) updateBoard({ ...board, ...saved });
+        toast.success("Board updated successfully");
+        onOpenChange(false);
+      } catch (error) {
+        console.error("Failed to update board:", error);
+        toast.error("Failed to update board. Please try again.");
+      }
+    });
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -115,8 +124,7 @@ export default function EditBoardDialog({
       <DialogContent className="sm:max-w-[520px] p-0 gap-0 rounded-xl border border-[#E2E8F0] shadow-lg overflow-hidden [&>button:last-of-type]:hidden">
         {/* Screen-reader description */}
         <DialogDescription className="sr-only">
-          Edit your board name, description, and visibility settings. Only the
-          board name will be saved to the server.
+          Edit your board name, description, and visibility settings.
         </DialogDescription>
 
         {/* Header */}
@@ -153,6 +161,7 @@ export default function EditBoardDialog({
             <Input
               id="edit-board-name"
               value={title}
+              disabled={isPending}
               onChange={(e) => {
                 setTitle(e.target.value);
                 if (titleError) validateTitle(e.target.value);
@@ -190,11 +199,12 @@ export default function EditBoardDialog({
             <Textarea
               id="edit-board-desc"
               value={description}
+              maxLength={BOARD_DESCRIPTION_MAX_LENGTH}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Board description (coming soon)"
+              placeholder="Board description"
               rows={3}
-              disabled
-              className="rounded-lg border-[#E2E8F0] resize-none text-sm opacity-50 cursor-not-allowed"
+              disabled={isPending}
+              className="rounded-lg border-[#E2E8F0] resize-none text-sm"
             />
           </div>
 
@@ -205,15 +215,16 @@ export default function EditBoardDialog({
             </Label>
             <fieldset
               aria-label="Board visibility"
-              className="flex gap-3 opacity-50"
-              disabled
+              aria-describedby="board-visibility-help"
+              className="flex gap-3 disabled:opacity-50"
+              disabled={isPending}
             >
               <button
                 type="button"
                 onClick={() => setVisibility("team")}
                 aria-pressed={visibility === "team"}
-                disabled
-                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm font-medium cursor-not-allowed ${
+                disabled={isPending}
+                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm font-medium disabled:cursor-not-allowed ${
                   visibility === "team"
                     ? "bg-[#0F172A] border-[#0F172A] text-white"
                     : "bg-white border-[#E2E8F0] text-[#64748B]"
@@ -226,8 +237,8 @@ export default function EditBoardDialog({
                 type="button"
                 onClick={() => setVisibility("private")}
                 aria-pressed={visibility === "private"}
-                disabled
-                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm font-medium cursor-not-allowed ${
+                disabled={isPending}
+                className={`flex-1 flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg border text-sm font-medium disabled:cursor-not-allowed ${
                   visibility === "private"
                     ? "bg-[#0F172A] border-[#0F172A] text-white"
                     : "bg-white border-[#E2E8F0] text-[#64748B]"
@@ -237,8 +248,9 @@ export default function EditBoardDialog({
                 Private
               </button>
             </fieldset>
-            <p className="text-xs text-[#94A3B8]">
-              Visibility settings coming soon
+            <p id="board-visibility-help" className="text-xs text-[#64748B]">
+              This setting does not change board access. Manage access in the
+              board member settings.
             </p>
           </div>
         </div>

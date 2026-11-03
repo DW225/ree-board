@@ -3,6 +3,7 @@
 import { Role } from "@/lib/constants/role";
 import {
   boardViewModeSignal,
+  boardsSignal,
   createBoardModalOpenSignal,
   sortedBoardsSignal,
 } from "@/lib/signal/boardSignals";
@@ -58,6 +59,14 @@ export default function BoardList() {
 
       {/* New board action — always above the grid/list */}
       <NewBoardCard />
+
+      {boards.length === 0 && (
+        <output className="block py-6 text-center text-sm text-[#64748B]">
+          {boardsSignal.value.length > 0
+            ? "No boards match your filters."
+            : "No boards yet. Create one to get started."}
+        </output>
+      )}
 
       {/* Board items */}
       {viewMode === "grid" ? (

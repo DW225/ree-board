@@ -15,10 +15,12 @@ import {
   boardSortCriteriaSignal,
   boardStatusFilterSignal,
   boardViewModeSignal,
+  boardVisibilityFilterSignal,
   filterBoards,
   resetAllFilters,
   setDateFilter,
   setStatusFilter,
+  setVisibilityFilter,
   sortBoards,
   type DateFilter,
 } from "@/lib/signal/boardSignals";
@@ -61,12 +63,15 @@ const STATUS_LABELS: Record<BoardState, string> = {
 
 function getCurrentSortLabel(criterion: string, direction: string): string {
   const match = SORT_OPTIONS.find(
-    (o) => o.criterion === criterion && o.direction === direction,
+    (o) => o.criterion === criterion && o.direction === direction
   );
   return match?.label ?? "Recent";
 }
 
-function Chip({ label, onRemove }: Readonly<{ label: string; onRemove: () => void }>) {
+function Chip({
+  label,
+  onRemove,
+}: Readonly<{ label: string; onRemove: () => void }>) {
   return (
     <div className="flex items-center gap-1.5 rounded-full border border-[#C7D2FE] bg-[#EEF2FF] px-2.5 py-1">
       <span className="text-[12px] font-medium text-[#4F46E5]">{label}</span>
@@ -90,12 +95,14 @@ export default function DashboardSearch() {
   const textFilter = boardFilterSignal.value;
   const statusFilter = boardStatusFilterSignal.value;
   const dateFilter = boardDateFilterSignal.value;
+  const visibilityFilter = boardVisibilityFilterSignal.value;
   const { criterion, direction } = boardSortCriteriaSignal.value;
   const sortLabel = getCurrentSortLabel(criterion, direction);
 
   const hasAnyFilter =
     textFilter.length > 0 ||
     statusFilter.length > 0 ||
+    visibilityFilter !== "all" ||
     dateFilter !== "allTime";
 
   return (
@@ -207,6 +214,13 @@ export default function DashboardSearch() {
               }
             />
           ))}
+
+          {visibilityFilter !== "all" && (
+            <Chip
+              label={visibilityFilter === "private" ? "Private" : "Team"}
+              onRemove={() => setVisibilityFilter("all")}
+            />
+          )}
 
           {dateFilter !== "allTime" && (
             <Chip

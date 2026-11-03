@@ -10,36 +10,23 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createBoardAction } from "@/lib/actions/board/action";
-import { BoardState } from "@/lib/constants/board";
+import { BOARD_VISIBILITIES, BoardState } from "@/lib/constants/board";
 import { Role } from "@/lib/constants/role";
 import {
   addBoard,
   createBoardModalOpenSignal,
   removeBoard,
 } from "@/lib/signal/boardSignals";
-import type { NewBoard } from "@/lib/types/board";
+import type { Board, BoardWithRole } from "@/lib/types/board";
 import { boardTitleSchema } from "@/lib/utils/validation";
 import { useSignals } from "@preact/signals-react/runtime";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock, Users } from "lucide-react";
 import { nanoid } from "nanoid";
 import type { KeyboardEvent } from "react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-
-type TemplateOption =
-  | "standard"
-  | "start-stop-continue"
-  | "4ls"
-  | "mad-sad-glad";
 
 interface CreateBoardModalProps {
   userID: string;
@@ -54,7 +41,7 @@ export default function CreateBoardModal({
   const [title, setTitle] = useState("");
   const [titleError, setTitleError] = useState<string>("");
   const [description, setDescription] = useState("");
-  const [template, setTemplate] = useState<TemplateOption>("standard");
+  const [visibility, setVisibility] = useState<Board["visibility"]>("private");
   const [isPending, startTransition] = useTransition();
 
   const open = createBoardModalOpenSignal.value;
@@ -66,7 +53,7 @@ export default function CreateBoardModal({
       setTitle("");
       setTitleError("");
       setDescription("");
-      setTemplate("standard");
+      setVisibility("private");
     }
   }
 
@@ -85,18 +72,15 @@ export default function CreateBoardModal({
   };
 
   const handleSubmit = () => {
-    if (!validateTitle(title)) return;
+    if (isPending || !validateTitle(title)) return;
 
     const newBoardId = nanoid();
-    const newBoard: NewBoard & {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      creator: string | null;
-      role: Role.owner;
-    } = {
+    const newBoard: BoardWithRole = {
       id: newBoardId,
       title: title.trim(),
+      description: null,
+      visibility,
+      teamId: null,
       state: BoardState.active,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -199,38 +183,44 @@ export default function CreateBoardModal({
             />
           </div>
 
-          {/* Template */}
-          <div className="flex flex-col gap-1.5">
-            <Label
-              htmlFor="board-template"
-              className="text-sm font-medium text-[#0F172A]"
+          <fieldset
+            disabled={isPending}
+            aria-describedby="create-board-visibility-help"
+          >
+            <legend className="mb-1.5 text-sm font-medium text-[#0F172A]">
+              Visibility
+            </legend>
+            <div className="flex gap-3">
+              {BOARD_VISIBILITIES.map((option) => {
+                const Icon = option === "team" ? Users : Lock;
+                return (
+                  <label key={option} className="flex-1">
+                    <input
+                      type="radio"
+                      name="create-board-visibility"
+                      value={option}
+                      checked={visibility === option}
+                      onChange={() => setVisibility(option)}
+                      className="peer sr-only"
+                    />
+                    <span
+                      className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm font-medium peer-focus-visible:ring-2 peer-focus-visible:ring-slate-400 peer-focus-visible:ring-offset-2 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 ${visibility === option ? "border-[#0F172A] bg-[#0F172A] text-white" : "border-[#E2E8F0] bg-white text-[#64748B]"}`}
+                    >
+                      <Icon className="size-4 shrink-0" aria-hidden="true" />
+                      {option === "team" ? "Team" : "Private"}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <p
+              id="create-board-visibility-help"
+              className="mt-1.5 text-xs text-[#64748B]"
             >
-              Template
-            </Label>
-            <Select
-              value={template}
-              onValueChange={(v) => setTemplate(v as TemplateOption)}
-              disabled
-            >
-              <SelectTrigger
-                id="board-template"
-                className="rounded-lg border-slate-200 h-10 text-sm"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="standard">
-                  Standard (Went Well / To Improve / To Discuss / Action Items)
-                </SelectItem>
-                <SelectItem value="start-stop-continue">
-                  Start / Stop / Continue
-                </SelectItem>
-                <SelectItem value="4ls">4Ls</SelectItem>
-                <SelectItem value="mad-sad-glad">Mad / Sad / Glad</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
+              This setting does not change board access. Manage access in the
+              board member settings.
+            </p>
+          </fieldset>
         </div>
 
         {/* Footer */}
