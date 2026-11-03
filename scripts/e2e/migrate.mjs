@@ -25,7 +25,10 @@ try {
     ).rows,
     first.rows
   );
-  assert.equal(first.rows.length, 9);
+  const journal = JSON.parse(
+    await readFile("drizzle/meta/_journal.json", "utf8")
+  );
+  assert.equal(first.rows.length, journal.entries.length);
   // Existing deployments recorded the original 0007 hash. It must stay applied.
   const repaired = await readFile("drizzle/0007_dizzy_deathbird.sql", "utf8");
   const original = repaired.replace(

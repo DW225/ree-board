@@ -1,4 +1,24 @@
 import type { Post } from "@/lib/types/post";
+import type { Board, NewBoard } from "@/lib/types/board";
+
+export const createBoardAction = async (board: NewBoard) => {
+  await request("create-board", board);
+  return board.id;
+};
+
+export const updateBoardAction = async (
+  boardId: string,
+  details: Partial<Pick<Board, "title" | "description" | "visibility">>
+) => {
+  const response = await fetch("/mock/board-settings", {
+    method: "POST",
+    body: JSON.stringify({ boardId, ...details }),
+  });
+  if (!response.ok) throw new Error("Mock board update failed");
+  return response.json();
+};
+export const deleteBoardAction = () =>
+  Promise.reject(new Error("Board deletion is outside this fixture"));
 
 async function request(name: string, body: unknown) {
   const response = await fetch(`/mock/${name}`, {

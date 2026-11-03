@@ -12,6 +12,9 @@ const prepareFetchBoardsByUserId = db
   .select({
     id: boardTable.id,
     title: boardTable.title,
+    description: boardTable.description,
+    visibility: boardTable.visibility,
+    teamId: boardTable.teamId,
     state: boardTable.state,
     creator: boardTable.creator,
     updatedAt: boardTable.updatedAt,
@@ -26,7 +29,7 @@ const prepareFetchBoardsByUserId = db
 export async function fetchBoards(userId: User["id"]) {
   invariant(userId, "User ID is required");
   return await withDbRetry(() =>
-    prepareFetchBoardsByUserId.execute({ userId }),
+    prepareFetchBoardsByUserId.execute({ userId })
   );
 }
 
@@ -37,6 +40,7 @@ export async function createBoard(newBoard: NewBoard, userID: User["id"]) {
       .values({
         id: newBoard.id,
         title: newBoard.title,
+        visibility: newBoard.visibility,
         state: newBoard.state,
         creator: userID,
       })
@@ -76,8 +80,10 @@ export async function deleteBoard(boardId: Board["id"], userId: User["id"]) {
 
 export async function updateBoard(
   boardId: Board["id"],
-  updates: Partial<Pick<Board, "title" | "state">>,
-  userId: User["id"],
+  updates: Partial<
+    Pick<Board, "title" | "state" | "description" | "visibility">
+  >,
+  userId: User["id"]
 ) {
   const role = await checkMemberRole(userId, boardId);
 
@@ -86,26 +92,29 @@ export async function updateBoard(
   }
 
   try {
-    await db
+    const [board] = await db
       .update(boardTable)
       .set({
         ...updates,
         updatedAt: new Date(),
       })
       .where(eq(boardTable.id, boardId))
-      .execute();
+      .returning();
+    if (!board) throw new Error("Board not found");
+    return board;
   } catch (error) {
     console.error("Failed to update board in database:", error);
     throw new Error("Failed to update board");
   }
-
-  // Return void - server actions don't need to return the DB result object
 }
 
 const prepareFetchBoardsWhereUserIsAdmin = db
   .select({
     id: boardTable.id,
     title: boardTable.title,
+    description: boardTable.description,
+    visibility: boardTable.visibility,
+    teamId: boardTable.teamId,
     state: boardTable.state,
     creator: boardTable.creator,
     updatedAt: boardTable.updatedAt,
@@ -117,19 +126,19 @@ const prepareFetchBoardsWhereUserIsAdmin = db
   .where(
     and(
       eq(userTable.id, sql.placeholder("userId")),
-      eq(memberTable.role, Role.owner),
-    ),
+      eq(memberTable.role, Role.owner)
+    )
   )
   .prepare();
 
 export async function fetchBoardsWhereUserIsAdmin(
-  userId: User["id"],
+  userId: User["id"]
 ): Promise<Board[]> {
   if (!userId) {
     throw new Error("User ID is required");
   }
 
   return await withDbRetry(() =>
-    prepareFetchBoardsWhereUserIsAdmin.execute({ userId }),
+    prepareFetchBoardsWhereUserIsAdmin.execute({ userId })
   );
 }

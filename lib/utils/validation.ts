@@ -1,3 +1,7 @@
+import {
+  BOARD_DESCRIPTION_MAX_LENGTH,
+  BOARD_VISIBILITIES,
+} from "@/lib/constants/board";
 import { z } from "zod";
 
 /**
@@ -15,6 +19,30 @@ export const boardTitleSchema = z
   .min(3, "Title must be at least 3 characters")
   .max(100, "Title must be less than 100 characters")
   .trim();
+
+export const boardVisibilitySchema = z.enum(BOARD_VISIBILITIES);
+
+export const boardDetailsSchema = z
+  .object({
+    title: z.string().trim().pipe(boardTitleSchema),
+    description: z
+      .string()
+      .max(
+        BOARD_DESCRIPTION_MAX_LENGTH,
+        `Description must be at most ${BOARD_DESCRIPTION_MAX_LENGTH} characters`
+      )
+      .trim()
+      .nullable()
+      .transform((value) => value || null),
+    visibility: boardVisibilitySchema,
+  })
+  .partial()
+  .refine(
+    (details) => Object.values(details).some((value) => value !== undefined),
+    {
+      message: "At least one board setting is required",
+    }
+  );
 
 // Email validation
 export const emailSchema = z

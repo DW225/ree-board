@@ -116,6 +116,8 @@ const BoardCard: FC<BoardCardProps> = ({ board, isOwner = false }) => {
         <EditBoardDialog
           boardId={board.id}
           currentTitle={board.title}
+          currentDescription={board.description}
+          currentVisibility={board.visibility}
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
         />
