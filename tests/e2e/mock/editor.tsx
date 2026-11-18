@@ -53,6 +53,7 @@ import { initializeMemberSignals } from "@/lib/signal/memberSignals";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
+import LoadingFixture from "./loading";
 
 const params = new URLSearchParams(location.search);
 const guest = params.has("guest");
@@ -288,5 +289,9 @@ if (params.get("review") === "board-settings") {
       <Toaster />
     </AppRouterContext.Provider>
   );
+}
+if (params.get("review") === "loading") {
+  boardViewModeSignal.value = params.get("view") === "list" ? "list" : "grid";
+  fixture = <LoadingFixture params={params} />;
 }
 createRoot(document.getElementById("root")!).render(fixture);
