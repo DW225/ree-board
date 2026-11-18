@@ -1,11 +1,11 @@
-import { BoardListSkeleton } from "@/components/ui/skeletons";
+import BoardListSkeleton from "@/components/home/BoardListSkeleton";
 import { getCurrentUser, verifySession } from "@/lib/dal";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
 const DashboardSearch = dynamic(
-  () => import("@/components/home/DashboardSearch"),
+  () => import("@/components/home/DashboardSearch")
 );
 
 export const metadata: Metadata = {
@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 };
 
 const CreateBoardModal = dynamic(
-  () => import("@/components/home/CreateBoardModal"),
+  () => import("@/components/home/CreateBoardModal")
 );
 const BoardListWrapper = dynamic(
-  () => import("@/components/home/BoardListWrapper"),
+  () => import("@/components/home/BoardListWrapper")
 );
 
 export default async function Boards() {
@@ -39,7 +39,9 @@ export default async function Boards() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <main className="flex flex-col gap-6 px-12 py-10">
-        <h1 className="text-[28px] font-bold text-[#0F172A]">{greeting}</h1>
+        <h1 className="truncate text-[28px] font-bold text-[#0F172A]">
+          {greeting}
+        </h1>
         <DashboardSearch />
         <Suspense fallback={<BoardListSkeleton />}>
           <BoardListWrapper userId={userID} />

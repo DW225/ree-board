@@ -1,7 +1,7 @@
 "use client";
 
 import { boardSignalInitial } from "@/lib/signal/boardSignals";
-import { BoardListSkeleton } from "@/components/ui/skeletons";
+import BoardListSkeleton from "./BoardListSkeleton";
 import type { BoardWithRole } from "@/lib/types/board";
 import { useEffectOnce } from "@/lib/utils/effect";
 import type { FC, ReactNode } from "react";
