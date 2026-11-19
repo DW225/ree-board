@@ -91,7 +91,7 @@
     "lint-staged": "^17.6.0",
     "postcss": "^8.5.31",
     "prettier": "3.9.10",
-    "supabase": "2.117.0",
+    "supabase": "2.122.1",
     "tailwindcss": "^4.3.3",
     "ts-jest": "^29.4.15",
     "typescript": "^6.0.3",
